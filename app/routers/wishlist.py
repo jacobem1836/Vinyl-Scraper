@@ -189,7 +189,7 @@ async def list_wishlist_items_api(db: Session = Depends(get_db)):
     response_model=WishlistItemResponse,
     dependencies=[Depends(require_api_key)],
 )
-async def create_wishlist_item_api(payload: WishlistItemCreate, db: Session = Depends(get_db)):
+async def create_wishlist_item_api(payload: WishlistItemCreate, scan: bool = True, db: Session = Depends(get_db)):
     item = WishlistItem(
         type=payload.type,
         query=payload.query,
@@ -201,6 +201,9 @@ async def create_wishlist_item_api(payload: WishlistItemCreate, db: Session = De
     db.add(item)
     db.commit()
     db.refresh(item)
+
+    if not scan:
+        return _enrich_item(item)
 
     new_listings = await scanner.scan_item(db, item)
 

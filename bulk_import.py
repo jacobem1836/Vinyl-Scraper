@@ -65,9 +65,9 @@ def parse_line(line: str) -> dict | None:
     }
 
 
-def post_item(base_url: str, api_key: str, item: dict) -> bool:
+def post_item(base_url: str, api_key: str, item: dict, scan: bool = False) -> bool:
     """POST to /api/wishlist. Returns True on success."""
-    url = f"{base_url.rstrip('/')}/api/wishlist"
+    url = f"{base_url.rstrip('/')}/api/wishlist?scan={'true' if scan else 'false'}"
     data = json.dumps(item).encode("utf-8")
     req = urllib.request.Request(
         url,
@@ -105,6 +105,8 @@ def main():
     parser = argparse.ArgumentParser(description="Bulk import wishlist items")
     parser.add_argument("--file", default=DEFAULT_FILE)
     parser.add_argument("--url", default=DEFAULT_URL)
+    parser.add_argument("--scan", action="store_true", default=False,
+                        help="Trigger a scan for each item on import (slow). Default: no scan.")
     args = parser.parse_args()
 
     api_key = load_env_api_key()
@@ -129,7 +131,7 @@ def main():
         if item is None:
             continue
 
-        ok = post_item(args.url, api_key, item)
+        ok = post_item(args.url, api_key, item, scan=args.scan)
         if ok:
             added += 1
             print(f"✓ Added: {item['type']}: {item['query']}")
