@@ -3,7 +3,7 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from sqlalchemy.orm import Session
 
-from app.database import Base, engine, get_db
+from app.database import Base, engine, get_db, run_migrations
 from app.models import Listing, WishlistItem
 from app.routers.wishlist import api_router, web_router
 from app.scheduler import scheduler, setup_scheduler
@@ -21,6 +21,7 @@ app.include_router(api_router)
 
 @app.on_event("startup")
 async def startup():
+    run_migrations()
     Base.metadata.create_all(bind=engine)
     setup_scheduler()
     scheduler.start()
@@ -44,12 +45,19 @@ async def index(request: Request, db: Session = Depends(get_db)):
         .all()
     )
     enriched = [_enrich_item(item) for item in items]
+    priced = [i for i in enriched if i["best_price"] is not None]
+    total_cost = round(sum(i["best_price"] for i in priced), 2) if priced else None
+    cheapest = min(priced, key=lambda i: i["best_price"]) if priced else None
+    most_expensive = max(priced, key=lambda i: i["best_price"]) if priced else None
     return templates.TemplateResponse(
         "index.html",
         {
             "request": request,
             "items": enriched,
             "total_listings": sum(i["listing_count"] for i in enriched),
+            "total_cost": total_cost,
+            "cheapest": cheapest,
+            "most_expensive": most_expensive,
         },
     )
 
