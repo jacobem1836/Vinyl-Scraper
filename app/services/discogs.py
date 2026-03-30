@@ -14,16 +14,45 @@ def _get_headers() -> dict:
     }
 
 
-def _build_listing(title: str, release_id: int, lowest_price: float | None) -> dict:
-    return {
-        "source": "discogs",
-        "title": title,
-        "price": float(lowest_price) if lowest_price is not None else None,
-        "currency": "USD",
-        "condition": None,
-        "seller": None,
-        "url": f"https://www.discogs.com/sell/list?release_id={release_id}&sort=price%2Casc",
-    }
+async def _get_marketplace_listings(
+    client: httpx.AsyncClient,
+    release_id: int,
+    title: str,
+    max_results: int,
+) -> list[dict]:
+    """Fetch individual marketplace listings for a release, with ships_from."""
+    resp = await client.get(
+        f"{BASE_URL}/marketplace/search",
+        params={
+            "release_id": release_id,
+            "sort": "price",
+            "sort_order": "asc",
+            "format": "Vinyl",
+            "per_page": max_results,
+        },
+        headers=_get_headers(),
+    )
+    if resp.status_code != 200:
+        return []
+
+    listings = []
+    for item in resp.json().get("listings", []):
+        price_info = item.get("price", {})
+        price = price_info.get("value")
+        listing_id = item.get("id")
+        if not listing_id or price is None:
+            continue
+        listings.append({
+            "source": "discogs",
+            "title": title,
+            "price": float(price),
+            "currency": price_info.get("currency", "USD"),
+            "condition": item.get("condition"),
+            "seller": (item.get("seller") or {}).get("username"),
+            "ships_from": item.get("ships_from"),
+            "url": f"https://www.discogs.com/sell/item/{listing_id}",
+        })
+    return listings
 
 
 async def search_and_get_listings(query: str, item_type: str, max_results: int = 5) -> list[dict]:
@@ -31,7 +60,7 @@ async def search_and_get_listings(query: str, item_type: str, max_results: int =
         return []
 
     try:
-        if item_type == "album":
+        if item_type in ("album", "subject"):
             return await _get_album_listings(query, max_results)
         if item_type == "artist":
             return await _get_artist_listings(query, max_results)
@@ -44,9 +73,6 @@ async def search_and_get_listings(query: str, item_type: str, max_results: int =
 
 
 async def _get_album_listings(query: str, max_results: int) -> list[dict]:
-    if not settings.discogs_token:
-        return []
-
     try:
         async with httpx.AsyncClient(timeout=20.0) as client:
             search_resp = await client.get(
@@ -66,26 +92,13 @@ async def _get_album_listings(query: str, max_results: int) -> list[dict]:
                 if not release_id or not title:
                     continue
 
-                detail_resp = await client.get(
-                    f"{BASE_URL}/releases/{release_id}",
-                    headers=_get_headers(),
-                )
-                if detail_resp.status_code != 200:
-                    await asyncio.sleep(0.5)
-                    continue
-
-                detail = detail_resp.json()
-                num_for_sale = detail.get("num_for_sale", 0)
-                lowest_price = detail.get("lowest_price")
-
-                if num_for_sale > 0 and lowest_price is not None:
-                    listings.append(_build_listing(title=title, release_id=release_id, lowest_price=lowest_price))
-                    if len(listings) >= max_results:
-                        break
-
+                new = await _get_marketplace_listings(client, release_id, title, max_results)
+                listings.extend(new)
+                if len(listings) >= max_results:
+                    break
                 await asyncio.sleep(0.5)
 
-            return listings
+            return listings[:max_results]
     except httpx.HTTPError as e:
         print(f"[Discogs] HTTP error in album search '{query}': {e}")
         return []
@@ -95,9 +108,6 @@ async def _get_album_listings(query: str, max_results: int) -> list[dict]:
 
 
 async def _get_artist_listings(query: str, max_results: int) -> list[dict]:
-    if not settings.discogs_token:
-        return []
-
     try:
         async with httpx.AsyncClient(timeout=20.0) as client:
             search_resp = await client.get(
@@ -133,26 +143,13 @@ async def _get_artist_listings(query: str, max_results: int) -> list[dict]:
                 if not release_id or not title:
                     continue
 
-                detail_resp = await client.get(
-                    f"{BASE_URL}/releases/{release_id}",
-                    headers=_get_headers(),
-                )
-                if detail_resp.status_code != 200:
-                    await asyncio.sleep(0.5)
-                    continue
-
-                detail = detail_resp.json()
-                num_for_sale = detail.get("num_for_sale", 0)
-                lowest_price = detail.get("lowest_price")
-
-                if num_for_sale > 0 and lowest_price is not None:
-                    listings.append(_build_listing(title=title, release_id=release_id, lowest_price=lowest_price))
-                    if len(listings) >= max_results:
-                        break
-
+                new = await _get_marketplace_listings(client, release_id, title, max_results)
+                listings.extend(new)
+                if len(listings) >= max_results:
+                    break
                 await asyncio.sleep(0.5)
 
-            return listings
+            return listings[:max_results]
     except httpx.HTTPError as e:
         print(f"[Discogs] HTTP error in artist search '{query}': {e}")
         return []
@@ -162,9 +159,6 @@ async def _get_artist_listings(query: str, max_results: int) -> list[dict]:
 
 
 async def _get_label_listings(query: str, max_results: int) -> list[dict]:
-    if not settings.discogs_token:
-        return []
-
     try:
         async with httpx.AsyncClient(timeout=20.0) as client:
             search_resp = await client.get(
@@ -200,26 +194,13 @@ async def _get_label_listings(query: str, max_results: int) -> list[dict]:
                 if not release_id or not title:
                     continue
 
-                detail_resp = await client.get(
-                    f"{BASE_URL}/releases/{release_id}",
-                    headers=_get_headers(),
-                )
-                if detail_resp.status_code != 200:
-                    await asyncio.sleep(0.5)
-                    continue
-
-                detail = detail_resp.json()
-                num_for_sale = detail.get("num_for_sale", 0)
-                lowest_price = detail.get("lowest_price")
-
-                if num_for_sale > 0 and lowest_price is not None:
-                    listings.append(_build_listing(title=title, release_id=release_id, lowest_price=lowest_price))
-                    if len(listings) >= max_results:
-                        break
-
+                new = await _get_marketplace_listings(client, release_id, title, max_results)
+                listings.extend(new)
+                if len(listings) >= max_results:
+                    break
                 await asyncio.sleep(0.5)
 
-            return listings
+            return listings[:max_results]
     except httpx.HTTPError as e:
         print(f"[Discogs] HTTP error in label search '{query}': {e}")
         return []

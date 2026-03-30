@@ -37,6 +37,7 @@ async def scan_item(db: Session, item: WishlistItem) -> list[Listing]:
             currency=result.get("currency", "USD"),
             condition=result.get("condition"),
             seller=result.get("seller"),
+            ships_from=result.get("ships_from"),
             url=url,
             found_at=datetime.utcnow(),
             is_active=True,
