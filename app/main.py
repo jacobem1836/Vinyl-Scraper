@@ -47,6 +47,7 @@ async def index(request: Request, db: Session = Depends(get_db)):
         .all()
     )
     enriched = [_enrich_item(item) for item in items]
+    shipping_estimate = settings.shipping_estimate_usd
     priced = [i for i in enriched if i["best_price"] is not None]
     total_cost = round(sum(i["best_price"] for i in priced), 2) if priced else None
     cheapest = min(priced, key=lambda i: i["best_price"]) if priced else None
@@ -60,7 +61,7 @@ async def index(request: Request, db: Session = Depends(get_db)):
             "total_cost": total_cost,
             "cheapest": cheapest,
             "most_expensive": most_expensive,
-            "shipping_estimate": shipping,
+            "shipping_estimate": shipping_estimate,
         },
     )
 
