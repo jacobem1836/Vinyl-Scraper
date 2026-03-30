@@ -1,7 +1,7 @@
 from fastapi import Depends, FastAPI, Request
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, joinedload
 
 from app.config import settings
 from app.database import Base, engine, get_db, run_migrations
@@ -43,6 +43,7 @@ async def index(request: Request, db: Session = Depends(get_db)):
     items = (
         db.query(WishlistItem)
         .filter_by(is_active=True)
+        .options(joinedload(WishlistItem.listings))
         .order_by(WishlistItem.created_at.desc())
         .all()
     )
@@ -72,7 +73,12 @@ async def item_detail(item_id: int, request: Request, db: Session = Depends(get_
 
     from app.routers.wishlist import _enrich_item
 
-    item = db.query(WishlistItem).filter_by(id=item_id, is_active=True).first()
+    item = (
+        db.query(WishlistItem)
+        .filter_by(id=item_id, is_active=True)
+        .options(joinedload(WishlistItem.listings))
+        .first()
+    )
     if not item:
         raise HTTPException(status_code=404, detail="Item not found")
 

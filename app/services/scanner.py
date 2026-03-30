@@ -5,9 +5,13 @@ from sqlalchemy.orm import Session
 
 from app.models import Listing, WishlistItem
 from app.services import discogs, shopify
+from app.services import scan_status
 
 
-async def scan_item(db: Session, item: WishlistItem) -> list[Listing]:
+async def scan_item(db: Session, item: WishlistItem, track: bool = False) -> list[Listing]:
+    if track:
+        scan_status.item_started(item.id, item.query, item.type)
+
     discogs_results, shopify_results = await asyncio.gather(
         discogs.search_and_get_listings(item.query, item.type),
         shopify.search_and_get_listings(item.query, item.type),
@@ -58,20 +62,36 @@ async def scan_item(db: Session, item: WishlistItem) -> list[Listing]:
     db.commit()
     db.refresh(item)
 
+    if track:
+        scan_status.item_finished(item.id, item.query, len(new_listings))
+
     return new_listings
 
 
-async def scan_all_items(db: Session) -> dict:
+async def scan_all_items(db: Session, track: bool = False) -> dict:
     items = db.query(WishlistItem).filter(WishlistItem.is_active.is_(True)).all()
 
+    if track:
+        scan_status.reset(mode="all", total=len(items))
+
+    semaphore = asyncio.Semaphore(3)
     summary_items: list[dict] = []
     total_new_listings = 0
 
-    for item in items:
-        new_listings = await scan_item(db, item)
-        count = len(new_listings)
-        total_new_listings += count
-        summary_items.append({"id": item.id, "query": item.query, "new_listings": count})
+    async def _scan(item: WishlistItem) -> dict:
+        async with semaphore:
+            new_listings = await scan_item(db, item, track=track)
+            count = len(new_listings)
+            return {"id": item.id, "query": item.query, "new_listings": count}
+
+    results = await asyncio.gather(*[_scan(item) for item in items])
+
+    for r in results:
+        summary_items.append(r)
+        total_new_listings += r["new_listings"]
+
+    if track:
+        scan_status.finish()
 
     return {
         "items_scanned": len(items),

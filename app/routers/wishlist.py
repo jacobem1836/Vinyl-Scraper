@@ -1,3 +1,5 @@
+import asyncio
+
 from fastapi import APIRouter, Depends, Form, Header, HTTPException
 from fastapi.responses import RedirectResponse
 from sqlalchemy.orm import Session
@@ -267,3 +269,46 @@ async def list_item_listings_api(item_id: int, db: Session = Depends(get_db)):
 @api_router.post("/scan", dependencies=[Depends(require_api_key)])
 async def scan_all_items_api(db: Session = Depends(get_db)):
     return await scanner.scan_all_items(db)
+
+
+@api_router.post("/scan/start")
+async def start_scan_api(item_id: int | None = None, db: Session = Depends(get_db)):
+    from app.services import scan_status as _scan_status
+
+    if _scan_status.get()["is_running"]:
+        return {"started": False, "reason": "scan already in progress"}
+
+    if item_id is not None:
+        item = db.query(WishlistItem).filter_by(id=item_id, is_active=True).first()
+        if not item:
+            raise HTTPException(status_code=404, detail="Item not found")
+
+        async def _run_single():
+            from app.database import SessionLocal
+            _db = SessionLocal()
+            try:
+                _item = _db.query(WishlistItem).filter_by(id=item_id).first()
+                if _item:
+                    await scanner.scan_item(_db, _item, track=True)
+            finally:
+                _db.close()
+
+        asyncio.create_task(_run_single())
+    else:
+        async def _run_all():
+            from app.database import SessionLocal
+            _db = SessionLocal()
+            try:
+                await scanner.scan_all_items(_db, track=True)
+            finally:
+                _db.close()
+
+        asyncio.create_task(_run_all())
+
+    return {"started": True}
+
+
+@api_router.get("/scan/status")
+async def scan_status_api():
+    from app.services import scan_status as _scan_status
+    return _scan_status.get()
