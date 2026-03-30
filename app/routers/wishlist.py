@@ -216,6 +216,24 @@ async def create_wishlist_item_api(payload: WishlistItemCreate, scan: bool = Tru
     return _enrich_item(item)
 
 
+@api_router.post("/wishlist/bulk", dependencies=[Depends(require_api_key)])
+async def bulk_create_wishlist_items_api(payload: list[WishlistItemCreate], db: Session = Depends(get_db)):
+    items = [
+        WishlistItem(
+            type=p.type,
+            query=p.query,
+            notes=p.notes,
+            notify_below_pct=p.notify_below_pct,
+            notify_email=p.notify_email,
+            is_active=True,
+        )
+        for p in payload
+    ]
+    db.add_all(items)
+    db.commit()
+    return {"added": len(items)}
+
+
 @api_router.delete("/wishlist/{item_id}", dependencies=[Depends(require_api_key)])
 async def delete_wishlist_item_api(item_id: int, db: Session = Depends(get_db)):
     item = db.query(WishlistItem).filter_by(id=item_id).first()
@@ -244,24 +262,6 @@ async def list_item_listings_api(item_id: int, db: Session = Depends(get_db)):
         .all()
     )
     return listings
-
-
-@api_router.post("/wishlist/bulk", dependencies=[Depends(require_api_key)])
-async def bulk_create_wishlist_items_api(payload: list[WishlistItemCreate], db: Session = Depends(get_db)):
-    items = [
-        WishlistItem(
-            type=p.type,
-            query=p.query,
-            notes=p.notes,
-            notify_below_pct=p.notify_below_pct,
-            notify_email=p.notify_email,
-            is_active=True,
-        )
-        for p in payload
-    ]
-    db.add_all(items)
-    db.commit()
-    return {"added": len(items)}
 
 
 @api_router.post("/scan", dependencies=[Depends(require_api_key)])
