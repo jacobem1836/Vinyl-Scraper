@@ -65,10 +65,10 @@ def parse_line(line: str) -> dict | None:
     }
 
 
-def post_item(base_url: str, api_key: str, item: dict, scan: bool = False) -> bool:
-    """POST to /api/wishlist. Returns True on success."""
-    url = f"{base_url.rstrip('/')}/api/wishlist?scan={'true' if scan else 'false'}"
-    data = json.dumps(item).encode("utf-8")
+def post_bulk(base_url: str, api_key: str, items: list[dict]) -> int:
+    """POST all items to /api/wishlist/bulk in one request. Returns count added."""
+    url = f"{base_url.rstrip('/')}/api/wishlist/bulk"
+    data = json.dumps(items).encode("utf-8")
     req = urllib.request.Request(
         url,
         data=data,
@@ -78,40 +78,30 @@ def post_item(base_url: str, api_key: str, item: dict, scan: bool = False) -> bo
             "X-API-Key": api_key,
         },
     )
-
     try:
         with urllib.request.urlopen(req) as resp:
-            return resp.status in (200, 201)
+            result = json.loads(resp.read().decode("utf-8"))
+            return result.get("added", 0)
     except urllib.error.HTTPError as e:
         body = ""
         try:
             body = e.read().decode("utf-8", errors="replace")
         except Exception:
-            body = ""
-        if body:
-            print(f"HTTP error {e.code} for {item['type']}: {item['query']} - {body}")
-        else:
-            print(f"HTTP error {e.code} for {item['type']}: {item['query']}")
-        return False
+            pass
+        print(f"HTTP error {e.code}: {body}")
+        sys.exit(1)
     except urllib.error.URLError as e:
-        print(f"Connection error for {item['type']}: {item['query']} - {e}")
-        return False
-    except Exception as e:
-        print(f"Unexpected error for {item['type']}: {item['query']} - {e}")
-        return False
+        print(f"Connection error: {e}")
+        sys.exit(1)
 
 
 def main():
     parser = argparse.ArgumentParser(description="Bulk import wishlist items")
     parser.add_argument("--file", default=DEFAULT_FILE)
     parser.add_argument("--url", default=DEFAULT_URL)
-    parser.add_argument("--scan", action="store_true", default=False,
-                        help="Trigger a scan for each item on import (slow). Default: no scan.")
     args = parser.parse_args()
 
     api_key = load_env_api_key()
-
-    print(f"Importing from {args.file} to {args.url}...")
 
     try:
         with open(args.file, "r", encoding="utf-8") as f:
@@ -123,23 +113,15 @@ def main():
         print(f"Error reading file {args.file}: {e}")
         sys.exit(1)
 
-    added = 0
-    failed = 0
+    items = [item for line in lines if (item := parse_line(line)) is not None]
 
-    for line in lines:
-        item = parse_line(line)
-        if item is None:
-            continue
+    if not items:
+        print("No valid items found in file.")
+        sys.exit(0)
 
-        ok = post_item(args.url, api_key, item, scan=args.scan)
-        if ok:
-            added += 1
-            print(f"✓ Added: {item['type']}: {item['query']}")
-        else:
-            failed += 1
-            print(f"✗ Failed: {item['type']}: {item['query']}")
-
-    print(f"Done. {added} added, {failed} failed.")
+    print(f"Importing {len(items)} items to {args.url}...")
+    added = post_bulk(args.url, api_key, items)
+    print(f"Done. {added} items added. Run 'Scan All' from the dashboard to fetch prices.")
 
 
 if __name__ == "__main__":
