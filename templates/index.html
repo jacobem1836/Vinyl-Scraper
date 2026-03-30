@@ -20,8 +20,9 @@
     {% if total_cost is not none %}
     <div class="flex flex-wrap gap-4 pt-1 border-t border-slate-700 text-sm">
       <div>
-        <span class="text-slate-400">Total wishlist cost</span>
+        <span class="text-slate-400">Total to Australia</span>
         <span class="ml-2 text-amber-400 font-semibold">${{ '%.2f'|format(total_cost) }}</span>
+        <span class="ml-1 text-slate-500 text-xs">(+~${{ '%.0f'|format(shipping_estimate) }}/item shipping)</span>
       </div>
       {% if cheapest %}
       <div>
@@ -58,6 +59,7 @@
               <option value="album">Album</option>
               <option value="artist">Artist</option>
               <option value="label">Label</option>
+              <option value="subject">Subject</option>
             </select>
           </div>
 

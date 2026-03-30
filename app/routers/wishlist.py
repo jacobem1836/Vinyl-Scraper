@@ -29,7 +29,7 @@ def _enrich_item(item: WishlistItem) -> dict:
         "type": item.type,
         "query": item.query,
         "notes": item.notes,
-        "price_ceiling": item.price_ceiling,
+        "notify_below_pct": item.notify_below_pct,
         "notify_email": item.notify_email,
         "created_at": item.created_at,
         "last_scanned_at": item.last_scanned_at,
