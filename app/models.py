@@ -24,7 +24,7 @@ class Listing(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     wishlist_item_id = Column(Integer, ForeignKey("wishlist_items.id"), nullable=False)
-    source = Column(String, nullable=False)         # "discogs" or "ebay"
+    source = Column(String, nullable=False)         # 'discogs', 'thevinylstore', 'dutchvinyl', 'strangeworld', 'goldmine', 'utopia'
     title = Column(String, nullable=False)
     price = Column(Float, nullable=True)
     currency = Column(String, default="USD")
@@ -34,5 +34,6 @@ class Listing(Base):
     url = Column(String, nullable=False, unique=True)
     found_at = Column(DateTime, default=datetime.utcnow)
     is_active = Column(Boolean, default=True)
+    is_in_stock = Column(Boolean, default=True)
 
     wishlist_item = relationship("WishlistItem", back_populates="listings")

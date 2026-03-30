@@ -84,17 +84,20 @@
           </thead>
           <tbody>
             {% for listing in listings if listing.price is not none %}
-              <tr class="listing-row border-t border-slate-700/70">
+              <tr class="listing-row border-t border-slate-700/70{% if not listing.is_in_stock %} opacity-50{% endif %}">
                 <td class="px-4 py-3 font-medium">
                   <span class="text-amber-300">${{ '%.2f'|format(listing.landed_price) }}</span>
                   <span class="block text-xs text-slate-500">${{ '%.2f'|format(listing.price) }} + shipping</span>
                 </td>
                 <td class="px-4 py-3 text-slate-300">{{ listing.ships_from or '—' }}</td>
                 <td class="px-4 py-3 text-slate-300">{{ listing.condition or '—' }}</td>
-                <td class="px-4 py-3">
+                <td class="px-4 py-3 space-y-1">
                   <span class="inline-flex text-xs px-2 py-1 rounded-full {% if listing.source == 'discogs' %}bg-orange-500/20 text-orange-300{% else %}bg-blue-500/20 text-blue-300{% endif %}">
                     {{ listing.source|title }}
                   </span>
+                  {% if not listing.is_in_stock %}
+                  <span class="block text-xs text-red-400">Out of stock</span>
+                  {% endif %}
                 </td>
                 <td class="px-4 py-3 text-slate-200 title-cell">{{ listing.title }}</td>
                 <td class="px-4 py-3 text-slate-300">{{ listing.seller or '—' }}</td>

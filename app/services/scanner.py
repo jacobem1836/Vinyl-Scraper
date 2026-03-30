@@ -4,15 +4,15 @@ from datetime import datetime
 from sqlalchemy.orm import Session
 
 from app.models import Listing, WishlistItem
-from app.services import discogs, ebay
+from app.services import discogs, shopify
 
 
 async def scan_item(db: Session, item: WishlistItem) -> list[Listing]:
-    discogs_results, ebay_results = await asyncio.gather(
+    discogs_results, shopify_results = await asyncio.gather(
         discogs.search_and_get_listings(item.query, item.type),
-        ebay.search_and_get_listings(item.query, item.type),
+        shopify.search_and_get_listings(item.query, item.type),
     )
-    all_results = discogs_results + ebay_results
+    all_results = discogs_results + shopify_results
 
     new_listings: list[Listing] = []
 
@@ -27,6 +27,9 @@ async def scan_item(db: Session, item: WishlistItem) -> list[Listing]:
             .first()
         )
         if existing:
+            new_stock = result.get("is_in_stock")
+            if new_stock is not None:
+                existing.is_in_stock = new_stock
             continue
 
         listing = Listing(
@@ -41,6 +44,7 @@ async def scan_item(db: Session, item: WishlistItem) -> list[Listing]:
             url=url,
             found_at=datetime.utcnow(),
             is_active=True,
+            is_in_stock=result.get("is_in_stock", True),
         )
         db.add(listing)
         new_listings.append(listing)

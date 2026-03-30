@@ -97,6 +97,7 @@ async def item_detail(item_id: int, request: Request, db: Session = Depends(get_
             "found_at": l.found_at,
             "is_active": l.is_active,
             "landed_price": (l.price + get_shipping_cost(l.ships_from, fallback)) if l.price is not None else None,
+            "is_in_stock": l.is_in_stock,
         }
         for l in raw_listings
     ]

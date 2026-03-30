@@ -34,3 +34,8 @@ def run_migrations():
             conn.commit()
         except Exception:
             pass  # Column already exists
+        try:
+            conn.execute(text("ALTER TABLE listings ADD COLUMN is_in_stock INTEGER NOT NULL DEFAULT 1"))
+            conn.commit()
+        except Exception:
+            pass  # Column already exists

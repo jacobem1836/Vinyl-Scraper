@@ -93,5 +93,49 @@
       });
     });
   </script>
+
+  <!-- Scan loading overlay -->
+  <div id="scanOverlay" class="hidden fixed inset-0 z-[60] bg-black/70 flex items-center justify-center">
+    <div class="text-center space-y-4">
+      <div class="animate-spin h-12 w-12 border-4 border-amber-500 border-t-transparent rounded-full mx-auto"></div>
+      <p class="text-white text-lg font-semibold">Scanning...</p>
+      <p class="text-slate-400 text-sm">Checking all sources, this may take a moment</p>
+    </div>
+  </div>
+
+  <!-- Toast notification -->
+  <div id="toast" class="hidden fixed bottom-6 right-6 z-50 max-w-sm bg-slate-700 border border-slate-600 rounded-lg px-5 py-3 shadow-xl flex items-center gap-3">
+    <svg class="w-5 h-5 text-amber-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+    <span id="toastMessage" class="text-sm text-white"></span>
+  </div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      // Show scan overlay on any scan form submit
+      document.querySelectorAll('form').forEach(form => {
+        const action = form.getAttribute('action') || '';
+        if (action.includes('scan')) {
+          form.addEventListener('submit', () => {
+            document.getElementById('scanOverlay').classList.remove('hidden');
+          });
+        }
+      });
+
+      // Show toast from ?toast= query param
+      const params = new URLSearchParams(window.location.search);
+      const toastMsg = params.get('toast');
+      if (toastMsg) {
+        const toast = document.getElementById('toast');
+        const msg = document.getElementById('toastMessage');
+        if (toast && msg) {
+          msg.textContent = decodeURIComponent(toastMsg.replace(/\+/g, ' '));
+          toast.classList.remove('hidden');
+          setTimeout(() => toast.classList.add('hidden'), 4000);
+          window.history.replaceState({}, '', window.location.pathname);
+        }
+      }
+    });
+  </script>
+
 </body>
 </html>
