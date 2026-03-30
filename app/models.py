@@ -24,7 +24,7 @@ class Listing(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     wishlist_item_id = Column(Integer, ForeignKey("wishlist_items.id"), nullable=False)
-    source = Column(String, nullable=False)         # "discogs" or "ebay"
+    source = Column(String, nullable=False)         # 'discogs', 'thevinylstore', 'dutchvinyl', 'strangeworld', 'goldmine', 'utopia'
     title = Column(String, nullable=False)
     price = Column(Float, nullable=True)
     currency = Column(String, default="USD")
