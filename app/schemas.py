@@ -7,7 +7,7 @@ class WishlistItemCreate(BaseModel):
     type: str           # "album", "artist", or "label"
     query: str
     notes: Optional[str] = None
-    price_ceiling: Optional[float] = None
+    notify_below_pct: float = 20.0
     notify_email: bool = True
 
 
@@ -15,7 +15,7 @@ class WishlistItemUpdate(BaseModel):
     type: Optional[str] = None
     query: Optional[str] = None
     notes: Optional[str] = None
-    price_ceiling: Optional[float] = None
+    notify_below_pct: Optional[float] = None
     notify_email: Optional[bool] = None
     is_active: Optional[bool] = None
 
@@ -43,7 +43,7 @@ class WishlistItemResponse(BaseModel):
     type: str
     query: str
     notes: Optional[str]
-    price_ceiling: Optional[float]
+    notify_below_pct: float
     notify_email: bool
     created_at: datetime
     last_scanned_at: Optional[datetime]
@@ -51,3 +51,5 @@ class WishlistItemResponse(BaseModel):
     best_price: Optional[float] = None      # computed field, not a DB column
     best_price_source: Optional[str] = None # "discogs" or "ebay"
     listing_count: int = 0
+    typical_price: Optional[float] = None      # median of all active listing prices
+    top_listings: list[dict] = []              # top 3 cheapest listings (title, price, source, url, currency)
