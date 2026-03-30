@@ -8,10 +8,28 @@ from app.config import settings
 from app.models import Listing, WishlistItem
 
 
-def should_notify(item: WishlistItem, listing: Listing) -> bool:
-    if item.price_ceiling is not None:
-        return listing.price is not None and listing.price <= item.price_ceiling
-    return True
+def compute_typical_price(listings: list[Listing]) -> float | None:
+    """Compute the median price from a list of active priced listings."""
+    prices = sorted(l.price for l in listings if l.price is not None and l.is_active)
+    if not prices:
+        return None
+    mid = len(prices) // 2
+    if len(prices) % 2 == 1:
+        return prices[mid]
+    return (prices[mid - 1] + prices[mid]) / 2
+
+
+def should_notify(item: WishlistItem, listing: Listing, all_listings: list[Listing] | None = None) -> bool:
+    """Return True if listing is at least notify_below_pct% below the median price."""
+    if listing.price is None:
+        return False
+    if not all_listings:
+        return True  # no history yet — always notify
+    typical = compute_typical_price(all_listings)
+    if typical is None:
+        return True  # can't compute median — notify
+    threshold = typical * (1 - item.notify_below_pct / 100)
+    return listing.price <= threshold
 
 
 def _send_smtp(
@@ -63,14 +81,12 @@ async def send_deal_email(item: WishlistItem, new_listings: list[Listing]) -> bo
             "</tr>"
         )
 
-    price_ceiling_html = ""
-    if item.price_ceiling is not None:
-        price_ceiling_html = f"<p>Your price ceiling: ${item.price_ceiling:.2f}</p>"
+    notify_info_html = f"<p>Notifying on listings ≥ {item.notify_below_pct:.0f}% below typical price</p>"
 
     html_body = (
         f"<h2>New listing found for: {html.escape(item.query)}</h2>"
         f"<p>Type: {html.escape(item.type)} | {len(notify_listings)} new listing(s) found</p>"
-        f"{price_ceiling_html}"
+        f"{notify_info_html}"
         '<table border="1" cellpadding="6" cellspacing="0" style="border-collapse:collapse">'
         "<tr><th>Title</th><th>Price</th><th>Condition</th><th>Source</th><th>Link</th></tr>"
         f"{''.join(table_rows)}"

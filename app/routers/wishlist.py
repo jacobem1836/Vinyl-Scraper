@@ -7,6 +7,7 @@ from app.database import get_db
 from app.models import Listing, WishlistItem
 from app.schemas import ListingResponse, WishlistItemCreate, WishlistItemResponse
 from app.services import notifier, scanner
+from app.services.notifier import compute_typical_price
 
 web_router = APIRouter(tags=["web"])
 api_router = APIRouter(prefix="/api", tags=["api"])
@@ -36,6 +37,11 @@ def _enrich_item(item: WishlistItem) -> dict:
         "best_price": best_listing.price if best_listing else None,
         "best_price_source": best_listing.source if best_listing else None,
         "listing_count": len(all_listings),
+        "typical_price": compute_typical_price(active_priced),
+        "top_listings": [
+            {"title": l.title, "price": l.price, "source": l.source, "url": l.url, "currency": l.currency}
+            for l in sorted(active_priced, key=lambda l: l.price)[:3]
+        ],
     }
 
 
@@ -44,7 +50,7 @@ async def add_wishlist_item_web(
     type: str = Form(...),
     query: str = Form(...),
     notes: str | None = Form(None),
-    price_ceiling: float | None = Form(None),
+    notify_below_pct: float = Form(20.0),
     notify_email: bool = Form(True),
     db: Session = Depends(get_db),
 ):
@@ -52,7 +58,7 @@ async def add_wishlist_item_web(
         type=type,
         query=query,
         notes=notes,
-        price_ceiling=price_ceiling,
+        notify_below_pct=notify_below_pct,
         notify_email=notify_email,
         is_active=True,
     )
@@ -85,7 +91,7 @@ async def scan_single_item_web(item_id: int, db: Session = Depends(get_db)):
     new_listings = await scanner.scan_item(db, item)
 
     if item.notify_email and new_listings:
-        notifiable = [l for l in new_listings if notifier.should_notify(item, l)]
+        notifiable = [l for l in new_listings if notifier.should_notify(item, l, list(item.listings or []))]
         if notifiable:
             await notifier.send_deal_email(item, notifiable)
 
@@ -113,7 +119,7 @@ async def scan_all_items_web(db: Session = Depends(get_db)):
             .all()
         )
 
-        notifiable = [l for l in recent_new if notifier.should_notify(item, l)]
+        notifiable = [l for l in recent_new if notifier.should_notify(item, l, list(item.listings or []))]
         if notifiable:
             await notifier.send_deal_email(item, notifiable)
 
@@ -150,7 +156,7 @@ async def create_wishlist_item_api(payload: WishlistItemCreate, db: Session = De
         type=payload.type,
         query=payload.query,
         notes=payload.notes,
-        price_ceiling=payload.price_ceiling,
+        notify_below_pct=payload.notify_below_pct,
         notify_email=payload.notify_email,
         is_active=True,
     )
@@ -161,7 +167,7 @@ async def create_wishlist_item_api(payload: WishlistItemCreate, db: Session = De
     new_listings = await scanner.scan_item(db, item)
 
     if item.notify_email and new_listings:
-        notifiable = [l for l in new_listings if notifier.should_notify(item, l)]
+        notifiable = [l for l in new_listings if notifier.should_notify(item, l, list(item.listings or []))]
         if notifiable:
             await notifier.send_deal_email(item, notifiable)
 
