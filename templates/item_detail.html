@@ -40,20 +40,21 @@
     </div>
   </section>
 
-  {% set priced_listings = listings|rejectattr('price', 'none')|sort(attribute='price')|list %}
   <section class="space-y-3">
     <h2 class="text-lg font-semibold">Best Deals</h2>
-    {% if priced_listings %}
+    {% if item.top_listings %}
       <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-        {% for listing in priced_listings[:3] %}
+        {% for l in item.top_listings %}
           <article class="bg-slate-800 border border-slate-700 rounded-xl p-4 space-y-2">
-            <p class="text-xl font-semibold text-amber-400">${{ '%.2f'|format(listing.price) }} {{ listing.currency }}</p>
-            <p class="text-slate-300 text-sm">{{ listing.condition or 'Condition not specified' }}</p>
-            <span class="inline-flex text-xs px-2 py-1 rounded-full {% if listing.source == 'discogs' %}bg-orange-500/20 text-orange-300{% else %}bg-blue-500/20 text-blue-300{% endif %}">
-              {{ listing.source|title }}
+            <div>
+              <p class="text-xl font-semibold text-amber-400">${{ '%.2f'|format(l.landed_price) }} <span class="text-sm font-normal text-slate-400">landed AU</span></p>
+              <p class="text-xs text-slate-500">${{ '%.2f'|format(l.price) }} + shipping from {{ l.ships_from or 'Unknown' }}</p>
+            </div>
+            <span class="inline-flex text-xs px-2 py-1 rounded-full {% if l.source == 'discogs' %}bg-orange-500/20 text-orange-300{% else %}bg-blue-500/20 text-blue-300{% endif %}">
+              {{ l.source|title }}
             </span>
-            <p class="text-sm text-slate-300 truncate">{{ listing.title }}</p>
-            <a href="{{ listing.url }}" target="_blank" rel="noopener noreferrer" class="inline-flex text-sm text-amber-400 hover:text-amber-300">View Listing →</a>
+            <p class="text-sm text-slate-300 truncate">{{ l.title }}</p>
+            <a href="{{ l.url }}" target="_blank" rel="noopener noreferrer" class="inline-flex text-sm text-amber-400 hover:text-amber-300">View Listing →</a>
           </article>
         {% endfor %}
       </div>
@@ -68,10 +69,11 @@
     {% if listings %}
       {% set unpriced_listings = listings|selectattr('price', 'none')|list %}
       <div class="bg-slate-800 border border-slate-700 rounded-xl overflow-x-auto">
-        <table class="w-full min-w-[860px] text-sm">
+        <table class="w-full min-w-[980px] text-sm">
           <thead class="bg-slate-900/70 text-slate-300">
             <tr>
-              <th class="text-left font-medium px-4 py-3">Price</th>
+              <th class="text-left font-medium px-4 py-3">Landed (AU)</th>
+              <th class="text-left font-medium px-4 py-3">Ships From</th>
               <th class="text-left font-medium px-4 py-3">Condition</th>
               <th class="text-left font-medium px-4 py-3">Source</th>
               <th class="text-left font-medium px-4 py-3">Title</th>
@@ -81,9 +83,13 @@
             </tr>
           </thead>
           <tbody>
-            {% for listing in priced_listings %}
+            {% for listing in listings if listing.price is not none %}
               <tr class="listing-row border-t border-slate-700/70">
-                <td class="px-4 py-3 text-amber-300 font-medium">${{ '%.2f'|format(listing.price) }} {{ listing.currency }}</td>
+                <td class="px-4 py-3 font-medium">
+                  <span class="text-amber-300">${{ '%.2f'|format(listing.landed_price) }}</span>
+                  <span class="block text-xs text-slate-500">${{ '%.2f'|format(listing.price) }} + shipping</span>
+                </td>
+                <td class="px-4 py-3 text-slate-300">{{ listing.ships_from or '—' }}</td>
                 <td class="px-4 py-3 text-slate-300">{{ listing.condition or '—' }}</td>
                 <td class="px-4 py-3">
                   <span class="inline-flex text-xs px-2 py-1 rounded-full {% if listing.source == 'discogs' %}bg-orange-500/20 text-orange-300{% else %}bg-blue-500/20 text-blue-300{% endif %}">
@@ -97,8 +103,9 @@
               </tr>
             {% endfor %}
 
-            {% for listing in unpriced_listings %}
+            {% for listing in listings if listing.price is none %}
               <tr class="listing-row border-t border-slate-700/70">
+                <td class="px-4 py-3 text-slate-500">—</td>
                 <td class="px-4 py-3 text-slate-500">—</td>
                 <td class="px-4 py-3 text-slate-300">{{ listing.condition or '—' }}</td>
                 <td class="px-4 py-3">

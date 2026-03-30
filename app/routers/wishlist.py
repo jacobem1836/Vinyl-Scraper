@@ -8,6 +8,7 @@ from app.models import Listing, WishlistItem
 from app.schemas import ListingResponse, WishlistItemCreate, WishlistItemResponse
 from app.services import notifier, scanner
 from app.services.notifier import compute_typical_price
+from app.services.shipping import get_shipping_cost
 
 web_router = APIRouter(tags=["web"])
 api_router = APIRouter(prefix="/api", tags=["api"])
@@ -18,11 +19,16 @@ async def require_api_key(x_api_key: str = Header(...)):
         raise HTTPException(status_code=401, detail="Invalid API key")
 
 
+def _landed(listing) -> float:
+    return listing.price + get_shipping_cost(listing.ships_from, settings.shipping_estimate_usd)
+
+
 def _enrich_item(item: WishlistItem) -> dict:
     all_listings = list(item.listings or [])
     active_priced = [l for l in all_listings if l.is_active and l.price is not None]
 
-    best_listing = min(active_priced, key=lambda l: l.price) if active_priced else None
+    sorted_by_landed = sorted(active_priced, key=_landed) if active_priced else []
+    best_listing = sorted_by_landed[0] if sorted_by_landed else None
 
     return {
         "id": item.id,
@@ -34,13 +40,23 @@ def _enrich_item(item: WishlistItem) -> dict:
         "created_at": item.created_at,
         "last_scanned_at": item.last_scanned_at,
         "is_active": item.is_active,
-        "best_price": best_listing.price if best_listing else None,
+        "best_price": _landed(best_listing) if best_listing else None,        # landed price
+        "best_price_raw": best_listing.price if best_listing else None,        # listing price only
+        "best_ships_from": best_listing.ships_from if best_listing else None,
         "best_price_source": best_listing.source if best_listing else None,
         "listing_count": len(all_listings),
         "typical_price": compute_typical_price(active_priced),
         "top_listings": [
-            {"title": l.title, "price": l.price, "source": l.source, "url": l.url, "currency": l.currency}
-            for l in sorted(active_priced, key=lambda l: l.price)[:3]
+            {
+                "title": l.title,
+                "price": l.price,
+                "landed_price": _landed(l),
+                "ships_from": l.ships_from,
+                "source": l.source,
+                "url": l.url,
+                "currency": l.currency,
+            }
+            for l in sorted_by_landed[:3]
         ],
     }
 

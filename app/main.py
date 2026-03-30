@@ -8,6 +8,7 @@ from app.database import Base, engine, get_db, run_migrations
 from app.models import Listing, WishlistItem
 from app.routers.wishlist import api_router, web_router
 from app.scheduler import scheduler, setup_scheduler
+from app.services.shipping import get_shipping_cost
 
 app = FastAPI(title="Vinyl Wishlist")
 
@@ -46,9 +47,8 @@ async def index(request: Request, db: Session = Depends(get_db)):
         .all()
     )
     enriched = [_enrich_item(item) for item in items]
-    shipping = settings.shipping_estimate_usd
     priced = [i for i in enriched if i["best_price"] is not None]
-    total_cost = round(sum(i["best_price"] + shipping for i in priced), 2) if priced else None
+    total_cost = round(sum(i["best_price"] for i in priced), 2) if priced else None
     cheapest = min(priced, key=lambda i: i["best_price"]) if priced else None
     most_expensive = max(priced, key=lambda i: i["best_price"]) if priced else None
     return templates.TemplateResponse(
@@ -75,12 +75,30 @@ async def item_detail(item_id: int, request: Request, db: Session = Depends(get_
     if not item:
         raise HTTPException(status_code=404, detail="Item not found")
 
-    listings = (
+    raw_listings = (
         db.query(Listing)
         .filter_by(wishlist_item_id=item_id, is_active=True)
         .order_by(Listing.price.asc().nullslast())
         .all()
     )
+    fallback = settings.shipping_estimate_usd
+    listings = [
+        {
+            "id": l.id,
+            "source": l.source,
+            "title": l.title,
+            "price": l.price,
+            "currency": l.currency,
+            "condition": l.condition,
+            "seller": l.seller,
+            "ships_from": l.ships_from,
+            "url": l.url,
+            "found_at": l.found_at,
+            "is_active": l.is_active,
+            "landed_price": (l.price + get_shipping_cost(l.ships_from, fallback)) if l.price is not None else None,
+        }
+        for l in raw_listings
+    ]
     return templates.TemplateResponse(
         "item_detail.html",
         {

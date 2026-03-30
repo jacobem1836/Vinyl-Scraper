@@ -109,16 +109,21 @@
           {% if item.listing_count > 0 %}
             <div class="space-y-1 text-sm">
               {% if item.type == 'label' and item.top_listings %}
-                <p class="text-slate-400 text-xs uppercase tracking-wide font-medium mb-1">Top picks</p>
+                <p class="text-slate-400 text-xs uppercase tracking-wide font-medium mb-1">Top picks (landed AU)</p>
                 {% for l in item.top_listings %}
                   <div class="flex items-center justify-between gap-2">
-                    <span class="text-slate-200 truncate text-xs">{{ l.title|truncate(28, true) }}</span>
-                    <span class="text-amber-400 font-medium text-xs shrink-0">${{ '%.2f'|format(l.price) }}</span>
+                    <span class="text-slate-200 truncate text-xs">{{ l.title|truncate(24, true) }}</span>
+                    <span class="text-xs text-slate-400 shrink-0">{{ l.ships_from or '?' }}</span>
+                    <span class="text-amber-400 font-medium text-xs shrink-0">${{ '%.2f'|format(l.landed_price) }}</span>
                   </div>
                 {% endfor %}
               {% else %}
-                <p class="text-slate-300">💰 Best price: <span class="price-best">{% if item.best_price is not none %}${{ '%.2f'|format(item.best_price) }}{% else %}—{% endif %}</span></p>
-                <p class="text-slate-400">from {{ (item.best_price_source or '—')|title }}</p>
+                <p class="text-slate-300">💰 Best landed: <span class="price-best">{% if item.best_price is not none %}${{ '%.2f'|format(item.best_price) }}{% else %}—{% endif %}</span></p>
+                <p class="text-slate-400 text-xs">
+                  {% if item.best_price_raw is not none %}${{ '%.2f'|format(item.best_price_raw) }} + shipping{% endif %}
+                  {% if item.best_ships_from %} · from {{ item.best_ships_from }}{% endif %}
+                  {% if item.best_price_source %} via {{ item.best_price_source|title }}{% endif %}
+                </p>
               {% endif %}
               <p class="text-slate-300">📦 {{ item.listing_count }} listings found</p>
               <p class="text-slate-300">⏱ Last scanned: {% if item.last_scanned_at %}<span data-timestamp="{{ item.last_scanned_at.isoformat() }}">{{ item.last_scanned_at }}</span>{% else %}<span>never</span>{% endif %}</p>
