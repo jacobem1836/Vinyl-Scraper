@@ -35,6 +35,7 @@ class ListingResponse(BaseModel):
     url: str
     found_at: datetime
     is_active: bool
+    is_in_stock: bool = True
 
 
 class WishlistItemResponse(BaseModel):

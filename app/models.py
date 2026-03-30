@@ -34,5 +34,6 @@ class Listing(Base):
     url = Column(String, nullable=False, unique=True)
     found_at = Column(DateTime, default=datetime.utcnow)
     is_active = Column(Boolean, default=True)
+    is_in_stock = Column(Boolean, default=True)
 
     wishlist_item = relationship("WishlistItem", back_populates="listings")

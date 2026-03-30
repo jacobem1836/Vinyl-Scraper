@@ -31,6 +31,11 @@ STORES: list[dict[str, str]] = [
         "name": "Utopia Records",
         "base_url": "https://utopia.com.au",
     },
+    {
+        "key": "umusic",
+        "name": "uMusic Shop AU",
+        "base_url": "https://shop.umusic.com.au",
+    },
 ]
 
 _HEADERS = {
@@ -88,6 +93,7 @@ async def _search_store(
                 "ships_from": "Australia",
                 "url": f"{base_url}/products/{handle}",
                 "condition": None,
+                "is_in_stock": product.get("available", True),
                 "seller": None,
             }
         )

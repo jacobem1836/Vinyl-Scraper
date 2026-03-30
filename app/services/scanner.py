@@ -27,6 +27,9 @@ async def scan_item(db: Session, item: WishlistItem) -> list[Listing]:
             .first()
         )
         if existing:
+            new_stock = result.get("is_in_stock")
+            if new_stock is not None:
+                existing.is_in_stock = new_stock
             continue
 
         listing = Listing(
@@ -41,6 +44,7 @@ async def scan_item(db: Session, item: WishlistItem) -> list[Listing]:
             url=url,
             found_at=datetime.utcnow(),
             is_active=True,
+            is_in_stock=result.get("is_in_stock", True),
         )
         db.add(listing)
         new_listings.append(listing)
