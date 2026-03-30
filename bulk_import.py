@@ -10,7 +10,7 @@ import urllib.request
 
 DEFAULT_FILE = "wishlist.txt"
 DEFAULT_URL = "http://localhost:8000"
-VALID_TYPES = {"album", "artist", "label"}
+VALID_TYPES = {"album", "artist", "label", "subject"}
 
 
 def load_env_api_key() -> str:
