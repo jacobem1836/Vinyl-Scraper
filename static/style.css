@@ -1,0 +1,12 @@
+/* Smooth transitions for modal */
+.modal-backdrop { transition: opacity 0.2s ease; }
+.modal-panel { transition: transform 0.2s ease, opacity 0.2s ease; }
+
+/* Table row hover */
+.listing-row:hover { background-color: rgba(255,255,255,0.04); }
+
+/* Price highlight */
+.price-best { color: #f59e0b; font-weight: 600; }
+
+/* Truncate long titles in table */
+.title-cell { max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }

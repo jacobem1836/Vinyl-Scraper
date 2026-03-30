@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}Vinyl Wishlist{% endblock %}</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="/static/style.css">
+</head>
+<body class="bg-slate-900 text-white min-h-screen">
+  <nav class="border-b border-slate-700 bg-slate-900/95 backdrop-blur sticky top-0 z-40">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="h-16 flex items-center justify-between">
+        <a href="/" class="text-lg font-semibold text-amber-400">🎵 Vinyl Wishlist</a>
+        <button
+          id="openAddItemBtn"
+          type="button"
+          class="bg-amber-500 hover:bg-amber-400 text-slate-900 text-sm font-semibold px-4 py-2 rounded-md transition"
+        >
+          Add Item
+        </button>
+      </div>
+    </div>
+  </nav>
+
+  <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+    {% block content %}{% endblock %}
+  </main>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const modal = document.getElementById('addItemModal');
+      const openBtn = document.getElementById('openAddItemBtn');
+      const closeBtns = document.querySelectorAll('[data-close-modal]');
+
+      const openModal = () => {
+        if (!modal) return;
+        modal.classList.remove('hidden');
+        requestAnimationFrame(() => {
+          modal.dataset.open = 'true';
+          const backdrop = modal.querySelector('[data-backdrop]');
+          const panel = modal.querySelector('[data-panel]');
+          if (backdrop) backdrop.classList.remove('opacity-0');
+          if (panel) panel.classList.remove('opacity-0', 'translate-y-4');
+        });
+      };
+
+      const closeModal = () => {
+        if (!modal) return;
+        modal.dataset.open = 'false';
+        const backdrop = modal.querySelector('[data-backdrop]');
+        const panel = modal.querySelector('[data-panel]');
+        if (backdrop) backdrop.classList.add('opacity-0');
+        if (panel) panel.classList.add('opacity-0', 'translate-y-4');
+        setTimeout(() => modal.classList.add('hidden'), 200);
+      };
+
+      if (openBtn) {
+        openBtn.addEventListener('click', () => {
+          if (modal) openModal();
+        });
+      }
+
+      closeBtns.forEach(btn => btn.addEventListener('click', closeModal));
+
+      if (modal) {
+        modal.addEventListener('click', (e) => {
+          if (e.target.matches('[data-backdrop]')) closeModal();
+        });
+      }
+
+      const relativeTime = (iso) => {
+        const dt = new Date(iso);
+        if (Number.isNaN(dt.getTime())) return 'never';
+        const now = new Date();
+        const diffSec = Math.max(0, Math.floor((now - dt) / 1000));
+        if (diffSec < 60) return 'just now';
+        const mins = Math.floor(diffSec / 60);
+        if (mins < 60) return `${mins} minute${mins === 1 ? '' : 's'} ago`;
+        const hours = Math.floor(mins / 60);
+        if (hours < 24) return `${hours} hour${hours === 1 ? '' : 's'} ago`;
+        const days = Math.floor(hours / 24);
+        return `${days} day${days === 1 ? '' : 's'} ago`;
+      };
+
+      document.querySelectorAll('[data-timestamp]').forEach(el => {
+        const value = el.getAttribute('data-timestamp');
+        if (!value) {
+          el.textContent = 'never';
+          return;
+        }
+        el.textContent = relativeTime(value);
+      });
+    });
+  </script>
+</body>
+</html>
