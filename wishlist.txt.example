@@ -1,0 +1,10 @@
+# Vinyl Wishlist — bulk import file
+# Format: type: name
+# Types: album, artist, label
+# Run: python bulk_import.py --file wishlist.txt.example
+
+album: Dark Side of the Moon
+album: Rumours - Fleetwood Mac
+artist: Miles Davis
+artist: John Coltrane
+label: Blue Note Records
