@@ -30,6 +30,7 @@ class Listing(Base):
     currency = Column(String, default="USD")
     condition = Column(String, nullable=True)
     seller = Column(String, nullable=True)
+    ships_from = Column(String, nullable=True)  # country the seller ships from
     url = Column(String, nullable=False, unique=True)
     found_at = Column(DateTime, default=datetime.utcnow)
     is_active = Column(Boolean, default=True)

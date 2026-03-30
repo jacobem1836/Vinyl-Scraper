@@ -31,6 +31,7 @@ class ListingResponse(BaseModel):
     currency: str
     condition: Optional[str]
     seller: Optional[str]
+    ships_from: Optional[str] = None
     url: str
     found_at: datetime
     is_active: bool

@@ -29,3 +29,8 @@ def run_migrations():
             conn.commit()
         except Exception:
             pass  # Column already exists
+        try:
+            conn.execute(text("ALTER TABLE listings ADD COLUMN ships_from TEXT"))
+            conn.commit()
+        except Exception:
+            pass  # Column already exists
