@@ -89,6 +89,28 @@ async def add_wishlist_item_web(
     return RedirectResponse(url="/", status_code=303)
 
 
+@web_router.post("/wishlist/{item_id}/edit")
+async def edit_wishlist_item_web(
+    item_id: int,
+    type: str = Form(...),
+    query: str = Form(...),
+    notes: str | None = Form(None),
+    notify_below_pct: float = Form(20.0),
+    notify_email: bool = Form(False),
+    db: Session = Depends(get_db),
+):
+    item = db.query(WishlistItem).filter_by(id=item_id, is_active=True).first()
+    if not item:
+        raise HTTPException(status_code=404, detail="Item not found")
+    item.type = type
+    item.query = query
+    item.notes = notes or None
+    item.notify_below_pct = notify_below_pct
+    item.notify_email = notify_email
+    db.commit()
+    return RedirectResponse(url="/?toast=Item+updated", status_code=303)
+
+
 @web_router.post("/wishlist/{item_id}/delete")
 async def delete_wishlist_item_web(item_id: int, db: Session = Depends(get_db)):
     item = db.query(WishlistItem).filter_by(id=item_id).first()
@@ -111,7 +133,7 @@ async def scan_single_item_web(item_id: int, db: Session = Depends(get_db)):
         if notifiable:
             await notifier.send_deal_email(item, notifiable)
 
-    return RedirectResponse(url=f"/item/{item_id}", status_code=303)
+    return RedirectResponse(url=f"/item/{item_id}?toast={len(new_listings)}+new+listings+found", status_code=303)
 
 
 @web_router.post("/scan-all")
@@ -139,7 +161,7 @@ async def scan_all_items_web(db: Session = Depends(get_db)):
         if notifiable:
             await notifier.send_deal_email(item, notifiable)
 
-    return RedirectResponse(url="/", status_code=303)
+    return RedirectResponse(url=f"/?toast={summary['new_listings_found']}+new+listings+found", status_code=303)
 
 
 @api_router.get("/health")
