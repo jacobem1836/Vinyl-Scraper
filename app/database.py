@@ -1,3 +1,5 @@
+import ssl
+
 from sqlalchemy import create_engine, text
 from sqlalchemy.orm import sessionmaker, DeclarativeBase
 from app.config import settings
@@ -5,9 +7,14 @@ from app.config import settings
 _db_url = settings.database_url
 if _db_url.startswith("postgres://") or _db_url.startswith("postgresql://"):
     _db_url = "postgresql+pg8000://" + _db_url.split("://", 1)[1]
-SQLALCHEMY_DATABASE_URL = _db_url
+    _ssl_ctx = ssl.create_default_context()
+    _ssl_ctx.check_hostname = False
+    _ssl_ctx.verify_mode = ssl.CERT_NONE
+    connect_args = {"ssl_context": _ssl_ctx}
+else:
+    connect_args = {"check_same_thread": False}
 
-connect_args = {"check_same_thread": False} if SQLALCHEMY_DATABASE_URL.startswith("sqlite") else {}
+SQLALCHEMY_DATABASE_URL = _db_url
 engine = create_engine(SQLALCHEMY_DATABASE_URL, connect_args=connect_args)
 
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
