@@ -23,8 +23,11 @@ app.include_router(api_router)
 
 @app.on_event("startup")
 async def startup():
-    run_migrations()
-    Base.metadata.create_all(bind=engine)
+    try:
+        run_migrations()
+        Base.metadata.create_all(bind=engine)
+    except Exception as e:
+        print(f"[startup] DB init failed (will retry on first request): {e}")
     setup_scheduler()
     scheduler.start()
 
