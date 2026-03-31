@@ -1,3 +1,5 @@
+import asyncio
+
 from fastapi import Depends, FastAPI, Request
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
@@ -23,11 +25,20 @@ app.include_router(api_router)
 
 @app.on_event("startup")
 async def startup():
-    try:
-        run_migrations()
-        Base.metadata.create_all(bind=engine)
-    except Exception as e:
-        print(f"[startup] DB init failed (will retry on first request): {e}")
+    async def _init_db_with_retries():
+        for attempt in range(1, 6):
+            try:
+                await asyncio.to_thread(run_migrations)
+                await asyncio.to_thread(Base.metadata.create_all, bind=engine)
+                print("[startup] DB init complete")
+                return
+            except Exception as e:
+                print(f"[startup] DB init attempt {attempt}/5 failed: {e}")
+                await asyncio.sleep(min(30, 2 ** attempt))
+
+        print("[startup] DB init failed after retries; app will continue and retry on demand")
+
+    asyncio.create_task(_init_db_with_retries())
     setup_scheduler()
     scheduler.start()
 
