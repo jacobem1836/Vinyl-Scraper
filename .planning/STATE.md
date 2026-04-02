@@ -3,19 +3,19 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: Executing Phase 02
-last_updated: "2026-04-02T06:02:01.091Z"
+last_updated: "2026-04-02T06:22:00.000Z"
 progress:
   total_phases: 3
   completed_phases: 1
   total_plans: 6
-  completed_plans: 5
+  completed_plans: 6
 ---
 
 # Project State
 
 ## Current Phase
 
-Phase 2: New Sources — In Progress (2 of 3 plans done)
+Phase 2: New Sources — Complete (3 of 3 plans done)
 
 ## Project Reference
 
@@ -35,7 +35,7 @@ See: .planning/PROJECT.md
 
 ```
 Phase 1 [##########] 100%
-Phase 2 [██████    ] 67%
+Phase 2 [##########] 100%
 Phase 3 [          ] 0%
 ```
 
@@ -58,6 +58,8 @@ Phase 3 [          ] 0%
 - [Phase 02-02]: Discrepancy search URL is /?kw= not /search?q= -- live HTML inspection revealed correct Neto param
 - [Phase 02-02]: Clarity Records set enabled=False -- DNS failure during implementation; BigCommerce standard selectors in place, re-enable once site confirmed reachable
 - [Phase 02-02]: AU store adapters use Semaphore(1) + sleep(1.5) -- small independent stores, conservative rate limiting
+- [Phase 02-03]: Juno search page is JS-rendered; artist browse page used as fallback -- works for artist-name queries
+- [Phase 02-03]: Bandcamp item_type=p is invalid filter; text-based vinyl filter used (check 'vinyl' in album title/subhead)
 
 ### Todos
 
@@ -69,4 +71,4 @@ Phase 3 [          ] 0%
 
 ## Last Updated
 
-2026-04-02 — Completed 02-02 (Discrepancy Records HTML scraper live, Clarity Records adapter disabled pending DNS)
+2026-04-02 — Completed 02-03 (Juno Records artist-page scraper + Bandcamp vinyl album adapter; full 7-adapter registry)
