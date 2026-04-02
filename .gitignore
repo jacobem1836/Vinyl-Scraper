@@ -31,3 +31,12 @@ Thumbs.db
 
 # Logs
 *.log
+
+# Node
+node_modules/
+package.json
+package-lock.json
+
+# Claude Code
+.claude/
+.mcp.json
