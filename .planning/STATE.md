@@ -1,9 +1,24 @@
+---
+gsd_state_version: 1.0
+milestone: v1.0
+milestone_name: milestone
+status: unknown
+last_updated: "2026-04-02T04:44:29.654Z"
+progress:
+  total_phases: 3
+  completed_phases: 1
+  total_plans: 3
+  completed_plans: 3
+---
+
 # Project State
 
 ## Current Phase
+
 Phase 1: Infrastructure — Complete (3 of 3 plans done)
 
 ## Project Reference
+
 See: .planning/PROJECT.md
 **Core value:** Show me the cheapest way to buy the records I want, right now.
 **Milestone:** v1 — Fast, Beautiful, More Sources
@@ -27,6 +42,7 @@ Phase 3 [          ] 0%
 ## Accumulated Context
 
 ### Decisions
+
 - Semaphore(3): Discogs 60/min cap; 3 concurrent items with ~2 sources = ~6 req/min peak, well under limit
 - TTLCache maxsize=1: single dashboard endpoint, 5-minute TTL; key='dashboard'
 - API POST /api/wishlist now returns immediately with item (no listings yet); iOS Shortcut contract preserved
@@ -38,10 +54,13 @@ Phase 3 [          ] 0%
 - 2-minute polling timeout prevents runaway intervals if scan stalls
 
 ### Todos
+
 - None yet
 
 ### Blockers
+
 - None yet
 
 ## Last Updated
+
 2026-04-02 — Completed 01-03 (Frontend Polling UX: scanning spinner, status endpoint, JS auto-refresh)
