@@ -1,7 +1,7 @@
 from collections.abc import Awaitable, Callable
 from typing import TypedDict
 
-from app.services import discogs, shopify
+from app.services import discogs, ebay, shopify
 
 
 class ListingDict(TypedDict, total=False):
@@ -21,6 +21,7 @@ AdapterFn = Callable[[str, str], Awaitable[list[dict]]]
 ADAPTER_REGISTRY: list[dict] = [
     {"name": "discogs", "fn": discogs.search_and_get_listings, "enabled": True},
     {"name": "shopify", "fn": shopify.search_and_get_listings, "enabled": True},
+    {"name": "ebay", "fn": ebay.search_and_get_listings, "enabled": True},
 ]
 
 
