@@ -30,8 +30,8 @@
 
 Plans:
 - [x] 01-PLAN-1.md — Backend performance: scan decoupling, N+1 fix, cache, semaphore, scheduler parallelism
-- [ ] 01-PLAN-2.md — Adapter registry: source-agnostic scanner with registry pattern
-- [ ] 01-PLAN-3.md — Frontend polling UX: scanning spinner + dashboard auto-refresh
+- [x] 01-PLAN-2.md — Adapter registry: source-agnostic scanner with registry pattern
+- [x] 01-PLAN-3.md — Frontend polling UX: scanning spinner + dashboard auto-refresh
 
 **UI hint**: no
 
@@ -45,7 +45,13 @@ Plans:
   3. Juno Records listings appear for records they carry, with correct currency conversion to AUD
   4. Bandcamp listings appear for known artist/label searches where physical vinyl is available and in stock
   5. Each new source has its own rate limiting; a full wishlist scan completes without triggering bans or 429 errors on any source
-**Plans**: TBD
+**Plans:** 3 plans
+
+Plans:
+- [ ] 02-01-PLAN.md — eBay Browse API adapter + rate limit migration to per-adapter semaphores
+- [ ] 02-02-PLAN.md — Discrepancy Records + Clarity Records AU HTML scrapers
+- [ ] 02-03-PLAN.md — Juno Records + Bandcamp international HTML scrapers
+
 **UI hint**: no
 
 ### Phase 3: UI Redesign
@@ -68,5 +74,5 @@ Plans:
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. Infrastructure | 3/3 | Complete   | 2026-04-02 |
-| 2. New Sources | 0/? | Not started | - |
+| 2. New Sources | 0/3 | Planned | - |
 | 3. UI Redesign | 0/? | Not started | - |
