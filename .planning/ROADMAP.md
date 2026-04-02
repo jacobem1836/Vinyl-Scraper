@@ -51,7 +51,7 @@ Plans:
 - [x] 02-01-PLAN.md — eBay Browse API adapter + rate limit migration to per-adapter semaphores
 - [x] 02-02-PLAN.md — Discrepancy Records + Clarity Records AU HTML scrapers
 - [x] 02-03-PLAN.md — Juno Records + Bandcamp international HTML scrapers
-- [ ] 02-04-PLAN.md — Gap closure: Clarity Records selector verification + enable adapter (SRC-03, SRC-06)
+- [x] 02-04-PLAN.md — Gap closure: Clarity Records selector verification + enable adapter (SRC-03, SRC-06)
 
 **UI hint**: no
 
