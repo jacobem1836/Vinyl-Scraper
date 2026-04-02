@@ -1,12 +1,15 @@
+import asyncio
+
 from fastapi import Depends, FastAPI, Request
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, selectinload
 
 from app.config import settings
 from app.database import Base, engine, get_db, run_migrations
 from app.models import Listing, WishlistItem
 from app.routers.wishlist import api_router, web_router
+from app.services.cache import get_cached_dashboard, invalidate_dashboard_cache, set_cached_dashboard
 from app.scheduler import scheduler, setup_scheduler
 from app.services.shipping import get_shipping_cost
 
@@ -23,8 +26,20 @@ app.include_router(api_router)
 
 @app.on_event("startup")
 async def startup():
-    run_migrations()
-    Base.metadata.create_all(bind=engine)
+    async def _init_db_with_retries():
+        for attempt in range(1, 6):
+            try:
+                await asyncio.to_thread(run_migrations)
+                await asyncio.to_thread(Base.metadata.create_all, bind=engine)
+                print("[startup] DB init complete")
+                return
+            except Exception as e:
+                print(f"[startup] DB init attempt {attempt}/5 failed: {e}")
+                await asyncio.sleep(min(30, 2 ** attempt))
+
+        print("[startup] DB init failed after retries; app will continue and retry on demand")
+
+    asyncio.create_task(_init_db_with_retries())
     setup_scheduler()
     scheduler.start()
 
@@ -40,13 +55,19 @@ async def shutdown():
 async def index(request: Request, db: Session = Depends(get_db)):
     from app.routers.wishlist import _enrich_item
 
-    items = (
-        db.query(WishlistItem)
-        .filter_by(is_active=True)
-        .order_by(WishlistItem.created_at.desc())
-        .all()
-    )
-    enriched = [_enrich_item(item) for item in items]
+    cached = get_cached_dashboard()
+    if cached is not None:
+        enriched = cached
+    else:
+        items = (
+            db.query(WishlistItem)
+            .filter_by(is_active=True)
+            .options(selectinload(WishlistItem.listings))
+            .order_by(WishlistItem.created_at.desc())
+            .all()
+        )
+        enriched = [_enrich_item(item) for item in items]
+        set_cached_dashboard(enriched)
     shipping_estimate = settings.shipping_estimate_usd
     priced = [i for i in enriched if i["best_price"] is not None]
     total_cost = round(sum(i["best_price"] for i in priced), 2) if priced else None
@@ -72,7 +93,12 @@ async def item_detail(item_id: int, request: Request, db: Session = Depends(get_
 
     from app.routers.wishlist import _enrich_item
 
-    item = db.query(WishlistItem).filter_by(id=item_id, is_active=True).first()
+    item = (
+        db.query(WishlistItem)
+        .filter_by(id=item_id, is_active=True)
+        .options(selectinload(WishlistItem.listings))
+        .first()
+    )
     if not item:
         raise HTTPException(status_code=404, detail="Item not found")
 

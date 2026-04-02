@@ -94,15 +94,6 @@
     });
   </script>
 
-  <!-- Scan loading overlay -->
-  <div id="scanOverlay" class="hidden fixed inset-0 z-[60] bg-black/70 flex items-center justify-center">
-    <div class="text-center space-y-4">
-      <div class="animate-spin h-12 w-12 border-4 border-amber-500 border-t-transparent rounded-full mx-auto"></div>
-      <p class="text-white text-lg font-semibold">Scanning...</p>
-      <p class="text-slate-400 text-sm">Checking all sources, this may take a moment</p>
-    </div>
-  </div>
-
   <!-- Toast notification -->
   <div id="toast" class="hidden fixed bottom-6 right-6 z-50 max-w-sm bg-slate-700 border border-slate-600 rounded-lg px-5 py-3 shadow-xl flex items-center gap-3">
     <svg class="w-5 h-5 text-amber-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
@@ -111,16 +102,6 @@
 
   <script>
     document.addEventListener('DOMContentLoaded', () => {
-      // Show scan overlay on any scan form submit
-      document.querySelectorAll('form').forEach(form => {
-        const action = form.getAttribute('action') || '';
-        if (action.includes('scan')) {
-          form.addEventListener('submit', () => {
-            document.getElementById('scanOverlay').classList.remove('hidden');
-          });
-        }
-      });
-
       // Show toast from ?toast= query param
       const params = new URLSearchParams(window.location.search);
       const toastMsg = params.get('toast');
@@ -135,6 +116,121 @@
         }
       }
     });
+  </script>
+
+  <!-- Floating scan status panel -->
+  <div id="scanPanel" class="hidden fixed bottom-4 right-4 z-50 select-none">
+    <div id="scanPill"
+         class="flex items-center gap-2 bg-slate-800 border border-slate-600 rounded-full px-4 py-2 shadow-lg cursor-pointer hover:bg-slate-700 transition-colors"
+         onclick="toggleScanPanel()">
+      <div id="scanSpinner" class="animate-spin h-4 w-4 border-2 border-amber-500 border-t-transparent rounded-full"></div>
+      <span id="scanPillText" class="text-sm text-white font-medium">Scanning…</span>
+    </div>
+    <div id="scanCard"
+         class="hidden mt-2 w-80 bg-slate-800 border border-slate-600 rounded-xl shadow-xl p-4 space-y-3">
+      <div class="flex items-center justify-between">
+        <span class="text-sm font-semibold text-white">Scan Progress</span>
+        <button onclick="toggleScanPanel()" class="text-slate-400 hover:text-white text-xs">collapse</button>
+      </div>
+      <div id="scanActive" class="space-y-1"></div>
+      <div id="scanLog" class="space-y-1 max-h-48 overflow-y-auto"></div>
+      <div id="scanSummary" class="hidden text-sm text-emerald-400 font-semibold"></div>
+    </div>
+  </div>
+
+  <script>
+  window.VINYL_API_KEY = '';
+  (function () {
+    var _pollTimer = null;
+    var _dismissTimer = null;
+    var _expanded = false;
+
+    function startScan(itemId) {
+      var url = (itemId != null) ? '/api/scan/start?item_id=' + itemId : '/api/scan/start';
+      fetch(url, { method: 'POST', headers: { 'X-API-Key': window.VINYL_API_KEY || '' } })
+        .then(function(r) { return r.json(); })
+        .then(function(data) { if (data.started) { showPanel(); startPolling(); } })
+        .catch(console.error);
+    }
+
+    function showPanel() {
+      document.getElementById('scanPanel').classList.remove('hidden');
+      clearTimeout(_dismissTimer);
+    }
+
+    function hidePanel() {
+      document.getElementById('scanPanel').classList.add('hidden');
+      document.getElementById('scanCard').classList.add('hidden');
+      _expanded = false;
+    }
+
+    function toggleScanPanel() {
+      _expanded = !_expanded;
+      document.getElementById('scanCard').classList.toggle('hidden', !_expanded);
+    }
+
+    function startPolling() {
+      if (_pollTimer) return;
+      _pollTimer = setInterval(pollStatus, 2000);
+      pollStatus();
+    }
+
+    function stopPolling() {
+      clearInterval(_pollTimer);
+      _pollTimer = null;
+    }
+
+    function pollStatus() {
+      fetch('/api/scan/status')
+        .then(function(r) { return r.json(); })
+        .then(renderStatus)
+        .catch(console.error);
+    }
+
+    function escHtml(str) {
+      return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+    }
+
+    function renderStatus(s) {
+      if (!s.is_running && !s.started_at) { hidePanel(); stopPolling(); return; }
+      showPanel();
+      var pillText = document.getElementById('scanPillText');
+      var spinner = document.getElementById('scanSpinner');
+      var activeEl = document.getElementById('scanActive');
+      var logEl = document.getElementById('scanLog');
+      var summaryEl = document.getElementById('scanSummary');
+
+      if (s.is_running) {
+        spinner.classList.remove('hidden');
+        pillText.textContent = 'Scanning ' + s.done + '/' + s.total + '…';
+        activeEl.innerHTML = s.current.map(function(c) {
+          return '<div class="text-xs text-slate-300">⟳ ' + escHtml(c.query) + ' <span class="text-slate-500">(' + escHtml(c.type) + ')</span></div>';
+        }).join('');
+      } else {
+        spinner.classList.add('hidden');
+        pillText.textContent = 'Done — ' + s.new_total + ' new listing' + (s.new_total !== 1 ? 's' : '');
+        activeEl.innerHTML = '';
+        summaryEl.textContent = s.new_total + ' new listing' + (s.new_total !== 1 ? 's' : '') + ' found';
+        summaryEl.classList.remove('hidden');
+        stopPolling();
+        _dismissTimer = setTimeout(hidePanel, 10000);
+      }
+
+      logEl.innerHTML = s.log.slice().reverse().map(function(entry) {
+        return '<div class="text-xs text-slate-400">' + escHtml(entry.query) + ' — <span class="text-emerald-400">+' + entry.new_listings + '</span></div>';
+      }).join('');
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+      fetch('/api/scan/status')
+        .then(function(r) { return r.json(); })
+        .then(function(s) { if (s.is_running) { showPanel(); startPolling(); } else if (s.started_at) { showPanel(); renderStatus(s); } })
+        .catch(function(){});
+    });
+
+    window.startScan = startScan;
+    window.toggleScanPanel = toggleScanPanel;
+  })();
   </script>
 
 </body>

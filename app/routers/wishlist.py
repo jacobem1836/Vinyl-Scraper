@@ -1,17 +1,35 @@
-from fastapi import APIRouter, Depends, Form, Header, HTTPException
+import asyncio
+
+from fastapi import APIRouter, BackgroundTasks, Depends, Form, Header, HTTPException
 from fastapi.responses import RedirectResponse
 from sqlalchemy.orm import Session
 
 from app.config import settings
-from app.database import get_db
+from app.database import SessionLocal, get_db
 from app.models import Listing, WishlistItem
 from app.schemas import ListingResponse, WishlistItemCreate, WishlistItemResponse
 from app.services import notifier, scanner
+from app.services.cache import invalidate_dashboard_cache
 from app.services.notifier import compute_typical_price
+from app.services.rate_limit import scan_semaphore
 from app.services.shipping import get_shipping_cost
 
 web_router = APIRouter(tags=["web"])
 api_router = APIRouter(prefix="/api", tags=["api"])
+
+
+async def _scan_in_background(item_id: int) -> None:
+    db = SessionLocal()
+    try:
+        item = db.query(WishlistItem).filter_by(id=item_id).first()
+        if item:
+            async with scan_semaphore:
+                new_listings = await scanner.scan_item(db, item)
+            if item.notify_email and new_listings:
+                await notifier.send_deal_email(item, new_listings)
+    finally:
+        invalidate_dashboard_cache()
+        db.close()
 
 
 async def require_api_key(x_api_key: str = Header(...)):
@@ -63,6 +81,7 @@ def _enrich_item(item: WishlistItem) -> dict:
 
 @web_router.post("/wishlist/add")
 async def add_wishlist_item_web(
+    background_tasks: BackgroundTasks,
     type: str = Form(...),
     query: str = Form(...),
     notes: str | None = Form(None),
@@ -82,11 +101,9 @@ async def add_wishlist_item_web(
     db.commit()
     db.refresh(item)
 
-    new_listings = await scanner.scan_item(db, item)
-    if item.notify_email and new_listings:
-        await notifier.send_deal_email(item, new_listings)
+    background_tasks.add_task(_scan_in_background, item.id)
 
-    return RedirectResponse(url="/", status_code=303)
+    return RedirectResponse(url="/?toast=Item+added%2C+scanning+in+background", status_code=303)
 
 
 @web_router.post("/wishlist/{item_id}/edit")
@@ -108,6 +125,7 @@ async def edit_wishlist_item_web(
     item.notify_below_pct = notify_below_pct
     item.notify_email = notify_email
     db.commit()
+    invalidate_dashboard_cache()
     return RedirectResponse(url="/?toast=Item+updated", status_code=303)
 
 
@@ -117,6 +135,7 @@ async def delete_wishlist_item_web(item_id: int, db: Session = Depends(get_db)):
     if item:
         db.delete(item)
         db.commit()
+        invalidate_dashboard_cache()
     return RedirectResponse(url="/", status_code=303)
 
 
@@ -126,7 +145,8 @@ async def scan_single_item_web(item_id: int, db: Session = Depends(get_db)):
     if not item:
         raise HTTPException(status_code=404, detail="Item not found")
 
-    new_listings = await scanner.scan_item(db, item)
+    async with scan_semaphore:
+        new_listings = await scanner.scan_item(db, item)
 
     if item.notify_email and new_listings:
         notifiable = [l for l in new_listings if notifier.should_notify(item, l, list(item.listings or []))]
@@ -189,7 +209,12 @@ async def list_wishlist_items_api(db: Session = Depends(get_db)):
     response_model=WishlistItemResponse,
     dependencies=[Depends(require_api_key)],
 )
-async def create_wishlist_item_api(payload: WishlistItemCreate, scan: bool = True, db: Session = Depends(get_db)):
+async def create_wishlist_item_api(
+    payload: WishlistItemCreate,
+    background_tasks: BackgroundTasks,
+    scan: bool = True,
+    db: Session = Depends(get_db),
+):
     item = WishlistItem(
         type=payload.type,
         query=payload.query,
@@ -202,17 +227,9 @@ async def create_wishlist_item_api(payload: WishlistItemCreate, scan: bool = Tru
     db.commit()
     db.refresh(item)
 
-    if not scan:
-        return _enrich_item(item)
+    if scan:
+        background_tasks.add_task(_scan_in_background, item.id)
 
-    new_listings = await scanner.scan_item(db, item)
-
-    if item.notify_email and new_listings:
-        notifiable = [l for l in new_listings if notifier.should_notify(item, l, list(item.listings or []))]
-        if notifiable:
-            await notifier.send_deal_email(item, notifiable)
-
-    db.refresh(item)
     return _enrich_item(item)
 
 
@@ -242,6 +259,7 @@ async def delete_wishlist_item_api(item_id: int, db: Session = Depends(get_db)):
 
     db.delete(item)
     db.commit()
+    invalidate_dashboard_cache()
     return {"deleted": True}
 
 
@@ -267,3 +285,46 @@ async def list_item_listings_api(item_id: int, db: Session = Depends(get_db)):
 @api_router.post("/scan", dependencies=[Depends(require_api_key)])
 async def scan_all_items_api(db: Session = Depends(get_db)):
     return await scanner.scan_all_items(db)
+
+
+@api_router.post("/scan/start")
+async def start_scan_api(item_id: int | None = None, db: Session = Depends(get_db)):
+    from app.services import scan_status as _scan_status
+
+    if _scan_status.get()["is_running"]:
+        return {"started": False, "reason": "scan already in progress"}
+
+    if item_id is not None:
+        item = db.query(WishlistItem).filter_by(id=item_id, is_active=True).first()
+        if not item:
+            raise HTTPException(status_code=404, detail="Item not found")
+
+        async def _run_single():
+            from app.database import SessionLocal
+            _db = SessionLocal()
+            try:
+                _item = _db.query(WishlistItem).filter_by(id=item_id).first()
+                if _item:
+                    await scanner.scan_item(_db, _item, track=True)
+            finally:
+                _db.close()
+
+        asyncio.create_task(_run_single())
+    else:
+        async def _run_all():
+            from app.database import SessionLocal
+            _db = SessionLocal()
+            try:
+                await scanner.scan_all_items(_db, track=True)
+            finally:
+                _db.close()
+
+        asyncio.create_task(_run_all())
+
+    return {"started": True}
+
+
+@api_router.get("/scan/status")
+async def scan_status_api():
+    from app.services import scan_status as _scan_status
+    return _scan_status.get()

@@ -2,9 +2,7 @@ from sqlalchemy import create_engine, text
 from sqlalchemy.orm import sessionmaker, DeclarativeBase
 from app.config import settings
 
-_db_url = settings.database_url
-if _db_url.startswith("postgres://") or _db_url.startswith("postgresql://"):
-    _db_url = "postgresql+pg8000://" + _db_url.split("://", 1)[1]
+_db_url = settings.database_url.replace("postgres://", "postgresql://", 1)
 SQLALCHEMY_DATABASE_URL = _db_url
 
 connect_args = {"check_same_thread": False} if SQLALCHEMY_DATABASE_URL.startswith("sqlite") else {}
