@@ -26,7 +26,13 @@
   3. Visiting the dashboard twice within 5 minutes hits the cache; adding or scanning an item immediately shows fresh results on the next load
   4. The scanner does not fire more than 3–5 simultaneous Discogs requests; no 429 errors appear in logs during a full wishlist scan
   5. Adding a new scraping source requires only creating an adapter file and adding one entry to the registry — the scanner requires no changes
-**Plans**: TBD
+**Plans:** 3 plans
+
+Plans:
+- [ ] 01-PLAN-1.md — Backend performance: scan decoupling, N+1 fix, cache, semaphore, scheduler parallelism
+- [ ] 01-PLAN-2.md — Adapter registry: source-agnostic scanner with registry pattern
+- [ ] 01-PLAN-3.md — Frontend polling UX: scanning spinner + dashboard auto-refresh
+
 **UI hint**: no
 
 ### Phase 2: New Sources
@@ -61,6 +67,6 @@
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Infrastructure | 0/? | Not started | - |
+| 1. Infrastructure | 0/3 | Planned | - |
 | 2. New Sources | 0/? | Not started | - |
 | 3. UI Redesign | 0/? | Not started | - |
