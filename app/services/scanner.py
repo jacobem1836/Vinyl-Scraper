@@ -6,6 +6,7 @@ from sqlalchemy.orm import Session
 from app.models import Listing, WishlistItem
 from app.services import discogs, shopify
 from app.services import scan_status
+from app.services.cache import invalidate_dashboard_cache
 
 
 async def scan_item(db: Session, item: WishlistItem, track: bool = False) -> list[Listing]:
@@ -61,6 +62,8 @@ async def scan_item(db: Session, item: WishlistItem, track: bool = False) -> lis
     item.last_scanned_at = datetime.utcnow()
     db.commit()
     db.refresh(item)
+
+    invalidate_dashboard_cache()
 
     if track:
         scan_status.item_finished(item.id, item.query, len(new_listings))
