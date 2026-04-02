@@ -45,11 +45,11 @@ Plans:
   3. Juno Records listings appear for records they carry, with correct currency conversion to AUD
   4. Bandcamp listings appear for known artist/label searches where physical vinyl is available and in stock
   5. Each new source has its own rate limiting; a full wishlist scan completes without triggering bans or 429 errors on any source
-**Plans:** 1/3 plans executed
+**Plans:** 2/3 plans executed
 
 Plans:
 - [x] 02-01-PLAN.md — eBay Browse API adapter + rate limit migration to per-adapter semaphores
-- [ ] 02-02-PLAN.md — Discrepancy Records + Clarity Records AU HTML scrapers
+- [x] 02-02-PLAN.md — Discrepancy Records + Clarity Records AU HTML scrapers
 - [ ] 02-03-PLAN.md — Juno Records + Bandcamp international HTML scrapers
 
 **UI hint**: no
@@ -74,5 +74,5 @@ Plans:
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. Infrastructure | 3/3 | Complete   | 2026-04-02 |
-| 2. New Sources | 1/3 | In Progress|  |
+| 2. New Sources | 2/3 | In Progress|  |
 | 3. UI Redesign | 0/? | Not started | - |

@@ -8,14 +8,14 @@ progress:
   total_phases: 3
   completed_phases: 1
   total_plans: 6
-  completed_plans: 4
+  completed_plans: 5
 ---
 
 # Project State
 
 ## Current Phase
 
-Phase 2: New Sources — In Progress (1 of 3 plans done)
+Phase 2: New Sources — In Progress (2 of 3 plans done)
 
 ## Project Reference
 
@@ -35,7 +35,7 @@ See: .planning/PROJECT.md
 
 ```
 Phase 1 [##########] 100%
-Phase 2 [███       ] 33%
+Phase 2 [██████    ] 67%
 Phase 3 [          ] 0%
 ```
 
@@ -55,6 +55,9 @@ Phase 3 [          ] 0%
 - [Phase 02-new-sources]: Semaphore(5) for eBay Browse API — higher limit than Discogs; per-adapter semaphores replace global scan_semaphore
 - [Phase 02-new-sources]: OAuth token cached at module level with asyncio.Lock() for race-condition-safe refresh; 60s expiry buffer
 - [Phase 02-new-sources]: ships_from hardcoded to Australia for EBAY_AU marketplace; all results are AU sellers
+- [Phase 02-02]: Discrepancy search URL is /?kw= not /search?q= -- live HTML inspection revealed correct Neto param
+- [Phase 02-02]: Clarity Records set enabled=False -- DNS failure during implementation; BigCommerce standard selectors in place, re-enable once site confirmed reachable
+- [Phase 02-02]: AU store adapters use Semaphore(1) + sleep(1.5) -- small independent stores, conservative rate limiting
 
 ### Todos
 
@@ -66,4 +69,4 @@ Phase 3 [          ] 0%
 
 ## Last Updated
 
-2026-04-02 — Completed 02-01 (eBay AU Browse API adapter, OAuth token caching, per-adapter rate limiting)
+2026-04-02 — Completed 02-02 (Discrepancy Records HTML scraper live, Clarity Records adapter disabled pending DNS)
