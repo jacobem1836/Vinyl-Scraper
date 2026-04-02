@@ -166,6 +166,22 @@ async def scan_all_items_web(db: Session = Depends(get_db)):
     return RedirectResponse(url=f"/?toast={summary['new_listings_found']}+new+listings+found", status_code=303)
 
 
+@web_router.get("/wishlist/{item_id}/status")
+async def item_scan_status(item_id: int, db: Session = Depends(get_db)):
+    item = db.query(WishlistItem).filter_by(id=item_id, is_active=True).first()
+    if not item:
+        raise HTTPException(status_code=404, detail="Item not found")
+    listing_count = db.query(Listing).filter_by(
+        wishlist_item_id=item_id, is_active=True
+    ).count()
+    return {
+        "id": item_id,
+        "has_listings": listing_count > 0,
+        "listing_count": listing_count,
+        "last_scanned_at": item.last_scanned_at.isoformat() if item.last_scanned_at else None,
+    }
+
+
 @api_router.get("/health")
 async def health_check():
     return {"status": "ok"}
