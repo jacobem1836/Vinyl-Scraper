@@ -1,3 +1,5 @@
+import asyncio
+
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 
 from app.config import settings
@@ -7,30 +9,26 @@ scheduler = AsyncIOScheduler()
 
 def setup_scheduler():
     from app.database import SessionLocal
-    from app.models import Listing, WishlistItem
+    from app.models import WishlistItem
     from app.services import notifier, scanner
+    from app.services.cache import invalidate_dashboard_cache
+    from app.services.rate_limit import scan_semaphore
 
     async def scheduled_scan():
         db = SessionLocal()
         try:
-            summary = await scanner.scan_all_items(db, track=False)
-            for item_summary in summary.get("items", []):
-                new_count = item_summary.get("new_listings", 0)
-                if not new_count:
-                    continue
-                item = db.query(WishlistItem).filter_by(id=item_summary["id"], is_active=True).first()
-                if not item or not item.notify_email:
-                    continue
-                recent_new = (
-                    db.query(Listing)
-                    .filter_by(wishlist_item_id=item.id, is_active=True)
-                    .order_by(Listing.found_at.desc())
-                    .limit(new_count)
-                    .all()
-                )
-                notifiable = [l for l in recent_new if notifier.should_notify(item, l, list(item.listings or []))]
-                if notifiable:
-                    await notifier.send_deal_email(item, notifiable)
+            items = db.query(WishlistItem).filter(WishlistItem.is_active.is_(True)).all()
+
+            async def _scan_one(item):
+                async with scan_semaphore:
+                    new_listings = await scanner.scan_item(db, item)
+                    if item.notify_email and new_listings:
+                        notifiable = [l for l in new_listings if notifier.should_notify(item, l, list(item.listings or []))]
+                        if notifiable:
+                            await notifier.send_deal_email(item, notifiable)
+
+            await asyncio.gather(*[_scan_one(item) for item in items], return_exceptions=True)
+            invalidate_dashboard_cache()
         finally:
             db.close()
 
@@ -40,4 +38,5 @@ def setup_scheduler():
         hours=settings.scan_interval_hours,
         id="scheduled_scan",
         replace_existing=True,
+        max_instances=1,
     )

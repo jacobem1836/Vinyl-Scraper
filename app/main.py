@@ -3,12 +3,13 @@ import asyncio
 from fastapi import Depends, FastAPI, Request
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
-from sqlalchemy.orm import Session, joinedload
+from sqlalchemy.orm import Session, selectinload
 
 from app.config import settings
 from app.database import Base, engine, get_db, run_migrations
 from app.models import Listing, WishlistItem
 from app.routers.wishlist import api_router, web_router
+from app.services.cache import get_cached_dashboard, invalidate_dashboard_cache, set_cached_dashboard
 from app.scheduler import scheduler, setup_scheduler
 from app.services.shipping import get_shipping_cost
 
@@ -54,14 +55,19 @@ async def shutdown():
 async def index(request: Request, db: Session = Depends(get_db)):
     from app.routers.wishlist import _enrich_item
 
-    items = (
-        db.query(WishlistItem)
-        .filter_by(is_active=True)
-        .options(joinedload(WishlistItem.listings))
-        .order_by(WishlistItem.created_at.desc())
-        .all()
-    )
-    enriched = [_enrich_item(item) for item in items]
+    cached = get_cached_dashboard()
+    if cached is not None:
+        enriched = cached
+    else:
+        items = (
+            db.query(WishlistItem)
+            .filter_by(is_active=True)
+            .options(selectinload(WishlistItem.listings))
+            .order_by(WishlistItem.created_at.desc())
+            .all()
+        )
+        enriched = [_enrich_item(item) for item in items]
+        set_cached_dashboard(enriched)
     shipping_estimate = settings.shipping_estimate_usd
     priced = [i for i in enriched if i["best_price"] is not None]
     total_cost = round(sum(i["best_price"] for i in priced), 2) if priced else None
@@ -90,7 +96,7 @@ async def item_detail(item_id: int, request: Request, db: Session = Depends(get_
     item = (
         db.query(WishlistItem)
         .filter_by(id=item_id, is_active=True)
-        .options(joinedload(WishlistItem.listings))
+        .options(selectinload(WishlistItem.listings))
         .first()
     )
     if not item:
