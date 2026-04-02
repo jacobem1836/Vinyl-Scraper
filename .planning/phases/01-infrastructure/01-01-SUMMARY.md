@@ -113,6 +113,16 @@ None - no external service configuration required.
 - Ready to add new sources (Phase 2) — new adapters drop into the existing gather pattern in scan_all_items
 - Dashboard cache means adding sources won't slow down the UI
 
+## Self-Check: PASSED
+
+- FOUND: app/services/cache.py
+- FOUND: app/services/rate_limit.py
+- FOUND: 01-01-SUMMARY.md
+- FOUND commit: 231e10e (feat: add cachetools dependency and cache module)
+- FOUND commit: 7599eba (feat: add global scan semaphore module)
+- FOUND commit: ac15a93 (feat: decouple scan, fix N+1, wire cache, parallelize scheduler)
+- FOUND commit: 0043716 (docs: complete plan metadata)
+
 ---
 *Phase: 01-infrastructure*
 *Completed: 2026-04-02*
