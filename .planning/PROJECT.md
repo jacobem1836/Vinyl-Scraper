@@ -24,7 +24,8 @@ Show me the cheapest way to buy the records I want, right now.
 
 ### Active
 
-- [ ] Performance — page load, search, and bulk import are noticeably slow
+- [x] Performance — page load, search, and bulk import are noticeably slow — *Validated in Phase 01: Infrastructure (scan decoupled, N+1 fixed, TTL cache, semaphore)*
+- [x] Source-agnostic scanner — adapter registry in place; adding Phase 2 sources requires only one dict entry — *Validated in Phase 01: Infrastructure*
 - [ ] UI redesign — Spotify-like aesthetic: record artwork as the hero, minimal/uncluttered, less "AI-generated"
 - [ ] Expand scraping sources — Juno Records, Bandcamp, eBay AU; Australian stores (Clarity, Egg, etc.) where feasible
 - [ ] Polish for daily use and shareable quality
@@ -77,4 +78,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-04-02 after initialization*
+*Last updated: 2026-04-02 after Phase 01: Infrastructure complete*
