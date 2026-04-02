@@ -2,20 +2,20 @@
 gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
-status: unknown
-last_updated: "2026-04-02T04:44:29.654Z"
+status: Executing Phase 02
+last_updated: "2026-04-02T06:02:01.091Z"
 progress:
   total_phases: 3
   completed_phases: 1
-  total_plans: 3
-  completed_plans: 3
+  total_plans: 6
+  completed_plans: 4
 ---
 
 # Project State
 
 ## Current Phase
 
-Phase 1: Infrastructure — Complete (3 of 3 plans done)
+Phase 2: New Sources — In Progress (1 of 3 plans done)
 
 ## Project Reference
 
@@ -35,7 +35,7 @@ See: .planning/PROJECT.md
 
 ```
 Phase 1 [##########] 100%
-Phase 2 [          ] 0%
+Phase 2 [███       ] 33%
 Phase 3 [          ] 0%
 ```
 
@@ -52,6 +52,9 @@ Phase 3 [          ] 0%
 - Status endpoint on web_router (no API key) for dashboard JS polling — iOS Shortcut uses api_router only
 - Full page reload on listing arrival — simpler than partial DOM replacement, no stale state risk
 - 2-minute polling timeout prevents runaway intervals if scan stalls
+- [Phase 02-new-sources]: Semaphore(5) for eBay Browse API — higher limit than Discogs; per-adapter semaphores replace global scan_semaphore
+- [Phase 02-new-sources]: OAuth token cached at module level with asyncio.Lock() for race-condition-safe refresh; 60s expiry buffer
+- [Phase 02-new-sources]: ships_from hardcoded to Australia for EBAY_AU marketplace; all results are AU sellers
 
 ### Todos
 
@@ -63,4 +66,4 @@ Phase 3 [          ] 0%
 
 ## Last Updated
 
-2026-04-02 — Completed 01-03 (Frontend Polling UX: scanning spinner, status endpoint, JS auto-refresh)
+2026-04-02 — Completed 02-01 (eBay AU Browse API adapter, OAuth token caching, per-adapter rate limiting)
