@@ -4,8 +4,8 @@ from datetime import datetime
 from sqlalchemy.orm import Session
 
 from app.models import Listing, WishlistItem
-from app.services import discogs, shopify
 from app.services import scan_status
+from app.services.adapter import get_enabled_adapters
 from app.services.cache import invalidate_dashboard_cache
 
 
@@ -13,11 +13,17 @@ async def scan_item(db: Session, item: WishlistItem, track: bool = False) -> lis
     if track:
         scan_status.item_started(item.id, item.query, item.type)
 
-    discogs_results, shopify_results = await asyncio.gather(
-        discogs.search_and_get_listings(item.query, item.type),
-        shopify.search_and_get_listings(item.query, item.type),
+    adapters = get_enabled_adapters()
+    results = await asyncio.gather(
+        *[a["fn"](item.query, item.type) for a in adapters],
+        return_exceptions=True,
     )
-    all_results = discogs_results + shopify_results
+    all_results = []
+    for i, r in enumerate(results):
+        if isinstance(r, Exception):
+            print(f"[Scanner] {adapters[i]['name']} error: {r}")
+        else:
+            all_results.extend(r)
 
     new_listings: list[Listing] = []
 
