@@ -29,7 +29,7 @@
 **Plans:** 3 plans
 
 Plans:
-- [ ] 01-PLAN-1.md — Backend performance: scan decoupling, N+1 fix, cache, semaphore, scheduler parallelism
+- [x] 01-PLAN-1.md — Backend performance: scan decoupling, N+1 fix, cache, semaphore, scheduler parallelism
 - [ ] 01-PLAN-2.md — Adapter registry: source-agnostic scanner with registry pattern
 - [ ] 01-PLAN-3.md — Frontend polling UX: scanning spinner + dashboard auto-refresh
 
@@ -67,6 +67,6 @@ Plans:
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Infrastructure | 0/3 | Planned | - |
+| 1. Infrastructure | 1/3 | In progress | - |
 | 2. New Sources | 0/? | Not started | - |
 | 3. UI Redesign | 0/? | Not started | - |

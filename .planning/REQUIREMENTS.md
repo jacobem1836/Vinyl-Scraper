@@ -7,10 +7,10 @@
 
 ### Performance
 
-- [ ] **PERF-01**: Adding a wishlist item returns an HTTP response immediately; scanning runs as a background task after the response is sent
-- [ ] **PERF-02**: Dashboard load uses selectinload (or equivalent) to batch-fetch listings in a single query rather than N+1 per item
-- [ ] **PERF-03**: Dashboard enrichment result is cached with a TTL of ~5 minutes; cache is invalidated on any wishlist mutation or scan completion
-- [ ] **PERF-04**: Concurrent scan requests across all sources are rate-limited via a semaphore (max 3–5 simultaneous Discogs requests) to prevent 429 errors
+- [x] **PERF-01**: Adding a wishlist item returns an HTTP response immediately; scanning runs as a background task after the response is sent
+- [x] **PERF-02**: Dashboard load uses selectinload (or equivalent) to batch-fetch listings in a single query rather than N+1 per item
+- [x] **PERF-03**: Dashboard enrichment result is cached with a TTL of ~5 minutes; cache is invalidated on any wishlist mutation or scan completion
+- [x] **PERF-04**: Concurrent scan requests across all sources are rate-limited via a semaphore (max 3–5 simultaneous Discogs requests) to prevent 429 errors
 
 ### Sources
 
@@ -62,10 +62,10 @@
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| PERF-01 | Phase 1: Infrastructure | Pending |
-| PERF-02 | Phase 1: Infrastructure | Pending |
-| PERF-03 | Phase 1: Infrastructure | Pending |
-| PERF-04 | Phase 1: Infrastructure | Pending |
+| PERF-01 | Phase 1: Infrastructure | Complete (01-01) |
+| PERF-02 | Phase 1: Infrastructure | Complete (01-01) |
+| PERF-03 | Phase 1: Infrastructure | Complete (01-01) |
+| PERF-04 | Phase 1: Infrastructure | Complete (01-01) |
 | SRC-06 | Phase 1: Infrastructure | Pending |
 | SRC-01 | Phase 2: New Sources | Pending |
 | SRC-02 | Phase 2: New Sources | Pending |

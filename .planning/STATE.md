@@ -1,7 +1,7 @@
 # Project State
 
 ## Current Phase
-Phase 1: Infrastructure — Not started
+Phase 1: Infrastructure — In progress (Plan 2 of 3)
 
 ## Project Reference
 See: .planning/PROJECT.md
@@ -19,7 +19,7 @@ See: .planning/PROJECT.md
 ## Progress
 
 ```
-Phase 1 [          ] 0%
+Phase 1 [###       ] 33%
 Phase 2 [          ] 0%
 Phase 3 [          ] 0%
 ```
@@ -27,7 +27,10 @@ Phase 3 [          ] 0%
 ## Accumulated Context
 
 ### Decisions
-- None yet
+- Semaphore(3): Discogs 60/min cap; 3 concurrent items with ~2 sources = ~6 req/min peak, well under limit
+- TTLCache maxsize=1: single dashboard endpoint, 5-minute TTL; key='dashboard'
+- API POST /api/wishlist now returns immediately with item (no listings yet); iOS Shortcut contract preserved
+- Cache invalidated eagerly on every mutation (edit, delete, scan completion)
 
 ### Todos
 - None yet
@@ -36,4 +39,4 @@ Phase 3 [          ] 0%
 - None yet
 
 ## Last Updated
-2026-04-02
+2026-04-02 — Completed 01-01 (Backend Performance: scan decoupling, N+1 fix, cache, semaphore)
