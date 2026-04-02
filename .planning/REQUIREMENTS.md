@@ -62,22 +62,22 @@
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| PERF-01 | Phase 1 | Pending |
-| PERF-02 | Phase 1 | Pending |
-| PERF-03 | Phase 1 | Pending |
-| PERF-04 | Phase 1 | Pending |
-| SRC-06 | Phase 1 | Pending |
-| SRC-01 | Phase 2 | Pending |
-| SRC-02 | Phase 2 | Pending |
-| SRC-03 | Phase 2 | Pending |
-| SRC-04 | Phase 2 | Pending |
-| SRC-05 | Phase 2 | Pending |
-| UI-01 | Phase 3 | Pending |
-| UI-02 | Phase 3 | Pending |
-| UI-03 | Phase 3 | Pending |
-| UI-04 | Phase 3 | Pending |
-| UI-05 | Phase 3 | Pending |
-| UI-06 | Phase 3 | Pending |
+| PERF-01 | Phase 1: Infrastructure | Pending |
+| PERF-02 | Phase 1: Infrastructure | Pending |
+| PERF-03 | Phase 1: Infrastructure | Pending |
+| PERF-04 | Phase 1: Infrastructure | Pending |
+| SRC-06 | Phase 1: Infrastructure | Pending |
+| SRC-01 | Phase 2: New Sources | Pending |
+| SRC-02 | Phase 2: New Sources | Pending |
+| SRC-03 | Phase 2: New Sources | Pending |
+| SRC-04 | Phase 2: New Sources | Pending |
+| SRC-05 | Phase 2: New Sources | Pending |
+| UI-01 | Phase 3: UI Redesign | Pending |
+| UI-02 | Phase 3: UI Redesign | Pending |
+| UI-03 | Phase 3: UI Redesign | Pending |
+| UI-04 | Phase 3: UI Redesign | Pending |
+| UI-05 | Phase 3: UI Redesign | Pending |
+| UI-06 | Phase 3: UI Redesign | Pending |
 
 **Coverage:**
 - v1 requirements: 16 total
@@ -86,4 +86,4 @@
 
 ---
 *Requirements defined: 2026-04-02*
-*Last updated: 2026-04-02 after initial definition*
+*Last updated: 2026-04-02 after roadmap creation*
