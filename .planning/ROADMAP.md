@@ -9,7 +9,7 @@
 ## Phases
 
 - [x] **Phase 1: Infrastructure** - Async scan decoupling, adapter registry, and dashboard caching so the foundation is solid before any new sources are added (completed 2026-04-02)
-- [x] **Phase 2: New Sources** - eBay AU, Discrepancy Records, Clarity Records, Juno Records, and Bandcamp adapters plugged into the registry (completed 2026-04-02)
+- [ ] **Phase 2: New Sources** - eBay AU, Discrepancy Records, Clarity Records, Juno Records, and Bandcamp adapters plugged into the registry
 - [ ] **Phase 3: UI Redesign** - Bootstrap removed, Spotify-like card layout with record artwork as the hero, custom CSS throughout
 
 ---
@@ -45,12 +45,13 @@ Plans:
   3. Juno Records listings appear for records they carry, with correct currency conversion to AUD
   4. Bandcamp listings appear for known artist/label searches where physical vinyl is available and in stock
   5. Each new source has its own rate limiting; a full wishlist scan completes without triggering bans or 429 errors on any source
-**Plans:** 3/3 plans complete
+**Plans:** 3/4 plans complete
 
 Plans:
 - [x] 02-01-PLAN.md — eBay Browse API adapter + rate limit migration to per-adapter semaphores
 - [x] 02-02-PLAN.md — Discrepancy Records + Clarity Records AU HTML scrapers
 - [x] 02-03-PLAN.md — Juno Records + Bandcamp international HTML scrapers
+- [ ] 02-04-PLAN.md — Gap closure: Clarity Records selector verification + enable adapter (SRC-03, SRC-06)
 
 **UI hint**: no
 
@@ -74,5 +75,5 @@ Plans:
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. Infrastructure | 3/3 | Complete   | 2026-04-02 |
-| 2. New Sources | 3/3 | Complete   | 2026-04-02 |
+| 2. New Sources | 3/4 | Gap closure | - |
 | 3. UI Redesign | 0/? | Not started | - |
