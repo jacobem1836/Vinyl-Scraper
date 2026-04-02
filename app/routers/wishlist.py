@@ -11,7 +11,6 @@ from app.schemas import ListingResponse, WishlistItemCreate, WishlistItemRespons
 from app.services import notifier, scanner
 from app.services.cache import invalidate_dashboard_cache
 from app.services.notifier import compute_typical_price
-from app.services.rate_limit import scan_semaphore
 from app.services.shipping import get_shipping_cost
 
 web_router = APIRouter(tags=["web"])
@@ -23,8 +22,7 @@ async def _scan_in_background(item_id: int) -> None:
     try:
         item = db.query(WishlistItem).filter_by(id=item_id).first()
         if item:
-            async with scan_semaphore:
-                new_listings = await scanner.scan_item(db, item)
+            new_listings = await scanner.scan_item(db, item)
             if item.notify_email and new_listings:
                 await notifier.send_deal_email(item, new_listings)
     finally:
@@ -145,8 +143,7 @@ async def scan_single_item_web(item_id: int, db: Session = Depends(get_db)):
     if not item:
         raise HTTPException(status_code=404, detail="Item not found")
 
-    async with scan_semaphore:
-        new_listings = await scanner.scan_item(db, item)
+    new_listings = await scanner.scan_item(db, item)
 
     if item.notify_email and new_listings:
         notifiable = [l for l in new_listings if notifier.should_notify(item, l, list(item.listings or []))]

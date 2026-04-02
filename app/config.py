@@ -5,6 +5,8 @@ class Settings(BaseSettings):
     database_url: str = "sqlite:///./vinyl.db"
     api_key: str = "change-me-please"
     discogs_token: Optional[str] = None
+    ebay_app_id: Optional[str] = None    # eBay App ID (Client ID) for Browse API
+    ebay_cert_id: Optional[str] = None   # eBay Cert ID (Client Secret) for Browse API
     smtp_host: str = "smtp.mail.me.com"
     smtp_port: int = 587
     smtp_user: Optional[str] = None
