@@ -1,7 +1,7 @@
 # Phase 3: UI Redesign - Context
 
 **Gathered:** 2026-04-03
-**Status:** Ready for planning
+**Status:** Ready for UI spec — run `/gsd:ui-phase 3` before planning to generate UI-SPEC.md
 
 <domain>
 ## Phase Boundary
@@ -107,6 +107,27 @@ Replace the current Tailwind CDN-based UI with a hand-rolled custom CSS design s
 None — discussion stayed within phase scope.
 
 </deferred>
+
+<tooling>
+## Available UI Tooling
+
+The following Claude MCPs and skills are available for this phase and should be used during UI spec generation, planning, and execution.
+
+### Recommended first step
+Run `/gsd:ui-phase 3` **before** `/gsd:plan-phase 3` to generate a `UI-SPEC.md` design contract. The `ui-ux-pro-max` skill and Stitch MCP are best invoked from within that workflow.
+
+### MCPs
+- **`mcp__stitch`** — create and apply design systems, generate screens from text descriptions, produce design variants. Use to generate the CSS design token system and visualise card/grid layouts before coding.
+- **`mcp__magic` (21st.dev)** — component builder, inspiration, and refiner. Useful for sourcing visual patterns (card grids, vinyl placeholder SVG, listing row layouts) and adapting them to hand-rolled CSS. Not React-specific for inspiration purposes.
+- **`mcp__shadcn`** — shadcn component registry. Not directly usable (app is Jinja2, not React) but useful for referencing interaction patterns, accessibility attributes, and component structure to adapt into custom HTML/CSS.
+
+### Skills
+- **`ui-ux-pro-max`** — 67-style UI/UX design intelligence. Use during `/gsd:ui-phase` to define the visual language, spacing, and interaction patterns before writing any CSS.
+
+### Note for executor agents
+This app is **Jinja2 + custom CSS** (Python/FastAPI), not a JS framework. MCP tools that generate React/JSX components should be used for **inspiration and pattern reference only** — extract the HTML structure, CSS properties, and SVG assets; discard the React boilerplate.
+
+</tooling>
 
 ---
 
