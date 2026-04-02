@@ -1,7 +1,7 @@
 # Project State
 
 ## Current Phase
-Phase 1: Infrastructure — In progress (Plan 2 of 3)
+Phase 1: Infrastructure — Complete (3 of 3 plans done)
 
 ## Project Reference
 See: .planning/PROJECT.md
@@ -19,7 +19,7 @@ See: .planning/PROJECT.md
 ## Progress
 
 ```
-Phase 1 [###       ] 33%
+Phase 1 [##########] 100%
 Phase 2 [          ] 0%
 Phase 3 [          ] 0%
 ```
@@ -31,6 +31,11 @@ Phase 3 [          ] 0%
 - TTLCache maxsize=1: single dashboard endpoint, 5-minute TTL; key='dashboard'
 - API POST /api/wishlist now returns immediately with item (no listings yet); iOS Shortcut contract preserved
 - Cache invalidated eagerly on every mutation (edit, delete, scan completion)
+- Adapter registry uses enabled flag per entry for future per-source toggling without overengineering
+- return_exceptions=True in registry gather isolates per-adapter failures so other sources still return results
+- Status endpoint on web_router (no API key) for dashboard JS polling — iOS Shortcut uses api_router only
+- Full page reload on listing arrival — simpler than partial DOM replacement, no stale state risk
+- 2-minute polling timeout prevents runaway intervals if scan stalls
 
 ### Todos
 - None yet
@@ -39,4 +44,4 @@ Phase 3 [          ] 0%
 - None yet
 
 ## Last Updated
-2026-04-02 — Completed 01-01 (Backend Performance: scan decoupling, N+1 fix, cache, semaphore)
+2026-04-02 — Completed 01-03 (Frontend Polling UX: scanning spinner, status endpoint, JS auto-refresh)

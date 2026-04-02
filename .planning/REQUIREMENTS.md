@@ -19,7 +19,7 @@
 - [ ] **SRC-03**: Clarity Records adapter scrapes the Clarity Records storefront (BigCommerce platform) and returns standard listing dicts with AUD prices
 - [ ] **SRC-04**: Juno Records adapter scrapes Juno Records HTML search results (with correct User-Agent header) and returns standard listing dicts
 - [ ] **SRC-05**: Bandcamp adapter performs artist/label search and returns physical vinyl listings (merch/records only, not digital); scope-limited to search — not general marketplace scraping
-- [ ] **SRC-06**: All new sources are registered in a central adapter registry; adding or removing a source requires only a change to the registry, not to the scanner
+- [x] **SRC-06**: All new sources are registered in a central adapter registry; adding or removing a source requires only a change to the registry, not to the scanner
 
 ### UI
 
@@ -66,7 +66,7 @@
 | PERF-02 | Phase 1: Infrastructure | Complete (01-01) |
 | PERF-03 | Phase 1: Infrastructure | Complete (01-01) |
 | PERF-04 | Phase 1: Infrastructure | Complete (01-01) |
-| SRC-06 | Phase 1: Infrastructure | Pending |
+| SRC-06 | Phase 1: Infrastructure | Complete |
 | SRC-01 | Phase 2: New Sources | Pending |
 | SRC-02 | Phase 2: New Sources | Pending |
 | SRC-03 | Phase 2: New Sources | Pending |
