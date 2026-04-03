@@ -1,26 +1,481 @@
-/* Smooth transitions for modal */
-.modal-backdrop { transition: opacity 0.2s ease; }
-.modal-panel { transition: transform 0.2s ease, opacity 0.2s ease; }
+/* ============================================================
+   Vinyl Wishlist — Design System
+   CSS custom properties + component classes
+   No external dependencies.
+   ============================================================ */
 
-/* Table row hover */
-.listing-row:hover { background-color: rgba(255,255,255,0.04); }
+/* ============================================================
+   1. CSS Custom Properties
+   ============================================================ */
+:root {
+  /* Colour — background / surface */
+  --color-bg:           #0f172a;
+  --color-surface:      #1e293b;
+  --color-surface-alt:  #0f172a;
 
-/* Price highlight */
-.price-best { color: #f59e0b; font-weight: 600; }
+  /* Colour — borders */
+  --color-border:       #334155;
+  --color-border-muted: #1e293b;
 
-/* Truncate long titles in table */
-.title-cell { max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  /* Colour — text */
+  --color-text:         #f8fafc;
+  --color-text-muted:   #94a3b8;
+  --color-text-faint:   #64748b;
 
-/* Scanning state card */
-@keyframes pulse-border {
-  0%, 100% { border-color: rgba(245, 158, 11, 0.3); }
-  50% { border-color: rgba(245, 158, 11, 0.7); }
+  /* Colour — accent (amber) */
+  --color-accent:       #f59e0b;
+  --color-accent-hover: #fbbf24;
+  --color-accent-bg:    #78350f;
+  --color-accent-cta:   #f59e0b;
+  --color-cta-text:     #0f172a;
+
+  /* Colour — destructive */
+  --color-destructive:        #f87171;
+  --color-destructive-border: rgba(239, 68, 68, 0.4);
+  --color-destructive-bg:     rgba(239, 68, 68, 0.1);
+
+  /* Colour — success */
+  --color-success: #34d399;
+
+  /* Colour — type badges */
+  --color-badge-album-bg:     rgba(59, 130, 246, 0.2);
+  --color-badge-album-text:   #93c5fd;
+  --color-badge-album-border: rgba(59, 130, 246, 0.3);
+
+  --color-badge-artist-bg:     rgba(168, 85, 247, 0.2);
+  --color-badge-artist-text:   #c4b5fd;
+  --color-badge-artist-border: rgba(168, 85, 247, 0.3);
+
+  --color-badge-other-bg:     rgba(34, 197, 94, 0.2);
+  --color-badge-other-text:   #86efac;
+  --color-badge-other-border: rgba(34, 197, 94, 0.3);
+
+  /* Colour — source badges */
+  --color-source-discogs-bg:   rgba(249, 115, 22, 0.2);
+  --color-source-discogs-text: #fdba74;
+  --color-source-other-bg:     rgba(59, 130, 246, 0.2);
+  --color-source-other-text:   #93c5fd;
+
+  /* Spacing scale */
+  --space-xs:  4px;
+  --space-sm:  8px;
+  --space-md:  16px;
+  --space-lg:  24px;
+  --space-xl:  32px;
+  --space-2xl: 48px;
+  --space-3xl: 64px;
+
+  /* Typography */
+  --text-sm:      14px;
+  --text-body:    16px;
+  --text-heading: 24px;
+  --text-price:   20px;
+
+  --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
 }
+
+/* ============================================================
+   2. Base element styles
+   ============================================================ */
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
+body {
+  background: var(--color-bg);
+  color: var(--color-text);
+  font-family: var(--font-sans);
+  font-size: var(--text-body);
+  min-height: 100vh;
+  margin: 0;
+  line-height: 1.5;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+img {
+  max-width: 100%;
+  display: block;
+}
+
+button, input, select, textarea {
+  font-family: inherit;
+  font-size: inherit;
+  color: inherit;
+  background: transparent;
+  border: none;
+}
+
+/* ============================================================
+   3. Utility classes — JS class toggle dependencies
+   These are toggled by JavaScript and MUST exist in CSS.
+   ============================================================ */
+.hidden       { display: none; }
+.opacity-0    { opacity: 0; }
+.translate-y-4 { transform: translateY(1rem); }
+
+/* ============================================================
+   4. Layout
+   ============================================================ */
+.container {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding-inline: var(--space-md);
+}
+
+.stack-sm {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+}
+
+.stack-md {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+}
+
+.stack-lg {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-lg);
+}
+
+/* ============================================================
+   5. Nav bar
+   ============================================================ */
+.nav {
+  border-bottom: 1px solid var(--color-border);
+  background: var(--color-bg);
+  backdrop-filter: blur(8px);
+  position: sticky;
+  top: 0;
+  z-index: 40;
+}
+
+.nav-inner {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding-inline: var(--space-md);
+  height: 64px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.nav-brand {
+  font-size: var(--text-heading);
+  font-weight: 600;
+  color: var(--color-accent);
+}
+
+/* ============================================================
+   6. Buttons
+   ============================================================ */
+.btn-cta {
+  background: var(--color-accent-cta);
+  color: var(--color-cta-text);
+  font-size: var(--text-sm);
+  font-weight: 600;
+  padding: var(--space-sm) var(--space-md);
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background 200ms;
+  min-height: 40px;
+  border: none;
+  display: inline-flex;
+  align-items: center;
+}
+
+.btn-cta:hover {
+  background: var(--color-accent-hover);
+}
+
+.btn-secondary {
+  background: transparent;
+  border: 1px solid var(--color-border);
+  color: var(--color-text-muted);
+  font-size: var(--text-sm);
+  padding: var(--space-sm) var(--space-md);
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background 200ms;
+  display: inline-flex;
+  align-items: center;
+}
+
+.btn-secondary:hover {
+  background: var(--color-surface);
+}
+
+.btn-destructive {
+  background: transparent;
+  border: 1px solid var(--color-destructive-border);
+  color: var(--color-destructive);
+  font-size: var(--text-sm);
+  font-weight: 500;
+  padding: var(--space-sm) var(--space-md);
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background 200ms;
+  display: inline-flex;
+  align-items: center;
+}
+
+.btn-destructive:hover {
+  background: var(--color-destructive-bg);
+}
+
+/* ============================================================
+   7. Cards
+   ============================================================ */
+.card {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  overflow: hidden;
+  transition: transform 200ms ease, box-shadow 200ms ease;
+}
+
+.card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+}
+
+.card-grid {
+  display: grid;
+  grid-template-columns: repeat(1, 1fr);
+  gap: var(--space-lg);
+}
+
+@media (min-width: 768px) {
+  .card-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (min-width: 1280px) {
+  .card-grid {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+.card-artwork {
+  aspect-ratio: 1 / 1;
+  width: 100%;
+  object-fit: cover;
+  border-radius: 4px 4px 0 0;
+  display: block;
+}
+
+.card-body {
+  padding: var(--space-md);
+}
+
 .card--scanning {
   animation: pulse-border 2s ease-in-out infinite;
 }
 
-/* CSS-only spinner */
+/* ============================================================
+   8. Forms
+   ============================================================ */
+.form-input {
+  width: 100%;
+  background: var(--color-surface-alt);
+  border: 1px solid var(--color-border);
+  border-radius: 6px;
+  padding: var(--space-sm) 12px;
+  color: var(--color-text);
+}
+
+.form-input:focus {
+  outline: none;
+  box-shadow: 0 0 0 2px var(--color-accent);
+}
+
+.form-label {
+  display: block;
+  font-size: var(--text-sm);
+  color: var(--color-text-muted);
+  margin-bottom: var(--space-xs);
+}
+
+.form-checkbox {
+  accent-color: var(--color-accent);
+}
+
+/* ============================================================
+   9. Modal
+   ============================================================ */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+}
+
+.modal-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+  transition: opacity 200ms ease;
+}
+
+.modal-center {
+  position: relative;
+  min-height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-md);
+}
+
+.modal-panel {
+  width: 100%;
+  max-width: 32rem;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: 12px;
+  padding: var(--space-lg);
+  transition: transform 200ms ease, opacity 200ms ease;
+}
+
+/* ============================================================
+   10. Tables
+   ============================================================ */
+.table-container {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: 12px;
+  overflow-x: auto;
+}
+
+.table {
+  width: 100%;
+  min-width: 980px;
+  font-size: var(--text-sm);
+  border-collapse: collapse;
+}
+
+.table th {
+  text-align: left;
+  font-weight: 500;
+  padding: var(--space-md);
+  background: var(--color-surface-alt);
+  color: var(--color-text-muted);
+}
+
+.table td {
+  padding: var(--space-md);
+  border-top: 1px solid rgba(51, 65, 85, 0.7);
+}
+
+.listing-row:hover {
+  background-color: rgba(255, 255, 255, 0.04);
+}
+
+/* ============================================================
+   11. Badges
+   ============================================================ */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  border-radius: 9999px;
+  border: 1px solid;
+  padding: 2px 10px;
+  font-size: var(--text-sm);
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.badge-album {
+  background: var(--color-badge-album-bg);
+  color: var(--color-badge-album-text);
+  border-color: var(--color-badge-album-border);
+}
+
+.badge-artist {
+  background: var(--color-badge-artist-bg);
+  color: var(--color-badge-artist-text);
+  border-color: var(--color-badge-artist-border);
+}
+
+.badge-other {
+  background: var(--color-badge-other-bg);
+  color: var(--color-badge-other-text);
+  border-color: var(--color-badge-other-border);
+}
+
+.badge-source-discogs {
+  background: var(--color-source-discogs-bg);
+  color: var(--color-source-discogs-text);
+  border-color: transparent;
+}
+
+.badge-source-other {
+  background: var(--color-source-other-bg);
+  color: var(--color-source-other-text);
+  border-color: transparent;
+}
+
+/* ============================================================
+   12. Typography helpers
+   ============================================================ */
+.text-sm      { font-size: var(--text-sm); }
+.text-heading { font-size: var(--text-heading); font-weight: 600; line-height: 1.2; }
+.text-price   { font-size: var(--text-price); font-weight: 600; line-height: 1.2; }
+.text-muted   { color: var(--color-text-muted); }
+.text-faint   { color: var(--color-text-faint); }
+.text-accent  { color: var(--color-accent); }
+.text-destructive { color: var(--color-destructive); }
+.text-success { color: var(--color-success); }
+
+/* Preserved from existing */
+.price-best { color: var(--color-accent); font-weight: 600; }
+.title-cell { max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+/* ============================================================
+   13. Scan panel
+   ============================================================ */
+.scan-panel {
+  position: fixed;
+  bottom: var(--space-md);
+  right: var(--space-md);
+  z-index: 50;
+  user-select: none;
+}
+
+.scan-pill {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: 9999px;
+  padding: var(--space-sm) var(--space-md);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  cursor: pointer;
+  transition: background-color 200ms;
+}
+
+.scan-pill:hover {
+  background: var(--color-surface-alt);
+}
+
+.scan-card {
+  width: 320px;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: 12px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+  padding: var(--space-md);
+  margin-top: var(--space-sm);
+}
+
+/* Preserved — CSS-only spinner */
 @keyframes spin {
   to { transform: rotate(360deg); }
 }
@@ -34,3 +489,57 @@
   display: inline-block;
   flex-shrink: 0;
 }
+
+/* ============================================================
+   14. Toast
+   ============================================================ */
+.toast {
+  position: fixed;
+  bottom: var(--space-lg);
+  right: var(--space-lg);
+  z-index: 50;
+  max-width: 24rem;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  padding: 12px 20px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+/* ============================================================
+   15. Keyframe animations — preserved
+   ============================================================ */
+@keyframes pulse-border {
+  0%, 100% { border-color: rgba(245, 158, 11, 0.3); }
+  50%       { border-color: rgba(245, 158, 11, 0.7); }
+}
+
+/* ============================================================
+   16. Empty state
+   ============================================================ */
+.empty-state {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: 12px;
+  padding: var(--space-3xl) var(--space-xl);
+  text-align: center;
+  color: var(--color-text-faint);
+}
+
+/* ============================================================
+   17. Misc utilities
+   ============================================================ */
+.truncate        { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.flex            { display: flex; }
+.flex-col        { flex-direction: column; }
+.items-center    { align-items: center; }
+.justify-between { justify-content: space-between; }
+.gap-sm          { gap: var(--space-sm); }
+.gap-md          { gap: var(--space-md); }
+.gap-lg          { gap: var(--space-lg); }
+.shrink-0        { flex-shrink: 0; }
+.w-full          { width: 100%; }
+.mt-auto         { margin-top: auto; }
