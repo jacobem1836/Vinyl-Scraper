@@ -162,15 +162,16 @@ Unchanged from Phase 3 for body text. One addition: wordmark typography.
 | `--text-heading` | Heading | 24px | 600 | 1.2 | Item detail page H1, section headings |
 | `--text-price` | Price display | 20px | 600 | 1.2 | AUD total in detail page listing cards |
 
-**Weights used:** 400 (regular) and 600 (semibold) only. No other weights except the wordmark (700).
+**Weights used:** 400 (regular) and 600 (semibold) only. No other weights.
 
 ### CRATE Wordmark (D-08)
 
 ```css
 .nav-brand {
-  font-size: 18px;        /* Claude's discretion — 18px sits between --text-body and --text-heading; 
-                             large enough to read as a wordmark, compact for nav bar */
-  font-weight: 700;        /* heavy — wordmark treatment, not body text */
+  font-size: 16px;        /* uses --text-body size; letter-spacing 0.25em and weight 600
+                             provide sufficient wordmark differentiation without a distinct size */
+  font-weight: 600;        /* semibold — same weight as headings; letter-spacing provides
+                             wordmark differentiation */
   letter-spacing: 0.25em; /* wide track — spells out as "C R A T E" visually */
   text-transform: uppercase;
   line-height: 1;          /* single-line wordmark, no vertical bleed */
@@ -180,7 +181,7 @@ Unchanged from Phase 3 for body text. One addition: wordmark typography.
 
 Template text: `CRATE` (single word, uppercase forced in CSS via `text-transform`, not encoded as `C R A T E` in HTML — the letter-spacing does the visual work).
 
-Source: 04-CONTEXT.md D-08; font-size and line-height are Claude's discretion per CONTEXT.md.
+Source: 04-CONTEXT.md D-08; font-size revised to `--text-body` (16px) to keep type scale at 4 sizes; weight revised to 600 to keep weight count at 2 (checker fix).
 
 Font declaration (unchanged from Phase 3):
 ```css
@@ -196,7 +197,7 @@ Font declaration (unchanged from Phase 3):
 | Dominant (60%) | `#0a0a0a` (`--color-bg`) | Page background, nav bar, table header rows, input backgrounds, modal backdrops | Full-bleed page surface — near-black neutral, no blue cast |
 | Secondary (30%) | `#111111` (`--color-surface`) | Cards (dashboard grid), panels (scan progress, stats bar), modal panels, listing table container | All contained surfaces |
 | Accent (10%) | `#ffffff` (`--color-accent`) | See reserved-for list below | Intentional attention elements only — strict list |
-| Destructive | `#f87171` (`--color-destructive`) | Delete button text and border; confirm copy | Destructive actions exclusively |
+| Destructive | `#f87171` (`--color-destructive`) | Remove from Crate button text and border; confirm copy | Destructive actions exclusively |
 
 **Accent reserved for (explicit list) — white `#ffffff`:**
 1. Nav bar wordmark text (`CRATE`)
@@ -328,7 +329,7 @@ Changes from Phase 3 are marked with *.
 | No listings found (detail) | "No listings found yet. Click Scan Now to search." (unchanged) |
 | Scan in progress (pill) | "Scanning {n}/{total}..." (unchanged) |
 | Scan complete (pill) | "Done — {n} new listing{s}" (unchanged) |
-| Delete item — button label | "Delete" (unchanged) |
+| Delete item — button label | "Remove from Crate" * |
 | Delete item — confirmation | Browser `confirm()` dialog: "Remove this item from your crate?" * |
 | Out of stock badge | "Out of stock" (unchanged) |
 | Landed cost label | "landed AU" (unchanged) |
@@ -338,7 +339,7 @@ Changes from Phase 3 are marked with *.
 | Page `<title>` | "CRATE" (was "Vinyl Wishlist") * |
 | Detail page `<title>` | "CRATE — {item.query}" * |
 
-Source: App name changes from 04-CONTEXT.md D-01, D-02. Copywriting reflecting "crate" metaphor from Specifics section. All other copy unchanged from Phase 3.
+Source: App name changes from 04-CONTEXT.md D-01, D-02. Copywriting reflecting "crate" metaphor from Specifics section. "Remove from Crate" updated from "Delete" per checker flag — verb + noun makes action and scope explicit.
 
 ---
 
@@ -385,7 +386,7 @@ Unchanged from Phase 3. Carried forward:
 - Submit: `POST /wishlist/{id}/edit`.
 
 ### Delete Item
-- Triggered by: "Delete" button on item detail page.
+- Triggered by: "Remove from Crate" button on item detail page.
 - Method: `POST /wishlist/{id}/delete`.
 - Confirmation: `confirm("Remove this item from your crate?")` — browser dialog, no separate modal.
 
@@ -404,7 +405,7 @@ Executor reference: what changes vs Phase 3.
 | `static/style.css` | Token update | `--color-bg/surface/border/text-muted/accent` tokens; all `border-radius` values; `pulse-border` keyframe; `.nav-brand` rule |
 | `templates/base.html` | Text + class | Nav brand text → "CRATE", `<title>` → "CRATE", `.nav-brand` letter-spacing class applied |
 | `templates/index.html` | Text | Empty state copy updated ("Your crate is empty") |
-| `templates/item_detail.html` | Text | `<title>` → "CRATE — {item.query}", delete confirm copy updated |
+| `templates/item_detail.html` | Text | `<title>` → "CRATE — {item.query}", delete button label → "Remove from Crate", confirm copy updated |
 | `app/services/discogs.py` | Backend | Artwork fetch upgraded to Discogs release endpoint `images[0].uri` |
 
 No new Python dependencies. No new HTML structure. No JS changes.
