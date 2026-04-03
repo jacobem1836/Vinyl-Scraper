@@ -1,7 +1,8 @@
 import asyncio
 
+import httpx
 from fastapi import APIRouter, BackgroundTasks, Depends, Form, Header, HTTPException
-from fastapi.responses import RedirectResponse
+from fastapi.responses import RedirectResponse, StreamingResponse
 from sqlalchemy.orm import Session
 
 from app.config import settings
@@ -56,6 +57,7 @@ def _enrich_item(item: WishlistItem) -> dict:
         "created_at": item.created_at,
         "last_scanned_at": item.last_scanned_at,
         "is_active": item.is_active,
+        "artwork_url": item.artwork_url,
         "best_price": _landed(best_listing) if best_listing else None,        # landed price
         "best_price_raw": best_listing.price if best_listing else None,        # listing price only
         "best_ships_from": best_listing.ships_from if best_listing else None,
@@ -195,6 +197,24 @@ async def item_scan_status(item_id: int, db: Session = Depends(get_db)):
         "listing_count": listing_count,
         "last_scanned_at": item.last_scanned_at.isoformat() if item.last_scanned_at else None,
     }
+
+
+@web_router.get("/api/artwork")
+async def proxy_artwork(url: str = ""):
+    if not url:
+        raise HTTPException(status_code=400, detail="url required")
+    try:
+        async with httpx.AsyncClient(timeout=10.0) as client:
+            r = await client.get(url, headers={"User-Agent": "VinylWishlist/1.0"})
+            if r.status_code != 200:
+                raise HTTPException(status_code=502, detail="upstream error")
+            return StreamingResponse(
+                r.aiter_bytes(),
+                media_type=r.headers.get("content-type", "image/jpeg"),
+                headers={"Cache-Control": "public, max-age=86400"},
+            )
+    except httpx.HTTPError:
+        raise HTTPException(status_code=502, detail="artwork fetch failed")
 
 
 @api_router.get("/health")
