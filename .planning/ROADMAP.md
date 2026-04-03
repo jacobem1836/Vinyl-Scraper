@@ -1,8 +1,8 @@
 # Roadmap: Vinyl Wishlist Manager
 
 **Milestone:** v1 — Fast, Beautiful, More Sources
-**Phases:** 3
-**Requirements:** 16
+**Phases:** 4
+**Requirements:** 22
 
 ---
 
@@ -11,6 +11,7 @@
 - [x] **Phase 1: Infrastructure** - Async scan decoupling, adapter registry, and dashboard caching so the foundation is solid before any new sources are added (completed 2026-04-02)
 - [ ] **Phase 2: New Sources** - eBay AU, Discrepancy Records, Clarity Records, Juno Records, and Bandcamp adapters plugged into the registry
 - [x] **Phase 3: UI Redesign** - Bootstrap removed, Spotify-like card layout with record artwork as the hero, custom CSS throughout (completed 2026-04-03)
+- [ ] **Phase 4: UI Polish** - CRATE rebrand, near-black neutral palette, white accent, sharp edges, compressed spacing, high-res Discogs artwork
 
 ---
 
@@ -77,13 +78,14 @@ Plans:
 
 ### Phase 4: UI Polish
 
-**Goal:** Redesign the visual aesthetic — dark non-blue palette, tighter spacing, no rounded excess, styled nav title, gold replaced with a better accent. Higher-res Discogs artwork via release endpoint. Leverages stitch, 21stdev magic, and ui-ux-promax design tools.
-**Requirements**: TBD
+**Goal:** The app is rebranded to CRATE with a sleek monochrome aesthetic — near-black neutral palette, white accent, sharp edges, compressed card spacing, and high-res Discogs artwork
+**Requirements**: POLISH-01, POLISH-02, POLISH-03, POLISH-04, POLISH-05, POLISH-06
 **Depends on:** Phase 3
-**Plans:** 0 plans
+**Plans:** 2 plans
 
 Plans:
-- [ ] TBD (run /gsd:plan-phase 4 to break down)
+- [ ] 04-01-PLAN.md — CSS design system update + template CRATE rename and copy changes
+- [ ] 04-02-PLAN.md — Discogs high-res artwork upgrade via release endpoint
 
 ---
 
@@ -94,3 +96,4 @@ Plans:
 | 1. Infrastructure | 3/3 | Complete   | 2026-04-02 |
 | 2. New Sources | 3/4 | Gap closure | - |
 | 3. UI Redesign | 4/4 | Complete   | 2026-04-03 |
+| 4. UI Polish | 0/2 | Planned | - |
