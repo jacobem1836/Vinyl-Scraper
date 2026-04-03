@@ -66,6 +66,10 @@ Phase 3 [########  ] 75%
 - [Phase 03-ui-redesign]: Cards are pure <a> tags; edit button removed from card face — edit accessible from detail page only (D-05)
 - [Phase 03-ui-redesign]: aud_total falls back to landed_price with currency label when FX fetch fails — price column never blank
 
+### Roadmap Evolution
+
+- Phase 4 added: UI Polish — dark non-blue palette, tighter spacing, no rounded excess, styled nav title, accent color revision, higher-res Discogs artwork via release endpoint, leverages stitch/magic/ui-ux-promax tools
+
 ### Todos
 
 - None yet

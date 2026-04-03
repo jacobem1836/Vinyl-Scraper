@@ -75,6 +75,16 @@ Plans:
 
 **UI hint**: yes
 
+### Phase 4: UI Polish
+
+**Goal:** Redesign the visual aesthetic — dark non-blue palette, tighter spacing, no rounded excess, styled nav title, gold replaced with a better accent. Higher-res Discogs artwork via release endpoint. Leverages stitch, 21stdev magic, and ui-ux-promax design tools.
+**Requirements**: TBD
+**Depends on:** Phase 3
+**Plans:** 0 plans
+
+Plans:
+- [ ] TBD (run /gsd:plan-phase 4 to break down)
+
 ---
 
 ## Progress
