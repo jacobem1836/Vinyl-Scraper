@@ -3,131 +3,163 @@
 {% block title %}{{ item.query }} · Vinyl Wishlist{% endblock %}
 
 {% block content %}
-<div class="space-y-6">
-  <section class="bg-slate-800 border border-slate-700 rounded-xl p-5 space-y-4">
-    <a href="/" class="text-sm text-amber-400 hover:text-amber-300">← Back to Dashboard</a>
+<div class="stack-lg">
 
-    <div class="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-4">
-      <div class="space-y-2">
-        <div class="flex items-center gap-2 flex-wrap">
-          <h1 class="text-2xl sm:text-3xl font-bold">{{ item.query }}</h1>
-          <span class="inline-flex items-center rounded-full border px-2.5 py-1 text-xs font-medium uppercase tracking-wide
-            {% if item.type == 'album' %}bg-blue-500/20 text-blue-300 border-blue-500/30
-            {% elif item.type == 'artist' %}bg-purple-500/20 text-purple-300 border-purple-500/30
-            {% else %}bg-green-500/20 text-green-300 border-green-500/30{% endif %}">
+  <!-- Header section with artwork thumbnail -->
+  <section class="card" style="padding: var(--space-lg);">
+    <a href="/" class="text-sm text-accent" style="display: inline-block; margin-bottom: var(--space-md);">← Back to Dashboard</a>
+
+    <div class="flex" style="gap: var(--space-lg); flex-wrap: wrap;">
+      <!-- Artwork thumbnail 120x120 -->
+      <div style="flex-shrink: 0;">
+        {% if item.artwork_url %}
+          <img
+            src="/api/artwork?url={{ item.artwork_url | urlencode }}"
+            alt="{{ item.query }} album cover"
+            onerror="this.src='/static/vinyl-placeholder.svg'"
+            style="width: 120px; height: 120px; object-fit: cover; border-radius: 8px;"
+          >
+        {% else %}
+          <img
+            src="/static/vinyl-placeholder.svg"
+            alt="{{ item.query }} — no artwork available"
+            style="width: 120px; height: 120px; object-fit: cover; border-radius: 8px;"
+          >
+        {% endif %}
+      </div>
+
+      <div style="flex: 1; min-width: 200px;">
+        <div class="flex items-center" style="gap: var(--space-sm); flex-wrap: wrap; margin-bottom: var(--space-sm);">
+          <h1 class="text-heading">{{ item.query }}</h1>
+          <span class="badge {% if item.type == 'album' %}badge-album{% elif item.type == 'artist' %}badge-artist{% else %}badge-other{% endif %}">
             {{ item.type }}
           </span>
         </div>
 
         {% if item.notes %}
-          <p class="text-slate-300 text-sm">{{ item.notes }}</p>
+          <p class="text-sm text-muted" style="margin-bottom: var(--space-sm);">{{ item.notes }}</p>
         {% endif %}
 
-        <div class="text-sm text-slate-400 space-y-1">
-          <p>Notify when ≥ <span class="text-amber-300">{{ item.notify_below_pct|int }}%</span> below typical price{% if item.typical_price is not none %} (~${{ '%.2f'|format(item.typical_price) }}){% endif %}</p>
+        <div class="text-sm text-muted" style="display: flex; flex-direction: column; gap: var(--space-xs);">
+          <p>Notify when ≥ <span class="text-accent">{{ item.notify_below_pct|int }}%</span> below typical price{% if item.typical_price is not none %} (~${{ '%.2f'|format(item.typical_price) }}){% endif %}</p>
           <p>Last scanned: {% if item.last_scanned_at %}<span data-timestamp="{{ item.last_scanned_at.isoformat() }}">{{ item.last_scanned_at }}</span>{% else %}never{% endif %}</p>
         </div>
       </div>
 
-      <div class="flex items-center gap-2">
-        <button type="button" onclick="startScan({{ item.id }})" class="px-4 py-2 rounded-md bg-amber-500 hover:bg-amber-400 text-slate-900 text-sm font-semibold transition">Scan Now</button>
-        <form action="/wishlist/{{ item.id }}/delete" method="post" onsubmit="return confirm('Delete this item?')">
-          <button type="submit" class="px-4 py-2 rounded-md border border-red-500/40 text-red-300 hover:bg-red-500/10 text-sm font-medium transition">Delete</button>
+      <div class="flex items-center" style="gap: var(--space-sm);">
+        <button type="button" onclick="startScan({{ item.id }})" class="btn-cta">Scan Now</button>
+        <form action="/wishlist/{{ item.id }}/delete" method="post" onsubmit="return confirm('Remove this item from your wishlist?')">
+          <button type="submit" class="btn-destructive">Delete</button>
         </form>
       </div>
     </div>
   </section>
 
-  <section class="space-y-3">
-    <h2 class="text-lg font-semibold">Best Deals</h2>
+  <!-- Best Deals section -->
+  <section style="display: flex; flex-direction: column; gap: var(--space-md);">
+    <h2 style="font-size: var(--text-heading); font-weight: 600;">Best Deals</h2>
     {% if item.top_listings %}
-      <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+      <div class="card-grid">
         {% for l in item.top_listings %}
-          <article class="bg-slate-800 border border-slate-700 rounded-xl p-4 space-y-2">
+          <article class="card" style="padding: var(--space-md); display: flex; flex-direction: column; gap: var(--space-sm);">
             <div>
-              <p class="text-xl font-semibold text-amber-400">${{ '%.2f'|format(l.landed_price) }} <span class="text-sm font-normal text-slate-400">landed AU</span></p>
-              <p class="text-xs text-slate-500">${{ '%.2f'|format(l.price) }} + shipping from {{ l.ships_from or 'Unknown' }}</p>
+              <p class="text-price price-best">${{ '%.2f'|format(l.landed_price) }} <span class="text-sm text-muted" style="font-weight: 400;">landed AU</span></p>
+              <p class="text-sm text-faint">${{ '%.2f'|format(l.price) }} + shipping from {{ l.ships_from or 'Unknown' }}</p>
             </div>
-            <span class="inline-flex text-xs px-2 py-1 rounded-full {% if l.source == 'discogs' %}bg-orange-500/20 text-orange-300{% else %}bg-blue-500/20 text-blue-300{% endif %}">
+            <span class="badge {% if l.source == 'discogs' %}badge-source-discogs{% else %}badge-source-other{% endif %}" style="align-self: flex-start;">
               {{ l.source|title }}
             </span>
-            <p class="text-sm text-slate-300 truncate">{{ l.title }}</p>
-            <a href="{{ l.url }}" target="_blank" rel="noopener noreferrer" class="inline-flex text-sm text-amber-400 hover:text-amber-300">View Listing →</a>
+            <p class="text-sm truncate" style="color: var(--color-text-muted);">{{ l.title }}</p>
+            <a href="{{ l.url }}" target="_blank" rel="noopener noreferrer" class="text-sm text-accent">View Listing →</a>
           </article>
         {% endfor %}
       </div>
     {% else %}
-      <div class="bg-slate-800 border border-slate-700 rounded-xl p-6 text-slate-400 text-sm">No priced listings yet.</div>
+      <div class="empty-state" style="padding: var(--space-lg);">
+        No listings found yet. Click Scan Now to search.
+      </div>
     {% endif %}
   </section>
 
-  <section class="space-y-3">
-    <h2 class="text-lg font-semibold">All Listings</h2>
+  <!-- All Listings table -->
+  <section style="display: flex; flex-direction: column; gap: var(--space-md);">
+    <h2 style="font-size: var(--text-heading); font-weight: 600;">All Listings</h2>
 
     {% if listings %}
-      {% set unpriced_listings = listings|selectattr('price', 'none')|list %}
-      <div class="bg-slate-800 border border-slate-700 rounded-xl overflow-x-auto">
-        <table class="w-full min-w-[980px] text-sm">
-          <thead class="bg-slate-900/70 text-slate-300">
+      <div class="table-container">
+        <table class="table">
+          <thead>
             <tr>
-              <th class="text-left font-medium px-4 py-3">Landed (AU)</th>
-              <th class="text-left font-medium px-4 py-3">Ships From</th>
-              <th class="text-left font-medium px-4 py-3">Condition</th>
-              <th class="text-left font-medium px-4 py-3">Source</th>
-              <th class="text-left font-medium px-4 py-3">Title</th>
-              <th class="text-left font-medium px-4 py-3">Seller</th>
-              <th class="text-left font-medium px-4 py-3">Found</th>
-              <th class="text-left font-medium px-4 py-3">Link</th>
+              <th>Landed (AU)</th>
+              <th>Ships From</th>
+              <th>Condition</th>
+              <th>Source</th>
+              <th>Title</th>
+              <th>Seller</th>
+              <th>Found</th>
+              <th>Link</th>
             </tr>
           </thead>
           <tbody>
             {% for listing in listings if listing.price is not none %}
-              <tr class="listing-row border-t border-slate-700/70{% if not listing.is_in_stock %} opacity-50{% endif %}">
-                <td class="px-4 py-3 font-medium">
-                  <span class="text-amber-300">${{ '%.2f'|format(listing.landed_price) }}</span>
-                  <span class="block text-xs text-slate-500">${{ '%.2f'|format(listing.price) }} + shipping</span>
+              <tr class="listing-row{% if not listing.is_in_stock %}" style="opacity: 0.5{% endif %}">
+                <td>
+                  {% if listing.aud_total is not none %}
+                    <span class="price-best">${{ '%.2f'|format(listing.aud_total) }}</span>
+                    <span class="text-sm text-muted" style="display: block;">
+                      {{ listing.orig_display }}
+                    </span>
+                  {% elif listing.landed_price is not none %}
+                    <span class="price-best">${{ '%.2f'|format(listing.landed_price) }}</span>
+                    <span class="text-sm text-faint" style="display: block;">
+                      {{ listing.currency }} {{ '%.2f'|format(listing.price) }} + shipping
+                    </span>
+                  {% else %}
+                    <span class="text-faint">—</span>
+                  {% endif %}
                 </td>
-                <td class="px-4 py-3 text-slate-300">{{ listing.ships_from or '—' }}</td>
-                <td class="px-4 py-3 text-slate-300">{{ listing.condition or '—' }}</td>
-                <td class="px-4 py-3 space-y-1">
-                  <span class="inline-flex text-xs px-2 py-1 rounded-full {% if listing.source == 'discogs' %}bg-orange-500/20 text-orange-300{% else %}bg-blue-500/20 text-blue-300{% endif %}">
+                <td class="text-muted">{{ listing.ships_from or '—' }}</td>
+                <td class="text-muted">{{ listing.condition or '—' }}</td>
+                <td>
+                  <span class="badge {% if listing.source == 'discogs' %}badge-source-discogs{% else %}badge-source-other{% endif %}">
                     {{ listing.source|title }}
                   </span>
                   {% if not listing.is_in_stock %}
-                  <span class="block text-xs text-red-400">Out of stock</span>
+                  <span class="text-sm text-destructive" style="display: block; margin-top: var(--space-xs);">Out of stock</span>
                   {% endif %}
                 </td>
-                <td class="px-4 py-3 text-slate-200 title-cell">{{ listing.title }}</td>
-                <td class="px-4 py-3 text-slate-300">{{ listing.seller or '—' }}</td>
-                <td class="px-4 py-3 text-slate-400"><span data-timestamp="{{ listing.found_at.isoformat() }}">{{ listing.found_at }}</span></td>
-                <td class="px-4 py-3"><a href="{{ listing.url }}" target="_blank" rel="noopener noreferrer" class="text-amber-400 hover:text-amber-300">Open</a></td>
+                <td class="title-cell">{{ listing.title }}</td>
+                <td class="text-muted">{{ listing.seller or '—' }}</td>
+                <td class="text-muted"><span data-timestamp="{{ listing.found_at.isoformat() }}">{{ listing.found_at }}</span></td>
+                <td><a href="{{ listing.url }}" target="_blank" rel="noopener noreferrer" class="text-accent">Open</a></td>
               </tr>
             {% endfor %}
 
             {% for listing in listings if listing.price is none %}
-              <tr class="listing-row border-t border-slate-700/70">
-                <td class="px-4 py-3 text-slate-500">—</td>
-                <td class="px-4 py-3 text-slate-500">—</td>
-                <td class="px-4 py-3 text-slate-300">{{ listing.condition or '—' }}</td>
-                <td class="px-4 py-3">
-                  <span class="inline-flex text-xs px-2 py-1 rounded-full {% if listing.source == 'discogs' %}bg-orange-500/20 text-orange-300{% else %}bg-blue-500/20 text-blue-300{% endif %}">
+              <tr class="listing-row">
+                <td class="text-faint">—</td>
+                <td class="text-faint">—</td>
+                <td class="text-muted">{{ listing.condition or '—' }}</td>
+                <td>
+                  <span class="badge {% if listing.source == 'discogs' %}badge-source-discogs{% else %}badge-source-other{% endif %}">
                     {{ listing.source|title }}
                   </span>
                 </td>
-                <td class="px-4 py-3 text-slate-200 title-cell">{{ listing.title }}</td>
-                <td class="px-4 py-3 text-slate-300">{{ listing.seller or '—' }}</td>
-                <td class="px-4 py-3 text-slate-400"><span data-timestamp="{{ listing.found_at.isoformat() }}">{{ listing.found_at }}</span></td>
-                <td class="px-4 py-3"><a href="{{ listing.url }}" target="_blank" rel="noopener noreferrer" class="text-amber-400 hover:text-amber-300">Open</a></td>
+                <td class="title-cell">{{ listing.title }}</td>
+                <td class="text-muted">{{ listing.seller or '—' }}</td>
+                <td class="text-muted"><span data-timestamp="{{ listing.found_at.isoformat() }}">{{ listing.found_at }}</span></td>
+                <td><a href="{{ listing.url }}" target="_blank" rel="noopener noreferrer" class="text-accent">Open</a></td>
               </tr>
             {% endfor %}
           </tbody>
         </table>
       </div>
     {% else %}
-      <div class="bg-slate-800 border border-slate-700 rounded-xl p-10 text-center text-slate-400">
-        No listings found yet. Click 'Scan Now' to search.
+      <div class="empty-state" style="padding: var(--space-3xl) var(--space-xl);">
+        No listings found yet. Click Scan Now to search.
       </div>
     {% endif %}
   </section>
+
 </div>
 {% endblock %}
