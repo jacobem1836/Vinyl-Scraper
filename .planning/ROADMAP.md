@@ -69,7 +69,7 @@ Plans:
 
 Plans:
 - [ ] 03-01-PLAN.md — CSS design system + Tailwind removal from base.html
-- [ ] 03-02-PLAN.md — Artwork pipeline: model column, Discogs capture, proxy endpoint, placeholder SVG
+- [x] 03-02-PLAN.md — Artwork pipeline: model column, Discogs capture, proxy endpoint, placeholder SVG
 - [ ] 03-03-PLAN.md — FX conversion service + AUD landed cost enrichment
 - [ ] 03-04-PLAN.md — Dashboard card grid + detail page rewrite + visual verification
 
@@ -83,4 +83,4 @@ Plans:
 |-------|----------------|--------|-----------|
 | 1. Infrastructure | 3/3 | Complete   | 2026-04-02 |
 | 2. New Sources | 3/4 | Gap closure | - |
-| 3. UI Redesign | 0/4 | Planning complete | - |
+| 3. UI Redesign | 1/4 | In progress | - |
