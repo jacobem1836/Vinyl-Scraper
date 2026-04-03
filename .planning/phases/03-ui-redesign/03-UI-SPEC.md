@@ -111,8 +111,7 @@ All font sizes are CSS custom property tokens.
 
 | Token | Role | Size | Weight | Line Height | Usage |
 |-------|------|------|--------|-------------|-------|
-| `--text-xs` | Meta | 12px | 400 | 1.5 | Timestamps, found-at dates, placeholder copy, faint labels |
-| `--text-sm` | Label | 14px | 400 | 1.5 | Form labels, table headers, badge text, card metadata, nav links |
+| `--text-sm` | Label/Meta | 14px | 400 | 1.5 | Form labels, table headers, badge text, card metadata, nav links, timestamps, found-at dates, placeholder copy, faint labels |
 | `--text-body` | Body | 16px | 400 | 1.5 | Default paragraph text, modal body, listing row text |
 | `--text-heading` | Heading | 24px | 600 | 1.2 | Item detail page H1, card section heading |
 
@@ -196,7 +195,7 @@ Source: Claude's discretion (CONTEXT.md allows hover/focus states).
 
 - Header: artwork thumbnail (120px × 120px) floated left of item title + meta. Source: design extension of D-03.
 - "Best Deals" section: card grid 1/2/3 columns (mobile/md/xl).
-- Listing row in "All Listings" table: AUD total prominent (`--text-price`, amber), original-currency amount below in `--text-xs` muted. Source: CONTEXT.md D-11.
+- Listing row in "All Listings" table: AUD total prominent (`--text-price`, amber), original-currency amount below in `--text-sm` muted. Source: CONTEXT.md D-11.
 - FX rate label: not shown in UI. Source: CONTEXT.md D-11.
 
 ### Scan Polling UX
