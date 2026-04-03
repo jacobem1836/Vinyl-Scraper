@@ -56,6 +56,7 @@ async def _get_album_listings(query: str, max_results: int) -> list[dict]:
                 return []
 
             results = search_resp.json().get("results", [])
+            first_thumb = results[0].get("thumb") if results else None
             listings: list[dict] = []
 
             for result in results[:3]:
@@ -83,6 +84,8 @@ async def _get_album_listings(query: str, max_results: int) -> list[dict]:
 
                 await asyncio.sleep(0.5)
 
+            if listings and first_thumb:
+                listings[0]["_cover_image"] = first_thumb
             return listings
     except httpx.HTTPError as e:
         print(f"[Discogs] HTTP error in album search '{query}': {e}")
@@ -107,6 +110,7 @@ async def _get_artist_listings(query: str, max_results: int) -> list[dict]:
             if not artist_results:
                 return []
 
+            first_thumb = artist_results[0].get("thumb") if artist_results else None
             artist_id = artist_results[0].get("id")
             if not artist_id:
                 return []
@@ -147,6 +151,8 @@ async def _get_artist_listings(query: str, max_results: int) -> list[dict]:
 
                 await asyncio.sleep(0.5)
 
+            if listings and first_thumb:
+                listings[0]["_cover_image"] = first_thumb
             return listings
     except httpx.HTTPError as e:
         print(f"[Discogs] HTTP error in artist search '{query}': {e}")
@@ -171,6 +177,7 @@ async def _get_label_listings(query: str, max_results: int) -> list[dict]:
             if not label_results:
                 return []
 
+            first_thumb = label_results[0].get("thumb") if label_results else None
             label_id = label_results[0].get("id")
             if not label_id:
                 return []
@@ -211,6 +218,8 @@ async def _get_label_listings(query: str, max_results: int) -> list[dict]:
 
                 await asyncio.sleep(0.5)
 
+            if listings and first_thumb:
+                listings[0]["_cover_image"] = first_thumb
             return listings
     except httpx.HTTPError as e:
         print(f"[Discogs] HTTP error in label search '{query}': {e}")

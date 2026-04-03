@@ -40,3 +40,8 @@ def run_migrations():
             conn.commit()
         except Exception:
             pass  # Column already exists
+        try:
+            conn.execute(text("ALTER TABLE wishlist_items ADD COLUMN artwork_url VARCHAR"))
+            conn.commit()
+        except Exception:
+            pass  # column already exists
