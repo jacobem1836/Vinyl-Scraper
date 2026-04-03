@@ -26,7 +26,7 @@
 - [ ] **UI-01**: Bootstrap is removed and replaced with custom CSS using design tokens (CSS custom properties) for colours, spacing, and typography
 - [ ] **UI-02**: Dashboard displays wishlist items as a card grid where record cover artwork is the visual hero of each card
 - [ ] **UI-03**: Album art is fetched from the Discogs API at scan time, stored as a URL in the database, and served via a local proxy endpoint — Discogs CDN is never hotlinked directly from the browser
-- [ ] **UI-04**: Each listing shows a clear landed cost breakdown: base price + estimated shipping + AUD equivalent (with FX rate noted)
+- [x] **UI-04**: Each listing shows a clear landed cost breakdown: base price + estimated shipping + AUD equivalent (with FX rate noted)
 - [ ] **UI-05**: Dark colour palette applied consistently across all pages (background, cards, text, accents)
 - [ ] **UI-06**: Existing iOS Shortcut API contract (`POST /api/wishlist` with `X-API-Key`) is preserved unchanged through all UI and backend changes
 
@@ -75,7 +75,7 @@
 | UI-01 | Phase 3: UI Redesign | Pending |
 | UI-02 | Phase 3: UI Redesign | Pending |
 | UI-03 | Phase 3: UI Redesign | Pending |
-| UI-04 | Phase 3: UI Redesign | Pending |
+| UI-04 | Phase 3: UI Redesign | Complete |
 | UI-05 | Phase 3: UI Redesign | Pending |
 | UI-06 | Phase 3: UI Redesign | Pending |
 

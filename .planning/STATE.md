@@ -3,19 +3,19 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: Executing Phase 03
-last_updated: "2026-04-03T01:16:48.527Z"
+last_updated: "2026-04-03T01:28:25.534Z"
 progress:
   total_phases: 3
   completed_phases: 2
   total_plans: 11
-  completed_plans: 7
+  completed_plans: 10
 ---
 
 # Project State
 
 ## Current Phase
 
-Phase 3: UI Redesign — In Progress (1 of 4 plans done)
+Phase 3: UI Redesign — In Progress (3 of 4 plans done)
 
 ## Project Reference
 
@@ -36,7 +36,7 @@ See: .planning/PROJECT.md
 ```
 Phase 1 [##########] 100%
 Phase 2 [##########] 100%
-Phase 3 [##        ] 25%
+Phase 3 [########  ] 75%
 ```
 
 ## Accumulated Context
@@ -61,6 +61,8 @@ Phase 3 [##        ] 25%
 - [Phase 02-03]: Juno search page is JS-rendered; artist browse page used as fallback -- works for artist-name queries
 - [Phase 02-03]: Bandcamp item_type=p is invalid filter; text-based vinyl filter used (check 'vinyl' in album title/subhead)
 - [Phase 02-new-sources]: clarityrecords.com.au NXDOMAIN confirmed on second check (02-04); adapter stays disabled=False; SRC-03 and SRC-06 remain open until site is reachable
+- [Phase 03-ui-redesign]: Pre-resolve FX rates at route handler level so _enrich_item stays synchronous
+- [Phase 03-ui-redesign]: TTLCache(maxsize=4, ttl=3600) for FX rates — 1 hour TTL, room for future currencies
 
 ### Todos
 
@@ -72,4 +74,4 @@ Phase 3 [##        ] 25%
 
 ## Last Updated
 
-2026-04-03 — Completed 03-01 (CSS design system + Tailwind removal; base.html rewritten with semantic classes) and 03-02 (Artwork pipeline: artwork_url column, Discogs thumb capture, proxy endpoint, placeholder SVG)
+2026-04-03 — Completed 03-01 (CSS design system + Tailwind removal; base.html rewritten with semantic classes), 03-02 (Artwork pipeline: artwork_url column, Discogs thumb capture, proxy endpoint, placeholder SVG), and 03-03 (FX rate service: open.er-api.com TTL cache, aud_total/orig_display in listing dicts)
