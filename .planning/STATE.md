@@ -3,12 +3,12 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: Executing Phase 03
-last_updated: "2026-04-03T01:28:25.534Z"
+last_updated: "2026-04-03T01:33:24.116Z"
 progress:
   total_phases: 3
-  completed_phases: 2
+  completed_phases: 3
   total_plans: 11
-  completed_plans: 10
+  completed_plans: 11
 ---
 
 # Project State
@@ -63,6 +63,8 @@ Phase 3 [########  ] 75%
 - [Phase 02-new-sources]: clarityrecords.com.au NXDOMAIN confirmed on second check (02-04); adapter stays disabled=False; SRC-03 and SRC-06 remain open until site is reachable
 - [Phase 03-ui-redesign]: Pre-resolve FX rates at route handler level so _enrich_item stays synchronous
 - [Phase 03-ui-redesign]: TTLCache(maxsize=4, ttl=3600) for FX rates — 1 hour TTL, room for future currencies
+- [Phase 03-ui-redesign]: Cards are pure <a> tags; edit button removed from card face — edit accessible from detail page only (D-05)
+- [Phase 03-ui-redesign]: aud_total falls back to landed_price with currency label when FX fetch fails — price column never blank
 
 ### Todos
 

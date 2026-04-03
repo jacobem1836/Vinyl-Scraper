@@ -10,7 +10,7 @@
 
 - [x] **Phase 1: Infrastructure** - Async scan decoupling, adapter registry, and dashboard caching so the foundation is solid before any new sources are added (completed 2026-04-02)
 - [ ] **Phase 2: New Sources** - eBay AU, Discrepancy Records, Clarity Records, Juno Records, and Bandcamp adapters plugged into the registry
-- [ ] **Phase 3: UI Redesign** - Bootstrap removed, Spotify-like card layout with record artwork as the hero, custom CSS throughout
+- [x] **Phase 3: UI Redesign** - Bootstrap removed, Spotify-like card layout with record artwork as the hero, custom CSS throughout (completed 2026-04-03)
 
 ---
 
@@ -65,13 +65,13 @@ Plans:
   3. Every listing row shows a clear landed cost breakdown: base price, estimated shipping, AUD equivalent, and FX rate if applicable
   4. The entire app uses a consistent dark colour palette — no white backgrounds, no light-mode bleed
   5. The iOS Shortcut still adds records correctly; `POST /api/wishlist` with `X-API-Key` works unchanged
-**Plans:** 3/4 plans executed
+**Plans:** 4/4 plans complete
 
 Plans:
 - [x] 03-01-PLAN.md — CSS design system + Tailwind removal from base.html
 - [x] 03-02-PLAN.md — Artwork pipeline: model column, Discogs capture, proxy endpoint, placeholder SVG
 - [x] 03-03-PLAN.md — FX conversion service + AUD landed cost enrichment
-- [ ] 03-04-PLAN.md — Dashboard card grid + detail page rewrite + visual verification
+- [x] 03-04-PLAN.md — Dashboard card grid + detail page rewrite + visual verification
 
 **UI hint**: yes
 
@@ -83,4 +83,4 @@ Plans:
 |-------|----------------|--------|-----------|
 | 1. Infrastructure | 3/3 | Complete   | 2026-04-02 |
 | 2. New Sources | 3/4 | Gap closure | - |
-| 3. UI Redesign | 3/4 | In Progress|  |
+| 3. UI Redesign | 4/4 | Complete   | 2026-04-03 |
