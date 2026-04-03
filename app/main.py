@@ -10,6 +10,7 @@ from app.database import Base, engine, get_db, run_migrations
 from app.models import Listing, WishlistItem
 from app.routers.wishlist import api_router, web_router
 from app.services.cache import get_cached_dashboard, invalidate_dashboard_cache, set_cached_dashboard
+from app.services.fx import convert_to_aud, format_orig_display, get_rate
 from app.scheduler import scheduler, setup_scheduler
 from app.services.shipping import get_shipping_cost
 
@@ -59,6 +60,13 @@ async def index(request: Request, db: Session = Depends(get_db)):
     if cached is not None:
         enriched = cached
     else:
+        # Pre-resolve FX rates for this request
+        fx_rates = {}
+        for currency in ("USD", "GBP"):
+            rate = await get_rate(currency)
+            if rate:
+                fx_rates[currency] = rate
+
         items = (
             db.query(WishlistItem)
             .filter_by(is_active=True)
@@ -66,7 +74,7 @@ async def index(request: Request, db: Session = Depends(get_db)):
             .order_by(WishlistItem.created_at.desc())
             .all()
         )
-        enriched = [_enrich_item(item) for item in items]
+        enriched = [_enrich_item(item, fx_rates=fx_rates) for item in items]
         set_cached_dashboard(enriched)
     shipping_estimate = settings.shipping_estimate_usd
     priced = [i for i in enriched if i["best_price"] is not None]
@@ -109,6 +117,14 @@ async def item_detail(item_id: int, request: Request, db: Session = Depends(get_
         .all()
     )
     fallback = settings.shipping_estimate_usd
+
+    # Pre-resolve FX rates for this request
+    fx_rates = {}
+    for currency in ("USD", "GBP"):
+        rate = await get_rate(currency)
+        if rate:
+            fx_rates[currency] = rate
+
     listings = [
         {
             "id": l.id,
@@ -124,6 +140,15 @@ async def item_detail(item_id: int, request: Request, db: Session = Depends(get_
             "is_active": l.is_active,
             "landed_price": (l.price + get_shipping_cost(l.ships_from, fallback)) if l.price is not None else None,
             "is_in_stock": l.is_in_stock,
+            # FX conversion fields
+            "aud_total": convert_to_aud(
+                l.price + get_shipping_cost(l.ships_from, fallback),
+                l.currency,
+                fx_rates.get(l.currency) if l.currency != "AUD" else 1.0,
+            ) if l.price is not None else None,
+            "orig_display": format_orig_display(
+                l.price, get_shipping_cost(l.ships_from, fallback), l.currency
+            ) if l.price is not None else None,
         }
         for l in raw_listings
     ]
@@ -131,7 +156,7 @@ async def item_detail(item_id: int, request: Request, db: Session = Depends(get_
         "item_detail.html",
         {
             "request": request,
-            "item": _enrich_item(item),
+            "item": _enrich_item(item, fx_rates=fx_rates),
             "listings": listings,
         },
     )

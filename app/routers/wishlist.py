@@ -11,6 +11,7 @@ from app.models import Listing, WishlistItem
 from app.schemas import ListingResponse, WishlistItemCreate, WishlistItemResponse
 from app.services import notifier, scanner
 from app.services.cache import invalidate_dashboard_cache
+from app.services.fx import convert_to_aud, format_orig_display, get_rate
 from app.services.notifier import compute_typical_price
 from app.services.shipping import get_shipping_cost
 
@@ -36,15 +37,23 @@ async def require_api_key(x_api_key: str = Header(...)):
         raise HTTPException(status_code=401, detail="Invalid API key")
 
 
-def _landed(listing) -> float:
-    return listing.price + get_shipping_cost(listing.ships_from, settings.shipping_estimate_usd)
+def _landed(listing, fx_rates: dict | None = None) -> float:
+    """Compute landed cost. If fx_rates provided, converts to AUD."""
+    shipping = get_shipping_cost(listing.ships_from, settings.shipping_estimate_usd)
+    base_total = listing.price + shipping
+    if fx_rates and listing.currency != "AUD":
+        rate = fx_rates.get(listing.currency)
+        aud = convert_to_aud(base_total, listing.currency, rate)
+        if aud is not None:
+            return aud
+    return base_total
 
 
-def _enrich_item(item: WishlistItem) -> dict:
+def _enrich_item(item: WishlistItem, fx_rates: dict | None = None) -> dict:
     all_listings = list(item.listings or [])
     active_priced = [l for l in all_listings if l.is_active and l.price is not None]
 
-    sorted_by_landed = sorted(active_priced, key=_landed) if active_priced else []
+    sorted_by_landed = sorted(active_priced, key=lambda l: _landed(l, fx_rates)) if active_priced else []
     best_listing = sorted_by_landed[0] if sorted_by_landed else None
 
     return {
@@ -58,7 +67,7 @@ def _enrich_item(item: WishlistItem) -> dict:
         "last_scanned_at": item.last_scanned_at,
         "is_active": item.is_active,
         "artwork_url": item.artwork_url,
-        "best_price": _landed(best_listing) if best_listing else None,        # landed price
+        "best_price": _landed(best_listing, fx_rates) if best_listing else None,        # landed price (AUD if fx_rates)
         "best_price_raw": best_listing.price if best_listing else None,        # listing price only
         "best_ships_from": best_listing.ships_from if best_listing else None,
         "best_price_source": best_listing.source if best_listing else None,
@@ -68,7 +77,7 @@ def _enrich_item(item: WishlistItem) -> dict:
             {
                 "title": l.title,
                 "price": l.price,
-                "landed_price": _landed(l),
+                "landed_price": _landed(l, fx_rates),
                 "ships_from": l.ships_from,
                 "source": l.source,
                 "url": l.url,
