@@ -72,4 +72,4 @@ Phase 3 [##        ] 25%
 
 ## Last Updated
 
-2026-04-03 — Completed 03-02 (Artwork pipeline: artwork_url column, Discogs thumb capture, proxy endpoint, placeholder SVG)
+2026-04-03 — Completed 03-01 (CSS design system + Tailwind removal; base.html rewritten with semantic classes) and 03-02 (Artwork pipeline: artwork_url column, Discogs thumb capture, proxy endpoint, placeholder SVG)
