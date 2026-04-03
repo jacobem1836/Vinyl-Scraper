@@ -65,7 +65,14 @@ Plans:
   3. Every listing row shows a clear landed cost breakdown: base price, estimated shipping, AUD equivalent, and FX rate if applicable
   4. The entire app uses a consistent dark colour palette — no white backgrounds, no light-mode bleed
   5. The iOS Shortcut still adds records correctly; `POST /api/wishlist` with `X-API-Key` works unchanged
-**Plans**: TBD
+**Plans:** 4 plans
+
+Plans:
+- [ ] 03-01-PLAN.md — CSS design system + Tailwind removal from base.html
+- [ ] 03-02-PLAN.md — Artwork pipeline: model column, Discogs capture, proxy endpoint, placeholder SVG
+- [ ] 03-03-PLAN.md — FX conversion service + AUD landed cost enrichment
+- [ ] 03-04-PLAN.md — Dashboard card grid + detail page rewrite + visual verification
+
 **UI hint**: yes
 
 ---
@@ -76,4 +83,4 @@ Plans:
 |-------|----------------|--------|-----------|
 | 1. Infrastructure | 3/3 | Complete   | 2026-04-02 |
 | 2. New Sources | 3/4 | Gap closure | - |
-| 3. UI Redesign | 0/? | Not started | - |
+| 3. UI Redesign | 0/4 | Planning complete | - |
