@@ -25,16 +25,15 @@ async def scan_item(db: Session, item: WishlistItem, track: bool = False) -> lis
         else:
             all_results.extend(r)
 
-    # Extract artwork URL before processing listings (pops _cover_image from dicts)
+    # Extract artwork URL before processing listings (always overwrite with latest high-res image)
     cover_image = None
-    if not item.artwork_url:
-        for r in all_results:
-            cover_image = r.pop("_cover_image", None)
-            if cover_image:
-                break
-        # Clean remaining _cover_image keys from other results
-        for r in all_results:
-            r.pop("_cover_image", None)
+    for r in all_results:
+        ci = r.pop("_cover_image", None)
+        if ci and not cover_image:
+            cover_image = ci
+    # Still pop from remaining results even after we have one
+    for r in all_results:
+        r.pop("_cover_image", None)
 
     new_listings: list[Listing] = []
 
@@ -77,7 +76,7 @@ async def scan_item(db: Session, item: WishlistItem, track: bool = False) -> lis
             db.refresh(listing)
 
     item.last_scanned_at = datetime.utcnow()
-    if cover_image and not item.artwork_url:
+    if cover_image:
         item.artwork_url = cover_image
     db.commit()
     db.refresh(item)
