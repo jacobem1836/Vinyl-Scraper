@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, Float, Boolean, DateTime, ForeignKey
+from sqlalchemy import Column, Integer, String, Float, Boolean, DateTime, ForeignKey, UniqueConstraint
 from sqlalchemy.orm import relationship
 from datetime import datetime
 from app.database import Base
@@ -32,9 +32,13 @@ class Listing(Base):
     condition = Column(String, nullable=True)
     seller = Column(String, nullable=True)
     ships_from = Column(String, nullable=True)  # country the seller ships from
-    url = Column(String, nullable=False, unique=True)
+    url = Column(String, nullable=False)
     found_at = Column(DateTime, default=datetime.utcnow)
     is_active = Column(Boolean, default=True)
     is_in_stock = Column(Boolean, default=True)
 
     wishlist_item = relationship("WishlistItem", back_populates="listings")
+
+    __table_args__ = (
+        UniqueConstraint("wishlist_item_id", "url", name="uq_listing_item_url"),
+    )

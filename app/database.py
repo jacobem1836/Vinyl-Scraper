@@ -45,3 +45,18 @@ def run_migrations():
             conn.commit()
         except Exception:
             pass  # column already exists
+        try:
+            conn.execute(text("DROP INDEX IF EXISTS ix_listings_url"))
+            conn.commit()
+        except Exception:
+            pass  # index may not exist
+        try:
+            conn.execute(text('DROP INDEX IF EXISTS "uq_listings_url"'))
+            conn.commit()
+        except Exception:
+            pass  # index may not exist
+        try:
+            conn.execute(text("CREATE UNIQUE INDEX IF NOT EXISTS uq_listing_item_url ON listings (wishlist_item_id, url)"))
+            conn.commit()
+        except Exception:
+            pass  # index already exists
