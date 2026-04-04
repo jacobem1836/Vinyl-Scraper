@@ -1,7 +1,7 @@
 ---
-status: complete
+status: resolved
 phase: 04-ui-polish
-source: [04-01-SUMMARY.md, 04-02-SUMMARY.md]
+source: [04-01-SUMMARY.md, 04-02-SUMMARY.md, 04-03-SUMMARY.md]
 started: 2026-04-04T00:00:00Z
 updated: 2026-04-04T00:00:00Z
 ---
@@ -53,17 +53,29 @@ skipped: 0
 ## Gaps
 
 - truth: "Scanning completes without error; existing listings are updated in-place rather than re-inserted"
-  status: failed
+  status: resolved
   reason: "User reported: UNIQUE constraint failed: listings.url — scanner attempts to INSERT a listing whose URL already exists in the DB instead of skipping or updating it"
   severity: blocker
   test: 7
-  artifacts: []
+  resolved_by: 04-03
+  root_cause: |
+    DB UNIQUE constraint on `listings.url` is global (url alone), but scanner dedup logic at scanner.py:46-55
+    filters by (wishlist_item_id + url). When the same store URL (e.g. dutchvinyl) appears in results for
+    two different wishlist items, the dedup check finds no existing row for that item, proceeds to INSERT,
+    and the global unique constraint fires. Fix: change the constraint to UNIQUE(wishlist_item_id, url).
+  artifacts: [app/models.py, app/services/scanner.py]
   missing: []
 
 - truth: "After scan, artwork displayed is full-resolution Discogs cover image (not thumbnail)"
-  status: failed
+  status: resolved
   reason: "User reported: images are still low res after scan"
   severity: major
   test: 7
-  artifacts: []
+  resolved_by: 04-03
+  root_cause: |
+    scanner.py:30 skips artwork update entirely if item.artwork_url is already set (`if not item.artwork_url`).
+    Existing items have old thumbnail URLs from previous scans. The high-res discogs.py change only applies
+    to items whose artwork_url is currently NULL. Fix: remove the guard — always overwrite artwork_url with
+    the newly fetched cover_uri on each scan.
+  artifacts: [app/services/scanner.py]
   missing: []
