@@ -28,7 +28,7 @@ Show me the cheapest way to buy the records I want, right now.
 - [x] Source-agnostic scanner — adapter registry in place; adding Phase 2 sources requires only one dict entry — *Validated in Phase 01: Infrastructure*
 - [x] UI redesign — Spotify-like aesthetic: record artwork as the hero, minimal/uncluttered, less "AI-generated" — *Validated in Phase 03: UI Redesign (custom CSS design system, card grid, artwork pipeline, AUD FX conversion)*
 - ✓ Expand scraping sources — eBay AU, Discrepancy Records, Juno Records, Bandcamp added; Clarity Records dropped (NXDOMAIN) — *Validated in Phase 02: new-sources*
-- [ ] Polish for daily use and shareable quality
+- [x] Polish for daily use and shareable quality — *Validated in Phase 04: UI Polish (CRATE rebrand, near-black palette, white accent, sharp edges, high-res artwork, scan crash fixed)*
 
 ### Out of Scope
 
@@ -78,4 +78,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-04-04 after Phase 04: UI Polish complete — CRATE rebrand, monochrome palette, sharp edges, high-res Discogs artwork*
+*Last updated: 2026-04-04 after Phase 04: UI Polish complete — CRATE rebrand, monochrome palette, sharp edges, high-res Discogs artwork, scan IntegrityError fixed*
