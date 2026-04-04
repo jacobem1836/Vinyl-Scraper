@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{% block title %}{{ item.query }} · Vinyl Wishlist{% endblock %}
+{% block title %}CRATE — {{ item.query }}{% endblock %}
 
 {% block content %}
 <div class="stack-lg">
@@ -17,13 +17,13 @@
             src="/api/artwork?url={{ item.artwork_url | urlencode }}"
             alt="{{ item.query }} album cover"
             onerror="this.src='/static/vinyl-placeholder.svg'"
-            style="width: 120px; height: 120px; object-fit: cover; border-radius: 8px;"
+            style="width: 120px; height: 120px; object-fit: cover; border-radius: 0;"
           >
         {% else %}
           <img
             src="/static/vinyl-placeholder.svg"
             alt="{{ item.query }} — no artwork available"
-            style="width: 120px; height: 120px; object-fit: cover; border-radius: 8px;"
+            style="width: 120px; height: 120px; object-fit: cover; border-radius: 0;"
           >
         {% endif %}
       </div>
@@ -48,8 +48,8 @@
 
       <div class="flex items-center" style="gap: var(--space-sm);">
         <button type="button" onclick="startScan({{ item.id }})" class="btn-cta">Scan Now</button>
-        <form action="/wishlist/{{ item.id }}/delete" method="post" onsubmit="return confirm('Remove this item from your wishlist?')">
-          <button type="submit" class="btn-destructive">Delete</button>
+        <form action="/wishlist/{{ item.id }}/delete" method="post" onsubmit="return confirm('Remove this item from your crate?')">
+          <button type="submit" class="btn-destructive">Remove from Crate</button>
         </form>
       </div>
     </div>

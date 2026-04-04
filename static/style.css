@@ -1,5 +1,5 @@
 /* ============================================================
-   Vinyl Wishlist — Design System
+   CRATE — Design System
    CSS custom properties + component classes
    No external dependencies.
    ============================================================ */
@@ -9,25 +9,25 @@
    ============================================================ */
 :root {
   /* Colour — background / surface */
-  --color-bg:           #0f172a;
-  --color-surface:      #1e293b;
-  --color-surface-alt:  #0f172a;
+  --color-bg:           #0a0a0a;
+  --color-surface:      #111111;
+  --color-surface-alt:  #0a0a0a;
 
   /* Colour — borders */
-  --color-border:       #334155;
-  --color-border-muted: #1e293b;
+  --color-border:       #222222;
+  --color-border-muted: #111111;
 
   /* Colour — text */
-  --color-text:         #f8fafc;
-  --color-text-muted:   #94a3b8;
-  --color-text-faint:   #64748b;
+  --color-text:         #f5f5f5;
+  --color-text-muted:   #777777;
+  --color-text-faint:   #555555;
 
-  /* Colour — accent (amber) */
-  --color-accent:       #f59e0b;
-  --color-accent-hover: #fbbf24;
-  --color-accent-bg:    #78350f;
-  --color-accent-cta:   #f59e0b;
-  --color-cta-text:     #0f172a;
+  /* Colour — accent (white) */
+  --color-accent:       #ffffff;
+  --color-accent-hover: #e0e0e0;
+  --color-accent-bg:    rgba(255,255,255,0.08);
+  --color-accent-cta:   #ffffff;
+  --color-cta-text:     #0a0a0a;
 
   /* Colour — destructive */
   --color-destructive:        #f87171;
@@ -37,24 +37,31 @@
   /* Colour — success */
   --color-success: #34d399;
 
-  /* Colour — type badges */
-  --color-badge-album-bg:     rgba(59, 130, 246, 0.2);
-  --color-badge-album-text:   #93c5fd;
-  --color-badge-album-border: rgba(59, 130, 246, 0.3);
+  /* Colour — type badges (desaturated, lower contrast) */
+  --color-badge-album-bg:     rgba(100, 120, 180, 0.15);
+  --color-badge-album-text:   #a0b0d0;
+  --color-badge-album-border: rgba(100, 120, 180, 0.25);
 
-  --color-badge-artist-bg:     rgba(168, 85, 247, 0.2);
-  --color-badge-artist-text:   #c4b5fd;
-  --color-badge-artist-border: rgba(168, 85, 247, 0.3);
+  --color-badge-artist-bg:    rgba(140, 100, 180, 0.15);
+  --color-badge-artist-text:  #b8a0d8;
+  --color-badge-artist-border:rgba(140, 100, 180, 0.25);
 
-  --color-badge-other-bg:     rgba(34, 197, 94, 0.2);
-  --color-badge-other-text:   #86efac;
-  --color-badge-other-border: rgba(34, 197, 94, 0.3);
+  --color-badge-other-bg:     rgba(80, 160, 100, 0.15);
+  --color-badge-other-text:   #90c8a0;
+  --color-badge-other-border: rgba(80, 160, 100, 0.25);
 
   /* Colour — source badges */
-  --color-source-discogs-bg:   rgba(249, 115, 22, 0.2);
-  --color-source-discogs-text: #fdba74;
-  --color-source-other-bg:     rgba(59, 130, 246, 0.2);
-  --color-source-other-text:   #93c5fd;
+  --color-source-discogs-bg:   rgba(200, 200, 200, 0.1);
+  --color-source-discogs-text: #bbbbbb;
+  --color-source-other-bg:     rgba(120, 140, 180, 0.1);
+  --color-source-other-text:   #9090b0;
+
+  /* Border radius */
+  --radius-card:    0px;
+  --radius-modal:   0px;
+  --radius-btn:     2px;
+  --radius-badge:   2px;
+  --radius-input:   2px;
 
   /* Spacing scale */
   --space-xs:  4px;
@@ -167,8 +174,11 @@ button, input, select, textarea {
 }
 
 .nav-brand {
-  font-size: var(--text-heading);
+  font-size: var(--text-body);
   font-weight: 600;
+  letter-spacing: 0.25em;
+  text-transform: uppercase;
+  line-height: 1;
   color: var(--color-accent);
 }
 
@@ -181,7 +191,7 @@ button, input, select, textarea {
   font-size: var(--text-sm);
   font-weight: 600;
   padding: var(--space-sm) var(--space-md);
-  border-radius: 6px;
+  border-radius: var(--radius-btn);
   cursor: pointer;
   transition: background 200ms;
   min-height: 40px;
@@ -200,7 +210,7 @@ button, input, select, textarea {
   color: var(--color-text-muted);
   font-size: var(--text-sm);
   padding: var(--space-sm) var(--space-md);
-  border-radius: 6px;
+  border-radius: var(--radius-btn);
   cursor: pointer;
   transition: background 200ms;
   display: inline-flex;
@@ -218,7 +228,7 @@ button, input, select, textarea {
   font-size: var(--text-sm);
   font-weight: 500;
   padding: var(--space-sm) var(--space-md);
-  border-radius: 6px;
+  border-radius: var(--radius-btn);
   cursor: pointer;
   transition: background 200ms;
   display: inline-flex;
@@ -235,20 +245,20 @@ button, input, select, textarea {
 .card {
   background: var(--color-surface);
   border: 1px solid var(--color-border);
-  border-radius: 8px;
+  border-radius: var(--radius-card);
   overflow: hidden;
   transition: transform 200ms ease, box-shadow 200ms ease;
 }
 
 .card:hover {
   transform: translateY(-2px);
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6);
 }
 
 .card-grid {
   display: grid;
   grid-template-columns: repeat(1, 1fr);
-  gap: var(--space-lg);
+  gap: 12px;
 }
 
 @media (min-width: 768px) {
@@ -267,12 +277,12 @@ button, input, select, textarea {
   aspect-ratio: 1 / 1;
   width: 100%;
   object-fit: cover;
-  border-radius: 4px 4px 0 0;
+  border-radius: 0;
   display: block;
 }
 
 .card-body {
-  padding: var(--space-md);
+  padding: 12px;
 }
 
 .card--scanning {
@@ -286,7 +296,7 @@ button, input, select, textarea {
   width: 100%;
   background: var(--color-surface-alt);
   border: 1px solid var(--color-border);
-  border-radius: 6px;
+  border-radius: var(--radius-input);
   padding: var(--space-sm) 12px;
   color: var(--color-text);
 }
@@ -337,7 +347,7 @@ button, input, select, textarea {
   max-width: 32rem;
   background: var(--color-surface);
   border: 1px solid var(--color-border);
-  border-radius: 12px;
+  border-radius: var(--radius-modal);
   padding: var(--space-lg);
   transition: transform 200ms ease, opacity 200ms ease;
 }
@@ -348,7 +358,7 @@ button, input, select, textarea {
 .table-container {
   background: var(--color-surface);
   border: 1px solid var(--color-border);
-  border-radius: 12px;
+  border-radius: 0;
   overflow-x: auto;
 }
 
@@ -382,7 +392,7 @@ button, input, select, textarea {
 .badge {
   display: inline-flex;
   align-items: center;
-  border-radius: 9999px;
+  border-radius: var(--radius-badge);
   border: 1px solid;
   padding: 2px 10px;
   font-size: var(--text-sm);
@@ -454,7 +464,7 @@ button, input, select, textarea {
   gap: var(--space-sm);
   background: var(--color-surface);
   border: 1px solid var(--color-border);
-  border-radius: 9999px;
+  border-radius: 2px;
   padding: var(--space-sm) var(--space-md);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
   cursor: pointer;
@@ -469,7 +479,7 @@ button, input, select, textarea {
   width: 320px;
   background: var(--color-surface);
   border: 1px solid var(--color-border);
-  border-radius: 12px;
+  border-radius: 0;
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
   padding: var(--space-md);
   margin-top: var(--space-sm);
@@ -482,8 +492,8 @@ button, input, select, textarea {
 .spinner {
   width: 14px;
   height: 14px;
-  border: 2px solid rgba(245, 158, 11, 0.3);
-  border-top-color: #f59e0b;
+  border: 2px solid rgba(255, 255, 255, 0.2);
+  border-top-color: var(--color-accent);
   border-radius: 50%;
   animation: spin 0.8s linear infinite;
   display: inline-block;
@@ -501,7 +511,7 @@ button, input, select, textarea {
   max-width: 24rem;
   background: var(--color-surface);
   border: 1px solid var(--color-border);
-  border-radius: 8px;
+  border-radius: 0;
   padding: 12px 20px;
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
   display: flex;
@@ -513,8 +523,8 @@ button, input, select, textarea {
    15. Keyframe animations — preserved
    ============================================================ */
 @keyframes pulse-border {
-  0%, 100% { border-color: rgba(245, 158, 11, 0.3); }
-  50%       { border-color: rgba(245, 158, 11, 0.7); }
+  0%, 100% { border-color: rgba(255, 255, 255, 0.2); }
+  50%       { border-color: rgba(255, 255, 255, 0.6); }
 }
 
 /* ============================================================
@@ -523,7 +533,7 @@ button, input, select, textarea {
 .empty-state {
   background: var(--color-surface);
   border: 1px solid var(--color-border);
-  border-radius: 12px;
+  border-radius: 0;
   padding: var(--space-3xl) var(--space-xl);
   text-align: center;
   color: var(--color-text-faint);
