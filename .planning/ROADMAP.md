@@ -81,11 +81,12 @@ Plans:
 **Goal:** The app is rebranded to CRATE with a sleek monochrome aesthetic — near-black neutral palette, white accent, sharp edges, compressed card spacing, and high-res Discogs artwork
 **Requirements**: POLISH-01, POLISH-02, POLISH-03, POLISH-04, POLISH-05, POLISH-06
 **Depends on:** Phase 3
-**Plans:** 2 plans
+**Plans:** 3 plans
 
 Plans:
-- [ ] 04-01-PLAN.md — CSS design system update + template CRATE rename and copy changes
-- [ ] 04-02-PLAN.md — Discogs high-res artwork upgrade via release endpoint
+- [x] 04-01-PLAN.md — CSS design system update + template CRATE rename and copy changes
+- [x] 04-02-PLAN.md — Discogs high-res artwork upgrade via release endpoint
+- [ ] 04-03-PLAN.md — Gap closure: fix listing UNIQUE constraint + always-overwrite artwork on scan
 
 ---
 
@@ -96,4 +97,4 @@ Plans:
 | 1. Infrastructure | 3/3 | Complete   | 2026-04-02 |
 | 2. New Sources | 3/4 | Gap closure | - |
 | 3. UI Redesign | 4/4 | Complete   | 2026-04-03 |
-| 4. UI Polish | 0/2 | Planned | - |
+| 4. UI Polish | 2/3 | Gap closure | - |
