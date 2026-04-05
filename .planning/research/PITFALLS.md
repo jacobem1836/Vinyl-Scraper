@@ -1,310 +1,279 @@
 # Pitfalls Research
 
-**Project:** Vinyl Wishlist Manager
-**Researched:** 2026-04-02
-**Scope:** Milestone additions — new scraping sources, performance improvements, UI redesign
+**Domain:** UX polish + API-backed typeahead + HTML email redesign on FastAPI/Jinja2/vanilla JS
+**Researched:** 2026-04-05
+**Confidence:** HIGH (codebase directly inspected; Discogs API and email client compatibility verified via web sources)
 
 ---
 
-## Scraping Risks by Source
+## Critical Pitfalls
 
-### Juno Records
+### Pitfall 1: Discogs Typeahead Hammers Rate Limit
 
-**What breaks:**
-Juno Records (junorecords.com) is a large specialist electronic/dance retailer. No confirmed public API exists. HTML scraping is the only viable path.
+**What goes wrong:**
+Each keypress fires a fetch to the new FastAPI typeahead endpoint, which in turn calls `GET /database/search` on Discogs. At 60 authenticated requests/minute, a fast typist sending ~3 characters per second exhales 180 requests/minute — 3x the limit. Discogs returns HTTP 429, the endpoint errors, and the UI shows nothing or breaks silently.
 
-Key risks:
-- The site is JavaScript-heavy in places (cart, filters). Product listing pages for search results typically render server-side but category/filter state can rely on JS-driven URL params.
-- CSS class names on Juno are not semantic — they change without notice as the site updates. Scraping by class name will break; prefer scraping by structural position or data attributes where present.
-- No confirmed rate limiting behavior is documented publicly, but the standard pattern applies: more than ~30 requests/minute from a single IP risks a soft block.
-- Juno uses a custom CDN. Response time varies — timeout at 20s (current default in the codebase) may be insufficient on slow days.
+**Why it happens:**
+The existing `discogs.py` pattern (used for scanning) opens a fresh `httpx.AsyncClient` per call and makes multiple sequential API calls. Typeahead reuses the same integration path but has a much higher call frequency driven by a human typing.
 
-**Mitigation:**
-- Scrape by URL structure, not class names. Juno search URLs follow a predictable pattern (`/search/?q=artist+title`).
-- Add explicit `User-Agent` header mimicking a browser. Scraping with Python's default httpx agent will be identified quickly.
-- Keep per-domain concurrency to 1-2 requests max. Add 1-2s jitter between requests.
-- Parse price from text content, not structured data — Juno does not expose JSON-LD or schema.org markup on listing pages.
-- Confidence: LOW (no official documentation; based on community scrapers and general pattern analysis).
+**How to avoid:**
+- Debounce the JS input at 300-400ms before firing `fetch`. This is the single most important guard.
+- Cache typeahead results per query string in-process (a simple `dict` or `functools.lru_cache` on the FastAPI endpoint) so repeated identical queries do not re-hit Discogs.
+- The typeahead endpoint should use `type=release&format=Vinyl` and `per_page=5` — the cheapest possible search call, not the multi-step scan path.
+- Do NOT reuse `_get_album_listings()` for typeahead. That function makes 3-5 sequential detail requests per result. Write a dedicated lightweight search function that returns only `id, title, thumb` from the search response.
+- Respect `X-Discogs-Ratelimit-Remaining` response header and bail early if approaching 0.
 
----
+**Warning signs:**
+- Console network tab shows fetch calls firing on every keypress
+- Discogs returns 429 responses; endpoint returns empty arrays silently
+- Existing scheduled scans start failing with rate limit errors after typeahead is added
 
-### eBay AU
-
-**What breaks:**
-eBay is the highest-risk source to scrape. It uses Akamai Bot Manager, which performs TLS fingerprinting, browser fingerprinting, and behavioral analysis. A plain `httpx` GET will be detected and return a challenge page or 403 within a few requests.
-
-**The right approach is the eBay Browse API, not HTML scraping.** The Browse API:
-- Is free with a developer account
-- Allows 5,000 calls/day by default (sufficient for personal use)
-- Returns structured JSON with price, condition, shipping, listing type, and location
-- Supports `filter=itemLocationCountry:AU` and `filter=buyingOptions:{FIXED_PRICE}` to isolate AU buy-it-now listings
-- Does not require OAuth for read-only search (Client Credentials flow only)
-
-Key risks even with the API:
-- **Auction vs Buy-It-Now:** The Browse API returns both by default. Auctions have `currentBidPrice` not `price`, and their ended-auction prices are not accessible. Filter with `buyingOptions:{FIXED_PRICE}` to exclude auctions, or handle both price fields.
-- **Shipping cost to AU:** eBay does not return a computed landed cost. The `shippingOptions` array may be empty for international listings that require contacting the seller. Do not assume a shipping cost is always present — fall back to the existing `shipping.py` table.
-- **AU vs international listings:** `itemLocationCountry` in the response tells you where the item is, but AU sellers may list on eBay.com (US) rather than eBay.com.au. Searching `ebay.com.au` via the marketplace header returns AU-biased results but not exclusively AU stock.
-- **Title-only matching:** eBay search is keyword-based. There is no structured "artist" or "label" field. Searching `"Artist Name" "Album Title" vinyl` returns noisy results — you will need a post-filter to reject false positives (e.g., listings mentioning the artist in context of a different item).
-- **API key expiry:** eBay OAuth Client Credentials tokens expire after 2 hours. The integration must refresh them automatically or requests will silently return 401.
-
-**HTML scraping as fallback:** Do not attempt. Akamai protection makes it unreliable without residential proxies, which are out of scope for a personal tool.
-
-- Confidence: MEDIUM (API structure confirmed via eBay developer docs; rate limits confirmed).
+**Phase to address:**
+Typeahead implementation phase (the new endpoint + JS). Must be designed in from the start — adding debounce as an afterthought after testing breaks scanning is harder to trace.
 
 ---
 
-### Bandcamp
+### Pitfall 2: Typeahead `fetch` Race Condition — Stale Results Overwrite Fresh Ones
 
-**What breaks:**
-Bandcamp has no public API for catalog search. Their official developer page (bandcamp.com/developer) only exposes oEmbed/embed player endpoints — not inventory or search.
+**What goes wrong:**
+With debounce in place, rapid sequential queries (user types "dark", then "dark side") can produce two in-flight fetches. If the first ("dark") resolves after the second ("dark side"), it overwrites the dropdown with stale results. The user sees suggestions for "dark" while "dark side" is typed in the input.
 
-Physical vinyl on Bandcamp is sold as **merch items**, not as releases. This has structural consequences:
-- A vinyl record may have no associated album page at all (it's a standalone merch item on the artist's page).
-- Alternatively, it may be attached to a release page as a "package" (merch variant of the release).
-- There is no cross-artist search API. You cannot query "show me all Bandcamp vinyl listings for Artist X."
+**Why it happens:**
+Vanilla `fetch` has no built-in cancellation or sequence guarantee. This is the classic async race condition in typeahead UI — easy to forget because it rarely shows up in happy-path testing on a local dev server with near-zero latency.
 
-**What you can do:**
-- If you already know an artist's Bandcamp URL (e.g., `artistname.bandcamp.com`), you can scrape their `/merch` or release pages to extract physical items.
-- The embedded `TralbumData` JavaScript object on release pages contains structured JSON with pricing, stock quantity (`quantity_available`), and package type. This is the most reliable extraction point.
-- The `/merch` page on a Bandcamp artist site lists physical items with stock status.
+**How to avoid:**
+Use an `AbortController` to cancel the previous fetch before issuing a new one:
 
-**Key risks:**
-- **Discoverability is broken:** There is no way to search Bandcamp for vinyl by artist/title without knowing the URL. This makes Bandcamp unsuitable as a general search source. It only works as a "check this specific artist's Bandcamp page" addon.
-- **Sold-out items stay listed:** Bandcamp shows sold-out items with "Sold Out" status rather than removing them. Scrapers must check `quantity_available` (from `TralbumData`) or the presence of "Sold Out" text — do not treat a listing as available without this check.
-- **Artist Cloudflare protection:** Many Bandcamp-hosted pages on custom domains (e.g., `label.com`) are behind Cloudflare. The canonical `*.bandcamp.com` subdomain URLs are more scraper-friendly.
-- **No canonical URL pattern for search:** Unlike Discogs or Juno, there is no URL you can construct for "search Bandcamp for [artist] [album] vinyl." The feature scope for Bandcamp must be limited to checking known URLs, not general discovery.
+```js
+let currentController = null;
 
-- Confidence: MEDIUM (Bandcamp developer page confirmed; TralbumData extraction pattern confirmed via community scrapers).
+function fetchSuggestions(query) {
+  if (currentController) currentController.abort();
+  currentController = new AbortController();
+  fetch(`/api/search?q=${encodeURIComponent(query)}`, { signal: currentController.signal })
+    .then(r => r.json())
+    .then(render)
+    .catch(e => { if (e.name !== 'AbortError') console.error(e); });
+}
+```
 
----
+**Warning signs:**
+- Dropdown flickers between different result sets while typing
+- Issue appears on Railway (remote latency) but not on local dev
 
-### Australian Vinyl Stores (Clarity, Egg, etc.)
-
-**What breaks:**
-Most independent AU vinyl stores run on Shopify. The existing `shopify.py` adapter already handles Shopify stores. Adding new AU stores is low-risk — it is primarily a configuration exercise (add new store URLs to the store list).
-
-Key risks:
-- **Not all AU stores are on Shopify.** Clarity Records (Melbourne) uses a custom platform. Egg Records (Melbourne) uses Shopify. Verify per store before assuming the existing adapter works.
-- **Shopify storefront search:** The existing adapter likely hits `/search?q=...&type=product`. This works but returns HTML. Some Shopify stores disable storefront search or restrict it. The Shopify Storefront API (JSON) is more reliable but requires a store-specific API key that you would not have for a third-party store.
-- **Pagination:** Shopify search results paginate. If the existing adapter only fetches the first page, it will miss results for common search terms (e.g., a well-known artist with many listings).
-
-- Confidence: MEDIUM (based on existing working Shopify adapter and knowledge of AU store landscape).
+**Phase to address:**
+Typeahead JS implementation. A 5-line `AbortController` pattern applied from the start costs nothing and prevents a subtle production bug.
 
 ---
 
-### General Anti-Bot Risks Across All New Sources
+### Pitfall 3: CSS Token Change Has Unexpected Blast Radius
 
-- **Missing `User-Agent`:** Python httpx sends `python-httpx/x.x.x` by default. Every new scraper must set a realistic browser User-Agent.
-- **Missing `Accept-Language` / `Accept` headers:** Sites fingerprint incomplete header sets. Send a full browser-like header block.
-- **No delay between requests:** The existing Discogs adapter has known issues with 429 errors (noted in CONCERNS.md). New adapters must build in per-request delays from day one, not as a retrofit.
-- **robots.txt:** The codebase notes a constraint to respect robots.txt. Verify robots.txt for each new source before building the adapter. Juno and eBay (HTML) may disallow scraping paths.
+**What goes wrong:**
+The CRATE design system uses CSS custom properties (`--color-text-faint`, `--text-heading`, `--space-md`, etc.) referenced across ~545 lines of CSS and in both HTML templates via inline `style=""` and class composition. Changing a token value (e.g. bumping `--text-heading` from 24px to 28px, or `--color-text-faint` from `#555555` to `#686868`) fixes the intended element but silently changes every other place that token is used.
 
----
+**Why it happens:**
+CSS custom properties are global by default. The design analysis in `ui-to-improve.txt` recommends several token value changes — these are correct fixes, but each has blast radius across both `index.html` and `item_detail.html` plus the modal, scan panel, toast, and table components.
 
-## Performance Fix Traps
+**How to avoid:**
+- Before changing any token value, grep for all usages: `grep -n "var(--color-text-faint" static/style.css templates/*.html`
+- Change one token at a time, review both pages in browser before continuing
+- When the type scale changes (`--text-heading`), explicitly verify the modal title, section headings, and nav brand all still work — they all reference this token
 
-### Trap 1: asyncio.gather() on scan_all_items() without a semaphore
+**Warning signs:**
+- A "fixed" element looks right but something unrelated looks wrong on the same page
+- The modal title suddenly looks too large after bumping `--text-heading`
 
-The obvious fix for the sequential item scan loop (flagged in CONCERNS.md) is to replace it with `asyncio.gather(*[scan_item(db, i) for i in items])`. This will break immediately.
-
-**What goes wrong:** With 20 wishlist items, gather launches 20 concurrent scan tasks. Each task hits Discogs and Shopify concurrently. Discogs rate limit is 60 requests/minute. 20 items x 3 Discogs requests = 60 requests fired simultaneously. Every one after the first few gets a 429. The scan returns empty results for most items.
-
-**Prevention:** Use `asyncio.Semaphore(N)` wrapping each `scan_item()` call. A concurrency limit of 3-5 items scanning in parallel is sufficient and safe. Do not use `gather()` without a semaphore.
-
----
-
-### Trap 2: APScheduler overlapping scan runs
-
-If `scan_all_items()` is made faster (via parallelism), the job completes faster — but if it is still slow and the scheduler fires again before the previous run completes, two scan jobs run concurrently. Both write to the database simultaneously, creating duplicate listings.
-
-**What goes wrong:** APScheduler's `AsyncIOScheduler` does not prevent job overlap by default. A slow run on a large wishlist overlapping with the next 6-hour trigger creates duplicate listing rows and inflated "best price" calculations.
-
-**Prevention:** Set `misfire_grace_time` and use `max_instances=1` on the scheduled job. This is a one-line fix but is easy to miss.
+**Phase to address:**
+CSS polish phase. Each token change should be its own discrete edit with visual review before the next.
 
 ---
 
-### Trap 3: Response caching returning stale listing data
+### Pitfall 4: HTML Email Uses CSS That Email Clients Strip
 
-Adding a cache (e.g., `functools.lru_cache`, Redis, or in-memory dict) to the dashboard query will cause `_enrich_item()` to return old listings after a scan completes.
+**What goes wrong:**
+The current email in `notifier.py` is a raw HTML string — no `<style>` block, layout done with a `<table border="1">`. A redesign that adds `<style>` blocks, CSS custom properties, flexbox, or external web fonts will break in Outlook (~10-15% share) and some Gmail configurations where `<style>` blocks are stripped or scoped. The redesigned email looks polished in Apple Mail (58% share) but broken elsewhere.
 
-**What goes wrong:** A scan runs and updates listings. The cached dashboard query still holds the pre-scan snapshot. The user sees no change. If the cache TTL is long (e.g., 5 minutes), the dashboard appears broken.
+**Why it happens:**
+Modern CSS email pitfalls are counterintuitive. Developers apply the same mental model as web CSS, not realising that:
+- CSS custom properties (`var(--color)`) are not supported in any email client
+- Flexbox and grid layout are unreliable across Outlook and older Gmail
+- Web fonts fail silently in Outlook and fall back to Times New Roman
+- `<style>` blocks are sometimes inlined, sometimes stripped, sometimes scoped by Gmail
 
-**Prevention:** Cache at the right granularity. Cache the per-item enriched dict with a short TTL (30-60 seconds), not the full item list. Invalidate the cache entry for a specific item after `scan_item()` completes for that item. Never cache the full wishlist response.
+**How to avoid:**
+- Keep layout as `<table>` based — not as a web best practice but as the email client reality for 2025
+- Inline all CSS using `style=""` attributes — do not rely on a `<style>` block surviving delivery
+- Do not use CSS custom properties in email HTML — write literal color values (`#0a0a0a`, not `var(--color-bg)`)
+- Use a web font stack but provide strong fallbacks: `font-family: 'Inter', Arial, Helvetica, sans-serif`
+- The CRATE aesthetic can be replicated in email with literal hex values and table layout — it just takes more verbose HTML
+- Test against caniemail.com for specific properties before using them
 
----
+**Warning signs:**
+- Email preview in Apple Mail or browser looks great
+- No test in Gmail web (where styles are often scoped) or any Outlook variant
+- Using `var(--color-...)` anywhere in the email HTML string
 
-### Trap 4: Fixing N+1 with joinedload() but fetching too much data
-
-The N+1 fix (adding `joinedload(WishlistItem.listings)` to the query) eliminates separate per-item listing queries. But joinedload on listings can return hundreds of rows per item if listing history has accumulated (unbounded listing growth is flagged in CONCERNS.md).
-
-**What goes wrong:** The join produces a cartesian product in result rows. A 50-item wishlist with 200 old listings per item returns 10,000 rows in one query. Memory spikes on both the DB and app side.
-
-**Prevention:** Use `selectinload` instead of `joinedload` for one-to-many relationships (listings). `selectinload` fires a second query with an `IN (item_ids)` clause rather than a join, avoiding row explosion. Also add the listing cleanup job (CONCERNS.md) before applying the joinedload fix — otherwise it will be immediately painful.
-
----
-
-### Trap 5: Email still blocking after "fixing" it
-
-The CONCERNS.md notes that email sends block the HTTP request. A naive fix is to fire-and-forget with `asyncio.create_task(send_deal_email(...))`. This is slightly better but introduces a new bug.
-
-**What goes wrong:** FastAPI's lifespan ends before the orphaned task completes if the server restarts or the request context closes. The task gets garbage-collected mid-send. Emails silently drop.
-
-**Prevention:** Do not fire-and-forget email tasks without a reference. Either queue to a background task via APScheduler (add a one-off job), or use `asyncio.shield()` if the send is expected to complete quickly. For this project's scale, the simplest safe fix is an APScheduler one-off job for the email send.
-
----
-
-### Trap 6: Adding DB indexes after data already exists
-
-Adding indexes on `Listing.wishlist_item_id`, `Listing.url`, and `WishlistItem.is_active` (recommended in CONCERNS.md) is correct. But adding them via the existing custom migration system (`ALTER TABLE IF COLUMN NOT EXISTS`) is fragile for index creation.
-
-**What goes wrong:** `CREATE INDEX` on a large `listings` table locks the table on PostgreSQL (by default). If done during a deployment with live traffic, scans and dashboard loads will stall until the index build completes.
-
-**Prevention:** Use `CREATE INDEX CONCURRENTLY` in migrations. This is PostgreSQL-specific and does not block reads/writes. The custom migration system will need to be extended to support this, or migrate to Alembic before adding indexes.
+**Phase to address:**
+Email redesign phase. The email HTML in `notifier.py` should be extracted to a Jinja2 template file to make it editable without touching Python, and must be constrained to email-safe CSS from the start.
 
 ---
 
-## UI Redesign Risks
+### Pitfall 5: iOS Shortcut API Contract Broken by Schema Change
 
-### Risk 1: Global CSS replacing Bootstrap without an audit
+**What goes wrong:**
+The iOS Shortcut hits `POST /api/wishlist` with an `X-API-Key` header and a JSON body matching `WishlistItemCreate`. Any change to this endpoint — a new required field, a changed response schema, a moved route prefix, or a new auth requirement — silently breaks the Shortcut until manually tested on the phone. Failures show up as silent "Item not added" outcomes on the Shortcut side.
 
-If Bootstrap is removed and replaced with Tailwind (or plain CSS), any Jinja2 template that uses Bootstrap utility classes (e.g., `mb-3`, `d-flex`, `text-muted`) will break silently — the page renders but looks broken.
+**Why it happens:**
+The v1.1 scope does not touch the Shortcut endpoint directly, but adjacent changes can break it:
+- Adding a new required field to `WishlistItemCreate` (e.g. a `discogs_release_id` from the typeahead) would cause Shortcut submissions to 422
+- Moving `api_router` prefix or changing auth would 401/404 all Shortcut posts
+- The typeahead-selected query might become a normalised format ("Artist - Title") that the scanner no longer matches as a freeform string
 
-**What goes wrong:** There are no tests for rendered HTML output. Visual regressions are invisible until manually reviewed. The scale of the change is easy to underestimate — Bootstrap classes may appear in base templates, macros, and individual route templates.
+**How to avoid:**
+- `WishlistItemCreate` must remain backward compatible: any new typeahead-derived fields (e.g. `discogs_release_id`) must be `Optional` with `None` default
+- The `query` field must remain accepted as a plain string — the Shortcut sends raw text, not a Discogs-resolved release ID
+- After any API schema change, manually trigger the iOS Shortcut and verify a 200 response
+- The Shortcut endpoint is `POST /api/wishlist` with `X-API-Key` — do not move it
 
-**Prevention:** Before switching CSS frameworks, grep the templates for Bootstrap-specific classes and count them. Do the migration template-by-template, not all at once. Keep Bootstrap loaded alongside the new CSS until every template has been converted.
+**Warning signs:**
+- New field added to `WishlistItemCreate` without `Optional[...] = None`
+- Any change to the `api_router` prefix (`/api`)
+- Scanner behaviour changes when `discogs_release_id` is present but the Shortcut still sends `None`
 
----
-
-### Risk 2: Record art as hero requires image dimensions you may not have
-
-The Spotify-like aesthetic (record art as the dominant visual element) assumes a square cover image is always available. This is not true for all wishlist items.
-
-**What goes wrong:** A wishlist item added by label (e.g., "Sub Pop Records") has no single cover image. An item added by artist may match releases with no Discogs image. Rendering a hero layout with a missing image shows a broken image placeholder or a large empty box.
-
-**Prevention:** Design the layout with a graceful fallback state. A "no art" state should still be visually intentional — a placeholder with the label/artist initials on a colored background, not a broken img tag. Implement this before wiring up real images so the fallback is never an afterthought.
-
----
-
-### Risk 3: Jinja2 macros becoming too complex
-
-A Spotify-like card layout for each wishlist item (art, title, best price, sources) is more complex than the current list row. The temptation is to put all the logic in the Jinja2 macro.
-
-**What goes wrong:** Jinja2 macros cannot be unit-tested. Complex price comparison logic, conditional display of "deal" badges, and listing source icons embedded in macros become invisible to debugging. When a price display bug occurs, there is no way to isolate it without rendering the full page.
-
-**Prevention:** Keep Jinja2 templates dumb. All computation (best price, deal threshold, listing count) should be done in the Python route handler or `_enrich_item()` and passed as pre-computed values to the template. Templates should only choose which pre-computed value to display, not compute it.
+**Phase to address:**
+Typeahead implementation phase — the schema change is most likely to happen here when `discogs_release_id` is added to the item model.
 
 ---
 
-### Risk 4: HTMX as a "quick win" that creates a new maintenance surface
+### Pitfall 6: Web Font FOUT Breaks the CRATE Brand Mark
 
-The current stack has no JavaScript framework. Adding HTMX for partial page updates (search-as-you-type, scan status polling) is commonly recommended for this stack in 2025. However, HTMX introduces a new dependency and a new mental model.
+**What goes wrong:**
+The CRATE brand mark in the nav relies on its font for its aesthetic identity (all-caps, `letter-spacing: 0.25em`). Adding a web font via `<link>` (Google Fonts or self-hosted) without proper `font-display` configuration causes a Flash of Unstyled Text on load — the brand mark renders briefly in the system fallback font, then snaps to the web font. On slow connections the FOUT period is noticeable and looks broken.
 
-**What goes wrong:** HTMX partial responses require new route variants that return HTML fragments (not full pages). These fragment routes are easy to forget to update when the main template changes. The "dumb template" principle above becomes harder to enforce when some routes return full pages and others return fragments of the same data.
+**Why it happens:**
+Without `font-display: swap` (or `optional`), the browser blocks rendering until the font is fetched. With `swap`, text renders immediately in the fallback and then swaps — which causes layout shift if the font metrics differ. Neither default behaviour is ideal for a brand mark element that defines the page header.
 
-**Prevention:** Only add HTMX if a specific interaction genuinely cannot be done with a full page reload (e.g., real-time scan progress). Do not add it for cosmetic reasons. If adopted, keep fragment routes co-located with their parent route, not scattered across different files.
+**How to avoid:**
+- If the font is for the brand mark only (narrow use), prefer `font-display: optional` — it uses the font only if it loads within the first frame; otherwise falls back permanently. No FOUT, no layout shift, no jarring swap.
+- Preload the font file: `<link rel="preload" href="..." as="font" crossorigin>` placed above the stylesheet link
+- If self-hosting, serve the font from the same Railway deployment as `style.css` to avoid an extra DNS lookup
+- Keep a condensed monospace fallback (`"Courier New", monospace`) with similar visual weight so the fallback brand mark does not look comically different
 
----
+**Warning signs:**
+- The nav CRATE text flickers on page load in devtools throttled network simulation
+- Testing only on local dev where the font loads instantly from the browser cache
 
-### Risk 5: Inline styles for "quick" art background colors
-
-When record art is used as a background or color source, there is a temptation to use inline Python color extraction (e.g., `colorthief`) to generate dynamic accent colors per card.
-
-**What goes wrong:** Color extraction from an image URL requires either fetching the image server-side (adding latency to every page load) or doing it client-side (adding JavaScript). It is a hidden performance cost disguised as a visual feature.
-
-**Prevention:** Defer dynamic color extraction entirely. Use a static color palette (e.g., map the first letter of the artist name to a fixed color) for the MVP redesign. If dynamic colors are wanted later, compute and store them at scan time, not at render time.
-
----
-
-## Album Art Pitfalls
-
-### Pitfall 1: Hotlinking Discogs images will get rate-limited or blocked
-
-The existing Discogs adapter likely returns image URLs from the Discogs CDN (`i.discogs.com` or `api-img.discogs.com`). Serving these URLs directly to end users (by embedding them in `<img src="...">` in the dashboard) counts as hotlinking.
-
-**What goes wrong:** Discogs rate-limits image requests. Forum posts confirm that `api-img.discogs.com` applies its own rate limit separate from the API rate limit. With a dashboard that loads 20-50 images per page, each page load fires 20-50 CDN requests. Discogs may return 429 or redirect to a placeholder. Images appear broken after a few page loads.
-
-**Prevention:** Proxy and cache images locally. When a listing is created with a Discogs image URL, download the image and store it (either on disk, in the DB as bytea, or on a simple object store). Serve the local copy. Never hotlink CDN images in a production dashboard.
+**Phase to address:**
+Font implementation phase. Decide `font-display` strategy before choosing or loading the font.
 
 ---
 
-### Pitfall 2: Cover Art Archive reliability is good but lookup requires a MusicBrainz ID
+## Technical Debt Patterns
 
-The Cover Art Archive (coverartarchive.org) has no rate limit and is a strong fallback for cover images. However, the API requires a MusicBrainz Release ID (MBID), not a free-text artist/title search.
-
-**What goes wrong:** You cannot query Cover Art Archive directly with "Artist Name + Album Title." You first need to resolve the MBID via the MusicBrainz search API, which has a rate limit of 1 request/second. For a wishlist of 50 items, MBID resolution takes ~50 seconds at the rate limit.
-
-**Prevention:** Resolve and store the MBID at scan time, not at render time. Do not do MBID lookup on page load. Cache the resolved MBID in the database against the wishlist item so it is only looked up once.
-
----
-
-### Pitfall 3: Bandcamp and Juno do not have centralized art APIs
-
-Bandcamp releases include art embedded in the page (the `TralbumData` object contains image URLs). Juno listing pages include a product image in the HTML. But neither provides a stable, versioned image URL that can be treated as a permanent link.
-
-**What goes wrong:** Image URLs on both platforms are CDN-hosted with path patterns that include content hashes or version numbers. A URL that works today may return 404 after a re-upload by the seller.
-
-**Prevention:** Download and cache at scrape time. Treat scraped image URLs as temporary. Always store a local copy, not a reference to the remote URL.
+| Shortcut | Immediate Benefit | Long-term Cost | When Acceptable |
+|----------|-------------------|----------------|-----------------|
+| Reusing `_get_album_listings()` for typeahead | No new code needed | 3-5 sequential Discogs API calls per keypress — guaranteed 429 errors | Never — typeahead needs a dedicated lightweight search function |
+| Inline CSS in email HTML string | Works today | Template unreadable; impossible to redesign without touching Python | Acceptable for the current plain-table email; must change for redesign |
+| Hardcoding color values in email HTML | Reliable rendering | Design system drift — email colors diverge from CRATE tokens | Acceptable (email has different constraints than web); document the mapping |
+| Skipping AbortController on typeahead fetch | Less code | Race condition on slow connections or Railway cold starts | Never — 5 lines of code, permanent protection |
+| Google Fonts `<link>` without preload | Quick to add | FOUT on cold visits; extra DNS/connection overhead | Never for brand mark use — add `rel="preload"` |
 
 ---
 
-### Pitfall 4: Missing art for label and subject searches
+## Integration Gotchas
 
-Wishlist items added as a label (e.g., "Warp Records") or subject ("German Techno 1992") have no single canonical cover image. The current Discogs adapter fetches multiple releases for these item types.
-
-**What goes wrong:** Picking the "first" image from the first result looks arbitrary and often shows an unrelated release. The UI will look noisy or wrong if art is forced into a hero layout for these item types.
-
-**Prevention:** Do not attempt to show release art for label/subject items. Use a genre or label-specific placeholder (a text-based avatar or a neutral graphic). Only show release art for album/artist item types where a specific release match is available.
+| Integration | Common Mistake | Correct Approach |
+|-------------|----------------|------------------|
+| Discogs `/database/search` for typeahead | Calling the existing scan path (which fetches release detail pages for each result) | Write a dedicated endpoint that calls `/database/search` once with `per_page=5` and returns only `id, title, thumb` — no detail fetches |
+| Discogs rate limit headers | Ignoring `X-Discogs-Ratelimit-Remaining` in responses | Check the header in the typeahead endpoint and return an empty list (not a 429) if the remaining budget is low |
+| HTML email with CRATE design | Using CSS custom properties or flexbox layout | Inline literal hex values; use `<table>` for layout; provide font fallbacks. Verify on caniemail.com |
+| Google Fonts / self-hosted web font | Linking font without `rel="preload"` or without `font-display` declaration | Add `<link rel="preload">` and use `font-display: optional` for narrow brand-mark use |
+| Typeahead dropdown closing on click | Dropdown closes on `blur` before the click on a suggestion registers | Delay the `blur` close handler by 150-200ms so the click event fires first |
+| Image source prioritisation in listing dicts | `_cover_image` key only ever set on `listings[0]` in the current Discogs adapter | When store adapters return their own image URL, check store image first; do not assume `_cover_image` is always Discogs-derived |
 
 ---
 
-## Mitigation Strategies
+## Performance Traps
 
-### Per-Source Scraping
+| Trap | Symptoms | Prevention | When It Breaks |
+|------|----------|------------|----------------|
+| No debounce on typeahead input | Discogs 429s spike; scheduled scans fail; Railway logs fill with httpx errors | 300ms debounce in JS before fetch fires | Immediately on any sustained typing — does not require scale |
+| Typeahead results not cached | Same query hits Discogs twice if user types, deletes, retype | Simple in-process dict cache with TTL on the FastAPI endpoint | Every repeated keypress in the same session |
+| `asyncio.sleep(0.5)` inside typeahead | Existing scan delays carried over; typeahead takes 1-2s per result | Remove scan-pacing delays from the dedicated typeahead function | Immediately — user expects sub-500ms dropdown response |
 
-| Source | Mitigation |
-|--------|------------|
-| Juno Records | Set browser User-Agent + full Accept headers; scrape by URL/structural position not class names; 1-2s jitter between requests; 1-2 max concurrent requests |
-| eBay | Use Browse API, not HTML scraping; filter `buyingOptions:{FIXED_PRICE}` to exclude auctions; handle missing `shippingOptions` gracefully; auto-refresh OAuth token every 2h |
-| Bandcamp | Limit scope to known artist URLs (not general search); check `quantity_available` in TralbumData; use canonical `*.bandcamp.com` URLs not custom domains |
-| AU Shopify stores | Verify each store is actually Shopify before assuming adapter works; handle paginated search results |
+---
 
-### Performance Fix Order
+## Security Mistakes
 
-Fix in this order to avoid cascading problems:
-1. Add `selectinload` for listings (eliminates N+1 without data explosion) — safe to do first
-2. Add listing cleanup job (prunes old data before index/join work is done)
-3. Add `CREATE INDEX CONCURRENTLY` migrations via Alembic (not the custom migration system)
-4. Add `Semaphore(3)` to `scan_all_items()` parallelism fix — safe only after Discogs rate limiting is confirmed working
-5. Add `max_instances=1` to the APScheduler scan job — do this at the same time as the parallelism fix
+| Mistake | Risk | Prevention |
+|---------|------|------------|
+| Typeahead endpoint unauthenticated | Anyone can hammer the app's Discogs rate limit quota via the proxy endpoint | Add `Depends(require_api_key)` to the typeahead endpoint, matching the API auth pattern already in use |
+| User query string reflected into email HTML without escaping | XSS in email clients that render raw HTML | The current `notifier.py` uses `html.escape()` — ensure the redesigned template preserves this for all user-sourced values |
+| `discogs_release_id` stored without validation | Malformed IDs cause Discogs API errors that could exhaust rate limit | Validate as integer > 0 before storing or using in a fetch |
 
-### UI Redesign Order
+---
 
-1. Audit Bootstrap class usage in all templates before removing Bootstrap
-2. Define a "no art" placeholder state in CSS before wiring any real images
-3. Move all enrichment computation to Python route handlers; keep Jinja2 templates display-only
-4. Do not add HTMX until a concrete interaction requirement demands it
-5. Proxy and cache all external images at scan time; never hotlink CDN images
+## UX Pitfalls
 
-### Album Art Sourcing
+| Pitfall | User Impact | Better Approach |
+|---------|-------------|-----------------|
+| Typeahead closes when mouse moves to click a suggestion | User cannot select a suggestion — dropdown closes on `blur` before click registers | Delay the `blur` close handler by 150-200ms so the click event fires first |
+| Typeahead selection overwrites query with no confirmation | User selects a release but the input just changes text — unclear if it worked | Show a small "selected" indicator (e.g. checkmark badge or pill) next to the input when a release is pinned |
+| Web font causes nav layout shift on load | CRATE brand mark jumps position when font swaps | Use `font-display: optional` — no swap, no shift |
+| Email redesign loses the `text/plain` fallback | Recipients with text-only clients see nothing | Add `MIMEText(plain_body, "plain")` to the `MIMEMultipart("alternative")` — text part should always be present |
+| CSS token change applied globally | Modal title, section headings, and nav elements all change unexpectedly | Change one token, review both full pages before the next change |
 
-Recommended fallback chain per item type:
-- **Album/Artist item:** Discogs image (proxied/cached) → Cover Art Archive (if MBID resolved at scan time) → text-based placeholder
-- **Label/Subject item:** text-based placeholder only (no release art)
-- **Bandcamp/Juno listings:** cache image from TralbumData / product page at scrape time; treat remote URL as temporary
+---
+
+## "Looks Done But Isn't" Checklist
+
+- [ ] **Typeahead debounce:** Implemented in JS — verify with devtools network tab that requests fire only after the user pauses, not on every keypress
+- [ ] **Typeahead AbortController:** In place — verify with devtools that previous requests are cancelled when new ones start
+- [ ] **Typeahead endpoint auth:** Protected — verify that a request without `X-API-Key` returns 401
+- [ ] **iOS Shortcut compatibility:** `discogs_release_id` (if added to schema) is `Optional` with `None` default — verify the Shortcut still gets a 200 after the model change
+- [ ] **Email HTML safe CSS only:** No `var(--)` tokens, no flexbox/grid, no unguarded external font references — verify by sending a test email to Gmail web
+- [ ] **Font FOUT:** Web font loading does not flash — verify by throttling to "Slow 3G" in devtools and watching the nav brand mark on first paint
+- [ ] **CSS token blast radius:** Every changed token value verified across both `index.html` and `item_detail.html` — not just the element being targeted
+- [ ] **Focus states on buttons:** All three button classes have `:focus-visible` styles — verify by tabbing through the page without using a mouse
+- [ ] **Image source priority:** Store-sourced images appear on listings where the adapter provides them; Discogs image is the fallback, not always first
+
+---
+
+## Recovery Strategies
+
+| Pitfall | Recovery Cost | Recovery Steps |
+|---------|---------------|----------------|
+| Rate limit exhaustion from un-debounced typeahead | LOW | Remove or disable the typeahead endpoint temporarily; add debounce; redeploy. Discogs rate limit resets every 60 seconds |
+| iOS Shortcut broken by schema change | LOW | Make the new field `Optional` with default `None`; redeploy. No DB migration needed if column is nullable |
+| Email redesign broken in Gmail | MEDIUM | Fall back to the existing plain-table template; redesign with inline CSS only; test before shipping |
+| Web font FOUT in production | LOW | Switch `font-display` from `swap` to `optional`; redeploy |
+| CSS token change breaks unexpected elements | LOW | Revert the token value; re-scope the fix to a specific selector rather than changing the global token |
+
+---
+
+## Pitfall-to-Phase Mapping
+
+| Pitfall | Prevention Phase | Verification |
+|---------|------------------|--------------|
+| Rate limit exhaustion from typeahead | Typeahead endpoint + JS implementation | Network tab shows debounced requests; no 429s in Railway logs during test |
+| Stale typeahead results (race condition) | Typeahead JS implementation | `AbortController` present in source; race condition tested under throttled network |
+| CSS token blast radius | CSS polish phase | Both pages reviewed in browser after each token change before moving to next |
+| Email CSS compatibility | Email redesign phase | Test email sent to Gmail web + Apple Mail before merging |
+| iOS Shortcut schema break | Typeahead/model schema phase | All new schema fields are `Optional`; Shortcut manually triggered and verified after deployment |
+| Web font FOUT | Font implementation phase | Slow 3G devtools simulation passes without visible brand mark flash |
+| Unauthenticated typeahead endpoint | Typeahead endpoint implementation | Unauthenticated request returns 401 |
 
 ---
 
 ## Sources
 
-- [eBay Browse API Overview](https://developer.ebay.com/api-docs/buy/browse/overview.html) — MEDIUM confidence (fetch timed out; rate limits confirmed via developer docs search)
-- [eBay API Call Limits](https://developer.ebay.com/develop/get-started/api-call-limits) — MEDIUM confidence
-- [Discogs API Terms of Use](https://support.discogs.com/hc/en-us/articles/360009334593-API-Terms-of-Use) — HIGH confidence
-- [Discogs image rate limiting community thread](https://www.discogs.com/forum/thread/1033204) — MEDIUM confidence
-- [Cover Art Archive API](https://musicbrainz.org/doc/Cover_Art_Archive/API) — HIGH confidence (no rate limit, requires MBID)
-- [Bandcamp Developer page](https://bandcamp.com/developer) — HIGH confidence (only oEmbed/embed endpoints are public)
-- [Bandcamp TralbumData extraction — community documentation](https://github.com/michaelherger/Bandcamp-API) — LOW confidence (undocumented internal API, may change)
-- [asyncio Semaphore pattern for rate-limited scraping](https://rednafi.com/python/limit-concurrency-with-semaphore/) — HIGH confidence
-- [Web scraping anti-bot detection 2025/2026](https://www.scrapingbee.com/blog/web-scraping-without-getting-blocked/) — MEDIUM confidence
-- [eBay scraping via API vs HTML — 2026 guide](https://dev.to/agenthustler/how-to-scrape-ebay-in-2026-listings-prices-sellers-and-auction-data-gk2) — MEDIUM confidence
-- [SQLAlchemy stale data / cache pitfalls](https://www.pythontutorials.net/blog/how-to-avoid-caching-in-sqlalchemy/) — MEDIUM confidence
-- [Juno Records Scrapy crawler (historical reference)](https://github.com/mattmurray/juno_crawler) — LOW confidence (old project, confirms URL structure exists)
+- Discogs API rate limits: [Discogs Developers](https://www.discogs.com/developers) — 60 req/min authenticated, `X-Discogs-Ratelimit-Remaining` header
+- HTML email CSS compatibility: [Can I Email](https://www.caniemail.com/), [Campaign Monitor CSS Guide](https://www.campaignmonitor.com/css/)
+- Email client market share 2025: Apple Mail 58%, Gmail 30% — [Email Developer Compatibility Guide 2025](https://email-dev.com/the-complete-guide-to-email-client-compatibility-in-2025/)
+- Web font FOUT best practices: [Google Fonts Knowledge — FOUT](https://fonts.google.com/knowledge/glossary/fout)
+- Typeahead debounce + AbortController patterns: [Vanilla JS accessible autocomplete](https://dev.to/alexpechkarev/how-to-build-an-autocomplete-component-from-scratch-in-vanilla-js-45g0)
+- Direct codebase inspection: `app/services/discogs.py`, `app/services/notifier.py`, `app/routers/wishlist.py`, `static/style.css`, `templates/base.html`, `templates/index.html`, `ui-to-improve.txt`
+
+---
+*Pitfalls research for: v1.1 UX Polish & Album Selection — FastAPI/Jinja2/Discogs typeahead/HTML email*
+*Researched: 2026-04-05*

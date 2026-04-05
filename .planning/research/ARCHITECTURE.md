@@ -1,354 +1,393 @@
 # Architecture Research
 
-**Project:** Vinyl Wishlist Manager
-**Researched:** 2026-04-02
-**Scope:** Subsequent milestone — existing FastAPI monolith, four architectural questions
+**Domain:** Subsequent milestone additions to existing FastAPI + Jinja2 + SQLAlchemy 2 app
+**Researched:** 2026-04-05
+**Confidence:** HIGH — based on direct codebase inspection + FastAPI/Discogs official docs
 
 ---
 
-## Adapter Pattern for New Sources
+## System Overview (Current v1.0 State)
 
-### Current State
-
-The existing codebase has an implicit adapter contract: every source module exposes one top-level async function:
-
-```python
-async def search_and_get_listings(query: str, item_type: str) -> list[dict]:
-    ...
+```
+Browser / iOS Shortcut
+        |
+        v
+┌───────────────────────────────────────────────────────────┐
+│  FastAPI app  (app/main.py)                                │
+│                                                            │
+│  web_router  (GET /, GET /item/{id}, POST /wishlist/add…)  │
+│  api_router  (POST /api/wishlist, DELETE /api/wishlist/{})  │
+│  GET /api/artwork  — image proxy                           │
+│  POST /api/scan/start, GET /api/scan/status               │
+│  GET /api/health                                          │
+└──────────────────────┬────────────────────────────────────┘
+                       |
+          ┌────────────┼────────────┐
+          v            v            v
+   scanner.py      notifier.py   fx.py / shipping.py
+   (coordinates    (email HTML    (price calculations)
+    adapters)       + SMTP)
+          |
+   ┌──────┴─────────────────────┐
+   | Adapter registry           |
+   | discogs  shopify  ebay     |
+   | discrepancy  juno  bandcamp|
+   └──────┬─────────────────────┘
+          |
+          v
+   SQLAlchemy ORM
+   WishlistItem  Listing
+          |
+   PostgreSQL (Railway) / SQLite (dev)
 ```
 
-`scanner.py` hard-codes imports of `discogs` and `shopify` and calls them explicitly in `asyncio.gather()`. Adding Juno/Bandcamp/eBay requires editing `scanner.py` every time.
+Templates:  base.html / index.html / item_detail.html  (Jinja2, server-rendered)
+CSS:        static/style.css  (~545 lines, CRATE design system)
+JS:         inline in base.html + index.html + item_detail.html (no build step)
 
-### Recommended: typing.Protocol (structural interface)
+---
 
-Use `typing.Protocol` to define the adapter contract, then register adapters in a list that the scanner iterates. No inheritance required — any module that implements the right signature satisfies the protocol automatically (structural subtyping, PEP 544).
+## v1.1 Feature Integration Map
 
-**Why Protocol over ABC:**
-- Existing adapters satisfy it without modification (no base class to add retroactively)
-- No import coupling between `scanner.py` and specific adapter modules
-- mypy/pyright can enforce the contract at type-check time
+### Feature 1: Discogs Typeahead
 
-**Adapter protocol definition** (`app/services/adapter.py`):
+**What it is:** As the user types in the "query" field of the add/edit form, fetch matching album names from Discogs `/database/search` and show a dropdown of suggestions. Selecting a suggestion fills the form field with the precise Discogs release title.
 
-```python
-from typing import Protocol, runtime_checkable
+**New component:** One new endpoint, one block of inline JS.
 
-@runtime_checkable
-class SourceAdapter(Protocol):
-    async def search_and_get_listings(
-        self, query: str, item_type: str
-    ) -> list[dict]:
-        ...
+**New endpoint — `GET /api/discogs/search`** in `app/routers/wishlist.py` (or a small new router if preferred):
+
+```
+GET /api/discogs/search?q=dark+side&type=album
+→ JSON: [{"title": "Pink Floyd - The Dark Side Of The Moon", "year": "1973", "thumb": "https://..."}, ...]
 ```
 
-But because the existing adapters are modules (not class instances), the simplest pattern is a callable-level protocol — a type alias for the function signature — combined with a registry list:
+- No authentication required (internal UI call only, no iOS Shortcut contract).
+- Calls `discogs.py`'s existing `_get_headers()` and the `/database/search` endpoint directly. The logic is almost identical to the first few lines of `_get_album_listings()` — search with `type=release&format=Vinyl`, return the top 5 results as lightweight JSON (title, year, thumb URL).
+- Do NOT call the full `search_and_get_listings()` — that makes follow-up release detail calls and is too slow for typeahead (~3-6s). A single search call returns in ~300ms.
+- Rate limit: Discogs allows 60 requests/min per authenticated token. Typeahead fires on keystroke; debounce at ~350ms in JS to avoid overwhelming the limit.
 
-```python
-# app/services/registry.py
-from app.services import discogs, shopify
+**Integration point — `app/services/discogs.py`:**
 
-ADAPTERS = [
-    discogs.search_and_get_listings,
-    shopify.search_and_get_listings,
-    # add: juno.search_and_get_listings
-    # add: bandcamp.search_and_get_listings
-]
+Add a new public function `async def search_suggestions(query: str, item_type: str, limit: int = 6) -> list[dict]`. This function calls `/database/search` once and returns lightweight dicts. The existing `search_and_get_listings` is untouched.
+
+**Integration point — `app/routers/wishlist.py`:**
+
+Add the GET endpoint. No changes to existing routes. No auth dependency needed (this is a browser-only call from the add/edit form).
+
+**Integration point — `templates/index.html`:**
+
+Add `<div class="typeahead-dropdown">` beneath the query `<input>` in both the Add modal and the Edit modal. The JS listens to `input` events on the query field, debounces at 350ms, fetches `/api/discogs/search?q=...&type=...`, and populates a dropdown list. Selecting a result writes to the input and hides the dropdown. No changes to form submit logic — the typeahead only populates the field.
+
+**Data flow:**
+
+```
+User types in query input
+  → JS debounce (350ms)
+    → GET /api/discogs/search?q=...&type=...
+      → discogs.search_suggestions()
+        → Discogs /database/search API
+          → returns [{title, year, thumb}]
+            → JS renders dropdown
+              → user clicks suggestion
+                → input.value = suggestion.title
+                  → dropdown hidden
+                    → form submits normally (POST /wishlist/add)
 ```
 
-**Scanner becomes source-agnostic:**
+**Component summary:**
+
+| Component | Change type | Details |
+|-----------|-------------|---------|
+| `app/services/discogs.py` | ADD function | `search_suggestions(query, item_type, limit)` — single Discogs search call |
+| `app/routers/wishlist.py` | ADD endpoint | `GET /api/discogs/search` — calls `search_suggestions`, returns JSON |
+| `templates/index.html` | MODIFY | Typeahead dropdown markup + JS in Add and Edit modals |
+
+---
+
+### Feature 2: Image Source Prioritisation
+
+**What it is:** Currently, `scanner.py` takes the first `_cover_image` it finds across all adapter results and assigns it to `item.artwork_url`. All adapters except Discogs return no `_cover_image` at all (the key is only set in `discogs.py`). The feature asks: if a non-Discogs store adapter scrapes a product image, prefer that over the Discogs thumbnail.
+
+**Current state (scanner.py lines 29–36):**
 
 ```python
-# app/services/scanner.py
-from app.services.registry import ADAPTERS
+cover_image = None
+for r in all_results:
+    ci = r.pop("_cover_image", None)
+    if ci and not cover_image:
+        cover_image = ci
+for r in all_results:
+    r.pop("_cover_image", None)
+```
 
-async def scan_item(db, item):
-    results = await asyncio.gather(
-        *[adapter(item.query, item.type) for adapter in ADAPTERS],
-        return_exceptions=True,
-    )
-    all_results = []
-    for r in results:
-        if isinstance(r, Exception):
-            print(f"[Scanner] Adapter error: {r}")
+This takes the first `_cover_image` found. Since `asyncio.gather` returns adapters in registry order, and Discogs is first in the registry, Discogs currently wins by position — not by priority rule.
+
+**No store adapters currently emit `_cover_image`.** Shopify's `suggest.json` endpoint does return a `featured_image` field. Bandcamp product pages and Juno product pages have cover art in HTML. eBay returns item images. However, none of the current adapters extract or forward image URLs — they return only price/stock/URL data.
+
+**What actually needs to change:**
+
+1. **Store adapters that have cover images:** Shopify's `suggest.json` returns `{"featured_image": {"url": "...", "width": 300, "height": 300}}` per product. Shopify store adapters can extract `product.get("featured_image", {}).get("url")` and include `"_cover_image": url` in the result dict. This is 2 lines per product in `shopify.py`.
+
+2. **Priority logic in scanner.py:** Replace "first wins" with "store image wins over Discogs". Classify by source: images from non-Discogs sources are "store images" (usually higher resolution, store-specific). Discogs images are the fallback.
+
+**Recommended priority logic:**
+
+```python
+cover_image = None
+discogs_fallback = None
+for r in all_results:
+    ci = r.pop("_cover_image", None)
+    source = r.get("source", "")
+    if ci:
+        if source == "discogs":
+            if discogs_fallback is None:
+                discogs_fallback = ci
         else:
-            all_results.extend(r)
-    ...
+            if cover_image is None:
+                cover_image = ci
+# Use store image if found; fall back to Discogs
+final_cover = cover_image or discogs_fallback
 ```
 
-**Adding a new source:** create `app/services/juno.py` with `search_and_get_listings(query, item_type) -> list[dict]`, then add one line to `registry.py`. Scanner never changes.
+**Note:** The `_cover_image` key is a sidecar on result dicts (not stored in `Listing`). The pop/discard pattern already ensures it never reaches the DB. Scanner then conditionally sets `item.artwork_url`. This logic change is entirely within `scanner.py`.
 
-### Standardised Listing Dict
+**Component summary:**
 
-Codify the expected keys as a `TypedDict` so new adapters know exactly what to return:
-
-```python
-# app/services/adapter.py
-from typing import TypedDict
-
-class ListingDict(TypedDict, total=False):
-    source: str       # required
-    title: str        # required
-    url: str          # required (dedup key)
-    price: float | None
-    currency: str
-    condition: str | None
-    seller: str | None
-    ships_from: str | None
-    is_in_stock: bool
-```
-
-**Confidence:** HIGH — pattern is structural, requires no new dependencies, validated against existing code.
+| Component | Change type | Details |
+|-----------|-------------|---------|
+| `app/services/scanner.py` | MODIFY | Replace first-wins with store-first fallback logic (~8 lines) |
+| `app/services/shopify.py` | MODIFY | Extract `featured_image.url` from product dicts, set `_cover_image` on results |
+| Other adapters (bandcamp, juno, ebay) | OPTIONAL | Can add `_cover_image` later; scanner handles gracefully with/without |
 
 ---
 
-## Scan Decoupling Pattern
+### Feature 3: CRATE Font Upgrade
 
-### Current Problem
+**What it is:** Swap the `--font-sans` CSS variable from the system font stack to a custom web font. The CRATE design uses system fonts today (`-apple-system, BlinkMacSystemFont, "Segoe UI", …`). The upgrade introduces a brand-appropriate typeface loaded as a `@font-face` or via Google Fonts CDN link.
 
-Both the web form (`POST /wishlist/add`) and the iOS Shortcut API (`POST /api/wishlist`) call `await scanner.scan_item(db, item)` synchronously before returning the response. A full scan takes several seconds (multiple Discogs API calls with `asyncio.sleep(0.5)` between them). The user stares at a spinner; the iOS Shortcut times out at its configured limit.
+**Integration points — static assets + CSS only. No Python changes.**
 
-### Recommended: FastAPI BackgroundTasks with its own DB session
+**Option A: Variable font from Google Fonts (CDN):**
 
-`BackgroundTasks` is built into FastAPI/Starlette. Tasks run in the same process, in the same async event loop, **after** the HTTP response is sent. Zero extra dependencies.
+Add one `<link>` in `templates/base.html` head, then update `--font-sans` in `static/style.css`:
 
-**The DB session pitfall:** the `db: Session = Depends(get_db)` session is closed at end-of-request. The background task cannot use it. The task must open its own session from `SessionLocal` directly.
-
-**Pattern:**
-
-```python
-# In route handler
-from fastapi import BackgroundTasks
-
-async def _scan_in_background(item_id: int):
-    """Opens its own DB session — never uses the request-scoped one."""
-    from app.database import SessionLocal
-    db = SessionLocal()
-    try:
-        item = db.query(WishlistItem).filter_by(id=item_id).first()
-        if item:
-            new_listings = await scanner.scan_item(db, item)
-            if item.notify_email and new_listings:
-                await notifier.send_deal_email(item, new_listings)
-    except Exception as e:
-        print(f"[BG scan] Error for item {item_id}: {e}")
-    finally:
-        db.close()
-
-@web_router.post("/wishlist/add")
-async def add_wishlist_item_web(
-    ...,
-    background_tasks: BackgroundTasks,
-    db: Session = Depends(get_db),
-):
-    item = WishlistItem(...)
-    db.add(item)
-    db.commit()
-    db.refresh(item)
-    background_tasks.add_task(_scan_in_background, item.id)   # fire and forget
-    return RedirectResponse(url="/?toast=Item+added%2C+scanning+in+background", status_code=303)
+```html
+<!-- base.html <head> -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
 ```
-
-The same pattern applies to `create_wishlist_item_api` — pass `scan=True` as a flag, still fire the task in background and return the unscannd item immediately.
-
-### Why not asyncio.create_task()?
-
-`asyncio.create_task()` starts the coroutine immediately in the current event loop iteration, before the response is sent. There is also no reference kept to the task, which creates a garbage collection race — Python may cancel it. You would need to store the task reference explicitly. `BackgroundTasks` handles this lifecycle correctly and is the FastAPI-native approach for this exact use case.
-
-### Why not Celery/Redis?
-
-Overkill for a single-user personal tool on Railway. Adds two new services (broker + worker) with operational overhead. `BackgroundTasks` runs in-process; for a scan that takes 3-10 seconds and only fires on item add, that is exactly the right tool.
-
-**Confidence:** HIGH — documented FastAPI pattern; DB session pitfall verified from official docs and community discussion.
-
----
-
-## In-Process Caching Pattern
-
-### Current Problem
-
-Every `GET /` request calls `_enrich_item()` for every wishlist item. Each call iterates `item.listings` (already loaded by SQLAlchemy relationship) and computes `compute_typical_price()`. This is pure CPU work on data that only changes when a scan runs, but it runs on every page load.
-
-### Recommended: cachetools TTLCache
-
-`functools.lru_cache` has no TTL — the cached enrichment would never expire between scans. `cachetools.TTLCache` solves this with a configurable expiry.
-
-**Install:** `pip install cachetools` (tiny, no infrastructure, actively maintained — v7.0.5 current as of 2025).
-
-**Pattern — cache the full enriched dashboard:**
-
-```python
-# app/services/cache.py
-from cachetools import TTLCache
-from cachetools.keys import hashkey
-
-_dashboard_cache: TTLCache = TTLCache(maxsize=1, ttl=300)  # 5 minutes
-
-def get_cached_dashboard(db) -> list[dict] | None:
-    key = hashkey("dashboard")
-    return _dashboard_cache.get(key)
-
-def set_cached_dashboard(db, data: list[dict]) -> None:
-    key = hashkey("dashboard")
-    _dashboard_cache[key] = data
-
-def invalidate_dashboard_cache() -> None:
-    _dashboard_cache.clear()
-```
-
-Call `invalidate_dashboard_cache()` at the end of `scan_item()` and after any wishlist mutation (add, edit, delete). Dashboard route checks cache first; only re-computes on miss.
-
-**Alternative — cache per item:**
-
-```python
-_item_cache: TTLCache = TTLCache(maxsize=200, ttl=300)
-
-@cached(cache=_item_cache, key=lambda item, *a: hashkey(item.id))
-def enrich_item_cached(item: WishlistItem) -> dict:
-    return _enrich_item(item)
-```
-
-Per-item cache is finer grained but requires invalidating individual keys after scan. Whole-dashboard cache (maxsize=1) is simpler — one key, one clear call. Use whole-dashboard for the MVP; per-item if the wishlist grows large.
-
-### What not to do
-
-Do not use `functools.lru_cache` on `_enrich_item` — the `WishlistItem` ORM object is not hashable by default and the cache never expires. Do not try to add Redis for this — a 5-minute in-process TTL is sufficient for a single-user personal tool.
-
-**Confidence:** HIGH — cachetools is well-established, pattern is straightforward; invalidation approach verified against the data flow in scanner.py.
-
----
-
-## Frontend Approach
-
-### Goal
-
-Spotify-like aesthetic: record artwork as the visual anchor, dark background, minimal chrome, information hierarchy that leads with the album cover rather than text. Server-rendered Jinja2 — no React, no build step.
-
-### Recommended Stack: Custom CSS (no Bootstrap)
-
-Bootstrap is the source of the current "generic/bootstrap-ish" look. Remove it entirely. Write ~200 lines of custom CSS using:
-
-- CSS custom properties (variables) for the design token layer (colours, spacing, type scale)
-- CSS Grid for the card layout
-- `aspect-ratio: 1 / 1` for artwork squares
-- `object-fit: cover` on `<img>` for artwork fill
-
-No JavaScript framework. Minimal vanilla JS only where strictly needed (toast dismissal, optimistic UI feedback on scan trigger).
-
-### CSS Variable Layer (design tokens)
 
 ```css
-:root {
-  --bg-base: #121212;
-  --bg-elevated: #1e1e1e;
-  --bg-highlight: #2a2a2a;
-  --accent: #1db954;          /* Spotify green — swap for any accent */
-  --text-primary: #ffffff;
-  --text-secondary: #b3b3b3;
-  --text-muted: #6a6a6a;
-  --radius-card: 8px;
-  --gap: 1.5rem;
-}
+/* style.css */
+--font-sans: "Inter", -apple-system, BlinkMacSystemFont, sans-serif;
 ```
 
-### Card Layout
+**Option B: Self-hosted `@font-face` (no CDN dependency):**
 
-```css
-.record-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
-  gap: var(--gap);
-}
+Place the font files in `static/fonts/`. Reference via `@font-face` at the top of `style.css`. No base.html changes required.
 
-.record-card {
-  background: var(--bg-elevated);
-  border-radius: var(--radius-card);
-  padding: 1rem;
-  cursor: pointer;
-  transition: background 0.2s;
-}
+**Recommendation:** Self-hosted. The app already serves from Railway with static files. A CDN dependency adds a network round-trip on every page load and a privacy risk (Google Fonts logs IPs). Self-hosting 2 WOFF2 files (~50KB each) is trivial and faster.
 
-.record-card:hover { background: var(--bg-highlight); }
+**Component summary:**
 
-.record-card__art {
-  width: 100%;
-  aspect-ratio: 1 / 1;
-  object-fit: cover;
-  border-radius: 4px;
-  background: var(--bg-highlight);   /* placeholder when no art */
-}
-
-.record-card__title {
-  font-weight: 700;
-  margin-top: 0.75rem;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.record-card__meta {
-  color: var(--text-secondary);
-  font-size: 0.875rem;
-  margin-top: 0.25rem;
-}
-```
-
-### Artwork Sourcing
-
-This is the hardest part. Options in priority order:
-
-1. **Discogs cover image** — the Discogs API returns `cover_image` URLs in search results. Store this URL on `WishlistItem` as `cover_url` column. Populate during scan.
-2. **MusicBrainz Cover Art Archive** — free, public API, no auth. `https://coverartarchive.org/release/{mbid}/front`. Requires MBID lookup but very reliable for well-known releases.
-3. **Placeholder SVG** — a vinyl disc SVG as the default when no art found. Keep it CSS-drawn rather than an image asset.
-
-Store `cover_url` (nullable) on `WishlistItem`. Template conditionally renders `<img src="{{ item.cover_url }}">` or falls back to the placeholder. Do not proxy images through the app — link directly to Discogs CDN.
-
-### Jinja2 Template Structure
-
-Keep the `base.html` / `index.html` / `item_detail.html` split that already exists. Add:
-
-- `templates/components/record_card.html` — Jinja2 macro for a single card, pulled into `index.html` via `{% from 'components/record_card.html' import record_card %}`
-- `templates/components/listing_row.html` — macro for a single listing row in the detail view
-
-Macros keep the logic in one place; the grid template stays clean.
-
-### Minimal JS (vanilla, no framework)
-
-Three specific interactions that benefit from JS:
-
-1. **Toast auto-dismiss** — `setTimeout(() => toast.remove(), 3000)` on any `?toast=` query param message
-2. **Scan button state** — disable button and show spinner text after click to prevent double-submit
-3. **Artwork error fallback** — `<img onerror="this.src='/static/placeholder.svg'">` or a tiny inline handler
-
-All three are < 20 lines total. Do not reach for Alpine.js or HTMX unless scan feedback becomes an explicit requirement.
-
-### What to Avoid
-
-- Bootstrap or any CSS framework — they produce the generic look you are escaping
-- Inline styles in templates — use CSS classes and the variable layer
-- JavaScript for layout — CSS Grid handles it entirely
-- Lazy-loading artwork via AJAX — server renders the URL; browser fetches it directly
-
-**Confidence:** MEDIUM-HIGH — CSS patterns are well-established; artwork sourcing depends on Discogs API response structure which needs verification when implementing the artwork column.
+| Component | Change type | Details |
+|-----------|-------------|---------|
+| `static/style.css` | MODIFY | Update `--font-sans`, add `@font-face` if self-hosting |
+| `static/fonts/` | ADD | Font files (WOFF2) if self-hosting |
+| `templates/base.html` | MODIFY | Add `<link>` only if using Google Fonts CDN |
 
 ---
 
-## Cross-Cutting Notes for Roadmap
+### Feature 4: Email HTML Redesign
 
-| Concern | Interaction |
-|---------|-------------|
-| Scan decoupling + adapter registry | Both change `scanner.py` — do in same phase |
-| Cover art column | Requires DB migration (`cover_url` on `WishlistItem`) — bundle with UI phase |
-| Cache invalidation | Must be added when scan decoupling is added — otherwise stale dashboard after background scan |
-| iOS Shortcut compatibility | `POST /api/wishlist` response changes if `scan=True` returns before scan completes — item will have no listings yet. Shortcut only checks HTTP 200/201; no impact on contract. |
+**What it is:** Replace the current plain `<table border="1">` email HTML in `notifier.py` with a designed, CRATE-branded HTML email template.
+
+**Current state in `notifier.py`:**
+
+The `html_body` is built inline in `send_deal_email()` via string concatenation. There is no template file — it is a raw Python string. The result is a generic HTML table with inline CSS, visually inconsistent with the CRATE UI.
+
+**Integration options:**
+
+**Option A: Jinja2 template for email (recommended)**
+
+Create `templates/email_deal.html`. In `notifier.py`, instantiate Jinja2 directly (not via FastAPI's `templates` object — notifier has no access to the request context):
+
+```python
+from jinja2 import Environment, FileSystemLoader
+
+_env = Environment(loader=FileSystemLoader("templates"))
+
+def _render_email(item, listings) -> str:
+    template = _env.get_template("email_deal.html")
+    return template.render(item=item, listings=listings)
+```
+
+This separates HTML from logic, makes the template editable without touching Python, and keeps `notifier.py` clean.
+
+**Option B: Inline HTML string (current approach, improved)**
+
+Keep string building but add proper inline CSS. No new files required. Faster to implement but harder to maintain.
+
+**Recommendation:** Jinja2 template (Option A). The template file is easy to iterate, designer-readable, and the Jinja2 dependency already exists in the project.
+
+**Email HTML constraints:**
+- Use inline CSS only — email clients strip `<style>` blocks and do not support external stylesheets.
+- Avoid CSS custom properties — not supported in most email clients.
+- Stick to table layout for the listing rows — email clients (particularly Outlook) do not support CSS Grid or Flexbox reliably.
+- Dark mode in email is unreliable; use a light background (#ffffff or near-white) with dark text for maximum compatibility, even if the web UI is dark.
+
+**Component summary:**
+
+| Component | Change type | Details |
+|-----------|-------------|---------|
+| `app/services/notifier.py` | MODIFY | Replace inline HTML string with Jinja2 template render |
+| `templates/email_deal.html` | ADD | CRATE-branded HTML email template with inline CSS |
+
+---
+
+### Feature 5: UI Polish (CSS + Markup)
+
+**What it is:** A set of targeted CSS fixes to `static/style.css` and minor markup corrections in `templates/`. All documented in `ui-to-improve.txt` (the full UI analysis in the project root).
+
+**These are CSS/HTML-only changes. No Python changes.**
+
+**Changes are isolated to two files:**
+
+| File | Changes |
+|------|---------|
+| `static/style.css` | Type scale, button states (`:focus-visible`, `:active`, `:disabled`), color contrast fix (`--color-text-faint` → `#686868`), 3-column grid breakpoint at 1024px, card hover shadow fix, spacing system cleanup |
+| `templates/index.html` | Fix overlapping buttons (layout/z-index), card title hierarchy (`text-sm` → slightly larger), scan log type label fix (Python scan_status template variable) |
+| `templates/item_detail.html` | H1/H2 visual distinction, table row border removal |
+
+**Scan log type label fix** ("no artist results" → correct type label) is in the JS `renderStatus()` function in `base.html` — the `c.type` display in the scan active panel. This is a one-line JS change.
+
+---
+
+## Build Order
+
+Dependencies between features determine order. The typeahead endpoint must exist before JS can call it; scanner image changes are independent; CSS/HTML are all independent.
+
+```
+Phase 1: Discogs Typeahead Endpoint
+  discogs.py (add search_suggestions)
+    → wishlist.py (add GET /api/discogs/search)
+      → index.html (add typeahead JS + dropdown markup)
+
+Phase 2: Image Source Prioritisation
+  shopify.py (emit _cover_image from featured_image)
+    → scanner.py (store-first priority logic)
+
+Phase 3: CRATE Font Upgrade
+  static/fonts/ (add WOFF2 files)
+    → static/style.css (update --font-sans, add @font-face)
+
+Phase 4: Email HTML Redesign
+  templates/email_deal.html (new template)
+    → notifier.py (switch to Jinja2 render)
+
+Phase 5: UI Polish
+  static/style.css (all CSS fixes)
+  templates/index.html (button layout, card hierarchy, scan log)
+  templates/item_detail.html (heading scale, table)
+  templates/base.html (scan log type label JS fix)
+```
+
+**Rationale for this order:**
+- Typeahead first: it adds a new backend endpoint and new frontend interaction, touching the most files. Getting it working validates the Discogs search function shape before the email phase touches notifier.
+- Image prioritisation second: scanner.py change is independent of all UI work; it produces correct data before any display work happens.
+- Font and email are isolated: neither depends on anything else, and neither is depended upon. They can run in any order or be done in the same session.
+- UI polish last: after all logic changes are in place, a single CSS pass cleans up everything visible at once. Polish after content is stable.
+
+---
+
+## Component Change Summary
+
+| Component | Change Type | Why |
+|-----------|------------|-----|
+| `app/services/discogs.py` | ADD function | `search_suggestions()` for typeahead — separate from full scan path |
+| `app/routers/wishlist.py` | ADD endpoint | `GET /api/discogs/search` — lightweight, no auth |
+| `app/services/shopify.py` | MODIFY | Emit `_cover_image` from Shopify `featured_image` field |
+| `app/services/scanner.py` | MODIFY | Store-first cover image priority (~8 lines) |
+| `app/services/notifier.py` | MODIFY | Replace inline HTML string with Jinja2 template render |
+| `templates/email_deal.html` | ADD | CRATE-branded email template (inline CSS only) |
+| `templates/index.html` | MODIFY | Typeahead dropdown markup + JS in both modals |
+| `templates/base.html` | MODIFY (minor) | Font CDN link (if CDN) or no change (if self-hosted); scan log JS fix |
+| `templates/item_detail.html` | MODIFY | Heading scale, table border |
+| `static/style.css` | MODIFY | Type scale, button states, contrast fix, 3-col breakpoint, spacing |
+| `static/fonts/` | ADD | WOFF2 font files (if self-hosting) |
+
+**Not changed:** `app/models.py`, `app/database.py`, `app/main.py`, `app/scheduler.py`, `app/config.py`, all other service adapters (bandcamp, ebay, juno, discrepancy). No migrations required — no new columns.
+
+---
+
+## Anti-Patterns to Avoid
+
+### Anti-Pattern 1: Typeahead calling full scan path
+
+**What people do:** Wire the typeahead to call `search_and_get_listings()` or even `/api/scan/start`, since that function already searches Discogs.
+
+**Why it's wrong:** `search_and_get_listings()` makes sequential Discogs API calls with `asyncio.sleep(0.5)` between each release detail request — it takes 3–8 seconds. A typeahead needs a response in under 500ms. The full scan path is designed for completeness, not latency.
+
+**Do this instead:** `search_suggestions()` calls `/database/search` once and returns immediately. No follow-up release detail calls.
+
+### Anti-Pattern 2: Email template using CSS custom properties
+
+**What people do:** Apply the CRATE design system CSS variables (`var(--color-bg)`, etc.) to the email template, since they already exist in `style.css`.
+
+**Why it's wrong:** Email clients (Gmail, Apple Mail, Outlook) do not support CSS custom properties. The email will render with no colors.
+
+**Do this instead:** Inline all color values as hex literals in the email template. Maintain a small comment block at the top of `email_deal.html` mapping token names to hex values for readability.
+
+### Anti-Pattern 3: Modifying `Listing` model to store cover image
+
+**What people do:** Add an `image_url` column to `Listing` so each listing carries its own artwork reference.
+
+**Why it's wrong:** The cover image is a property of the album (the `WishlistItem`), not of an individual store listing. Storing it on `Listing` means the same artwork would be duplicated across every listing for an item, requiring a migration with no benefit.
+
+**Do this instead:** Keep `artwork_url` on `WishlistItem` where it already lives. The `_cover_image` sidecar on adapter result dicts is a transient key that never reaches the DB.
+
+### Anti-Pattern 4: Typeahead calling Discogs on every keystroke
+
+**What people do:** Add an `addEventListener('input', fetch(...))` with no debounce.
+
+**Why it's wrong:** A fast typist hits 5–8 keystrokes per second. Without debounce, 5 rapid keystrokes trigger 5 simultaneous Discogs API calls. Discogs rate-limits at 60 req/min per token; this burns through the quota quickly and the last response may arrive out of order (the first query "dark" resolves after "dark side").
+
+**Do this instead:** Debounce at 350ms. Only send the request when the user has paused typing. Cancel any pending fetch if the input changes before the timer fires.
+
+---
+
+## Integration Points
+
+### Existing Boundary: Discogs token in settings
+
+`discogs.py` reads `settings.discogs_token`. The new `search_suggestions()` function uses the same token and the same `_get_headers()` helper. No new config keys needed.
+
+### Existing Boundary: `/api/artwork` proxy
+
+The typeahead suggestions include `thumb` URLs from Discogs. These can be displayed inline in the dropdown by the browser directly (no proxy needed — thumbnail URLs are public CDN). The `/api/artwork` proxy is only needed for the full-resolution artwork stored on `WishlistItem.artwork_url`, where it handles auth headers and caching. Keep the boundary as-is.
+
+### Existing Boundary: `_cover_image` sidecar protocol
+
+The `_cover_image` key on adapter result dicts is an undeclared but effective protocol between adapters and `scanner.py`. The `ListingDict` TypedDict in `adapter.py` does not include it (it is a transient key for `scanner.py` to consume and discard). No change needed to `ListingDict` — document the sidecar as a scanner-level convention, not a typed contract.
+
+### New Boundary: `/api/discogs/search` endpoint visibility
+
+This endpoint has no auth. It is intended only for use by the browser UI. If the app were ever made multi-user or public, this endpoint would expose unmetered Discogs API usage. For a single-user personal tool on a private Railway deployment this is acceptable. Note it in a comment at the route definition.
 
 ---
 
 ## Sources
 
-- [FastAPI Background Tasks — official docs](https://fastapi.tiangolo.com/tutorial/background-tasks/)
-- [BackgroundTasks blocks entire FastAPI — community discussion](https://github.com/fastapi/fastapi/discussions/11210)
-- [cachetools documentation](https://cachetools.readthedocs.io/en/stable/)
-- [PEP 544 — Protocols: Structural subtyping](https://peps.python.org/pep-0544/)
-- [Python Protocols — mypy docs](https://mypy.readthedocs.io/en/stable/protocols.html)
-- [TTL LRU Cache in FastAPI — Medium](https://medium.com/@priyanshu009ch/ttl-lru-cache-in-python-fastapi-2ca2a39258dc)
-- [Spotify-inspired layout with CSS Grid — CodePen](https://codepen.io/sheelah/pen/qYPwBK)
+- Discogs API — `/database/search` response structure: https://www.discogs.com/developers/#page:database,header:database-search
+- Discogs rate limits (60 req/min authenticated): https://support.discogs.com/hc/en-us/articles/360001676934
+- FastAPI endpoint routing — official docs: https://fastapi.tiangolo.com/tutorial/bigger-applications/
+- HTML email CSS support matrix: https://www.caniemail.com/
+- Jinja2 standalone Environment (without Flask/FastAPI): https://jinja.palletsprojects.com/en/3.1.x/api/#basics
+- Shopify Storefront suggest.json — featured_image field: confirmed in `shopify.py` existing call structure
+
+---
+
+*Architecture research for: Vinyl Wishlist Manager v1.1 — UX Polish & Album Selection*
+*Researched: 2026-04-05*
