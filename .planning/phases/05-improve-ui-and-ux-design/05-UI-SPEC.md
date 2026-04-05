@@ -62,14 +62,15 @@ Source: `static/style.css` `:root` tokens. Priority 5 changes `--text-heading` a
 |------|-------------|--------|-------------|-------|
 | Small / Label | `--text-sm` = 14px | 400 (regular) | 1.5 | Secondary info, badges, timestamps, price sub-labels, table cells |
 | Body | `--text-body` = 16px | 400 (regular) | 1.5 | Body copy, form labels, card titles |
-| Price | `--text-price` = 20px | 600 (semibold) | 1.2 | Landed price display in Best Deals cards |
-| Heading H2 / Section title | 22px (inline `font-size`) | 600 (semibold) | 1.2 | "Best Deals", "All Listings" section headings on detail page; modal titles ("Add Wishlist Item", "Edit Wishlist Item") |
+| Price / H2 / Section title | `--text-price` = 22px (inline `font-size`) | 600 (semibold) | 1.2 | Landed price display in Best Deals cards; "Best Deals", "All Listings" section headings on detail page; modal titles ("Add Wishlist Item", "Edit Wishlist Item") |
 | Heading H1 / Page title | `--text-heading` = **28px** (was 24px) | 600 (semibold) | 1.2 | Item name `<h1>` on detail page; empty-state heading "Your crate is empty" |
 
 **Priority 5 change (locked):**
 - `--text-heading` bumped from 24px to 28px
-- H2 section headings set to 22px (Claude's discretion: 22px chosen over 24px to preserve a clear 6px step below the 28px H1, while remaining above body text)
-- Creates a genuine 28px (H1) → 22px (H2) → 16px (body) hierarchy
+- H2 section headings and price display set to 22px — `--text-price` token updated to 22px (Claude's discretion: 22px chosen over 24px to preserve a clear 6px step below the 28px H1, while remaining above body text)
+- Creates a genuine 28px (H1) → 22px (H2 + price) → 16px (body) → 14px (label) hierarchy
+
+**4-size scale:** 14px (label/small) → 16px (body) → 22px (price + H2) → 28px (H1).
 
 **Weight constraint:** Exactly 2 weights used — 400 (regular) for body copy, 600 (semibold) for headings, prices, button labels. No 500 weight introductions in this phase.
 
@@ -214,9 +215,9 @@ Replace `onsubmit="return confirm('Remove this item from your crate?')"` with an
 
 **Behaviour contract:**
 1. Initial state: single "Remove from Crate" button (`.btn-destructive`)
-2. First click: button group appears — "Confirm?" (`.btn-destructive`) + "Cancel" (`.btn-secondary`) side by side
+2. First click: button group appears — "Confirm?" (`.btn-destructive`) + "Keep Item" (`.btn-secondary`) side by side
 3. "Confirm?" click: form submits
-4. "Cancel" click: resets to initial state
+4. "Keep Item" click: resets to initial state
 5. No timeout — the state persists until the user explicitly cancels or confirms
 6. No browser `confirm()` dialog — entirely inline within the page
 
@@ -263,7 +264,7 @@ Full breakpoint sequence post-phase:
 | No price yet (card) | "No listings found yet" |
 | Delete — initial state | "Remove from Crate" |
 | Delete — confirmation state | "Confirm?" |
-| Delete — cancel | "Cancel" |
+| Delete — cancel | "Keep Item" |
 | Modal — add item title | "Add Wishlist Item" |
 | Modal — edit item title | "Edit Wishlist Item" |
 | Out of stock indicator | "Out of stock" |
@@ -274,6 +275,7 @@ Full breakpoint sequence post-phase:
 - No exclamation marks
 - Destructive action uses "Remove" not "Delete" — consistent with existing copy
 - Inline confirmation says "Confirm?" (with question mark) — communicates that this is still a question, not a final action label
+- Cancel action uses "Keep Item" — communicates what the action preserves, consistent with "Remove from Crate" vocabulary
 
 ---
 
@@ -283,13 +285,13 @@ Components affected by this phase (for executor reference):
 
 | Component | File | Changes |
 |-----------|------|---------|
-| CSS design tokens | `static/style.css` | `--color-text-faint`, `--text-heading`, button `:focus-visible`, button `:active`, `min-height: 44px`, card shadow, `card-body` padding, `card-grid` gap, 3-col breakpoint |
+| CSS design tokens | `static/style.css` | `--color-text-faint`, `--text-heading`, `--text-price` (20px → 22px), button `:focus-visible`, button `:active`, `min-height: 44px`, card shadow, `card-body` padding, `card-grid` gap, 3-col breakpoint |
 | Modal (add item) | `templates/base.html` | ARIA attributes on panel, focus management in `openModal`/`closeModal` JS |
 | Modal (edit item) | `templates/index.html` | ARIA attributes on panel, focus management in `openEdit`/`closeEdit` JS |
 | H1 page title | `templates/item_detail.html` | Inherits `--text-heading` token change (28px) automatically |
-| H2 section headings | `templates/item_detail.html` | Inline `font-size` changed from `var(--text-heading)` to `22px` on "Best Deals" and "All Listings" |
-| Delete form | `templates/item_detail.html` | Replace `confirm()` with inline two-step confirmation |
-| Modal heading (add) | `templates/index.html` | Inline `font-size` changed from `var(--text-heading)` to `22px`; add `id` for ARIA |
+| H2 section headings | `templates/item_detail.html` | Inline `font-size` changed from `var(--text-heading)` to `var(--text-price)` (22px) on "Best Deals" and "All Listings" |
+| Delete form | `templates/item_detail.html` | Replace `confirm()` with inline two-step confirmation; "Keep Item" as cancel label |
+| Modal heading (add) | `templates/index.html` | Inline `font-size` changed from `var(--text-heading)` to `var(--text-price)` (22px); add `id` for ARIA |
 | Modal heading (edit) | `templates/index.html` | Same as above |
 
 ---
@@ -327,4 +329,4 @@ No component registry in use. This project uses a custom CSS design system with 
 | `templates/base.html` | `openModal`/`closeModal` JS structure, modal HTML structure |
 | `templates/index.html` | `openEdit`/`closeEdit` JS structure, edit modal HTML, delete form pattern, empty state copy |
 | `templates/item_detail.html` | H1/H2 heading usage, delete button pattern, Best Deals/All Listings section structure |
-| Claude's discretion | H2 size = 22px; `card-grid gap` → `var(--space-sm)`; `card-body padding` → `var(--space-md)`; inline confirm no-timeout; `.btn-cta:disabled` only if trivial |
+| Claude's discretion | H2 size = 22px; `--text-price` collapsed to 22px (same as H2); `card-grid gap` → `var(--space-sm)`; `card-body padding` → `var(--space-md)`; inline confirm no-timeout; "Keep Item" cancel label; `.btn-cta:disabled` only if trivial |
