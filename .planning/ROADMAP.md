@@ -12,6 +12,7 @@
 - [ ] **Phase 2: New Sources** - eBay AU, Discrepancy Records, Clarity Records, Juno Records, and Bandcamp adapters plugged into the registry
 - [x] **Phase 3: UI Redesign** - Bootstrap removed, Spotify-like card layout with record artwork as the hero, custom CSS throughout (completed 2026-04-03)
 - [ ] **Phase 4: UI Polish** - CRATE rebrand, near-black neutral palette, white accent, sharp edges, compressed spacing, high-res Discogs artwork
+- [ ] **Phase 5: Improve UI and UX Design** - Accessibility fixes, interaction states, typography hierarchy, layout gaps, and color system polish
 
 ---
 
@@ -88,6 +89,20 @@ Plans:
 - [x] 04-02-PLAN.md — Discogs high-res artwork upgrade via release endpoint
 - [ ] 04-03-PLAN.md — Gap closure: fix listing UNIQUE constraint + always-overwrite artwork on scan
 
+### Phase 5: Improve UI and UX Design
+
+**Goal:** Apply a comprehensive UI/UX polish pass addressing 10 prioritised issues from a design audit — covering accessibility failures, missing interaction states, typography hierarchy, layout gaps, and color system fixes
+**Requirements**: P1-contrast, P2-focus-visible, P3-modal-focus, P4-touch-targets, P5-typography-hierarchy, P6-grid-breakpoint, P7-spacing-tokens, P8-active-state, P9-shadow-fix, P10-delete-confirm
+**Depends on:** Phase 4
+**Plans:** 3 plans
+
+Plans:
+- [ ] 05-01-PLAN.md — CSS design system fixes: contrast, focus-visible, touch targets, spacing tokens, active states, shadow fix
+- [ ] 05-02-PLAN.md — Typography hierarchy (H1/H2 distinction) + 3-column grid breakpoint
+- [ ] 05-03-PLAN.md — Modal accessibility (focus management + ARIA) + inline delete confirmation
+
+**UI hint**: yes
+
 ---
 
 ## Progress
@@ -98,3 +113,4 @@ Plans:
 | 2. New Sources | 3/4 | Gap closure | - |
 | 3. UI Redesign | 4/4 | Complete   | 2026-04-03 |
 | 4. UI Polish | 2/3 | Gap closure | - |
+| 5. UI/UX Design | 0/3 | Planned | - |
