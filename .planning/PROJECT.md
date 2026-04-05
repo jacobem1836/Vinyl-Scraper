@@ -4,6 +4,8 @@
 
 A personal vinyl record wishlist manager that scrapes multiple stores and marketplaces to track prices and availability for records you want to buy. You add records you're after; it finds them across the web, computes landed costs (including shipping to AU), and alerts you to deals. Accessed via a web dashboard and an iOS Shortcut for quick adds.
 
+The app shipped v1.0 as a polished personal tool: the CRATE design system, 7 scraping sources, async scanning, and a clean dark UI with record artwork as the hero.
+
 ## Core Value
 
 Show me the cheapest way to buy the records I want, right now.
@@ -21,29 +23,39 @@ Show me the cheapest way to buy the records I want, right now.
 - ✓ Email alerts for deals below typical price threshold — existing
 - ✓ Bulk import via text file + CLI script — existing
 - ✓ Deployed to Railway with PostgreSQL — existing
+- ✓ **PERF-01–04**: Scan decoupled from HTTP, N+1 fixed, TTL cache, rate-limit semaphores — v1.0
+- ✓ **SRC-06**: Source-agnostic adapter registry — v1.0
+- ✓ **SRC-01**: eBay AU Browse API adapter — v1.0
+- ✓ **SRC-02**: Discrepancy Records AU scraper — v1.0
+- ✓ **SRC-03**: Clarity Records adapter (disabled pending NXDOMAIN fix) — v1.0
+- ✓ **SRC-04**: Juno Records scraper — v1.0
+- ✓ **SRC-05**: Bandcamp vinyl scraper — v1.0
+- ✓ **UI-01**: Bootstrap removed; 545-line hand-rolled CSS design system (CRATE) — v1.0
+- ✓ **UI-02**: Card grid with record artwork as visual hero — v1.0
+- ✓ **UI-03**: Artwork fetched via Discogs release endpoint, served through `/api/artwork` proxy — v1.0
+- ✓ **UI-04**: Landed cost breakdown with AUD FX conversion — v1.0
+- ✓ **UI-05**: Dark palette consistently applied — v1.0
+- ✓ **UI-06**: iOS Shortcut API contract (`POST /api/wishlist`, `X-API-Key`) preserved — v1.0
 
 ### Active
 
-- [x] Performance — page load, search, and bulk import are noticeably slow — *Validated in Phase 01: Infrastructure (scan decoupled, N+1 fixed, TTL cache, semaphore)*
-- [x] Source-agnostic scanner — adapter registry in place; adding Phase 2 sources requires only one dict entry — *Validated in Phase 01: Infrastructure*
-- [x] UI redesign — Spotify-like aesthetic: record artwork as the hero, minimal/uncluttered, less "AI-generated" — *Validated in Phase 03: UI Redesign (custom CSS design system, card grid, artwork pipeline, AUD FX conversion)*
-- ✓ Expand scraping sources — eBay AU, Discrepancy Records, Juno Records, Bandcamp added; Clarity Records dropped (NXDOMAIN) — *Validated in Phase 02: new-sources*
-- [x] Polish for daily use and shareable quality — *Validated in Phase 04: UI Polish (CRATE rebrand, near-black palette, white accent, sharp edges, high-res artwork, scan crash fixed)*
+_(Start fresh with /gsd-new-milestone to define v1.1 requirements)_
 
 ### Out of Scope
 
 - User accounts / multi-user support — personal tool, single user
 - Mobile app — iOS Shortcut handles mobile add; web is desktop-first
 - Auction bidding or purchasing — discovery only, not transactional
+- Clarity Records (clarityrecords.com.au) — NXDOMAIN; re-enable when site recovers
 
 ## Context
 
-- **Stack:** Python 3, FastAPI, SQLAlchemy, Jinja2 templates, pg8000/PostgreSQL, APScheduler, deployed on Railway
-- **Scraping architecture:** Source adapters (`app/services/discogs.py`, `app/services/shopify.py`) return standardized listing dicts; scanner coordinates them concurrently
-- **Performance issues:** No DB query caching, `_enrich_item()` called per-item on every dashboard load, scan runs synchronously on item add before returning response
-- **UI:** Server-side rendered Jinja2 templates; no JS framework; current look is generic/bootstrap-ish
-- **iOS Shortcut:** Hits `POST /api/wishlist` with `X-API-Key` header; must remain backward compatible
-- **Codebase map:** `.planning/codebase/` contains full analysis (CONCERNS.md has detailed perf notes)
+- **Stack:** Python 3.14, FastAPI, SQLAlchemy 2, Jinja2, pg8000/PostgreSQL (Railway), aiosqlite (dev), APScheduler, httpx
+- **Adapters:** discogs, shopify, ebay, discrepancy, juno, bandcamp (6 active; clarity disabled NXDOMAIN)
+- **Design system:** CRATE — CSS custom properties, near-black palette (#0a0a0a), white accent, sharp edges, 44px touch targets, WCAG AA contrast
+- **Database:** `listings` composite unique on `(wishlist_item_id, url)`; SQLite migration rebuilds table if legacy `UNIQUE (url)` inline constraint detected
+- **iOS Shortcut:** Hits `POST /api/wishlist` with `X-API-Key` header; backward compatible
+- **Codebase:** ~3,400 LOC (Python + HTML + CSS)
 
 ## Constraints
 
@@ -56,26 +68,25 @@ Show me the cheapest way to buy the records I want, right now.
 
 | Decision | Rationale | Outcome |
 |----------|-----------|---------|
-| Expand beyond Discogs + Shopify | User wants more coverage; Juno, Bandcamp, eBay, AU stores are targets | 6 adapters active (discogs, shopify, ebay, discrepancy, juno, bandcamp); Clarity dropped — NXDOMAIN |
-| UI direction: Spotify-like, record-art-forward | Feels less AI, more personal and visually engaging | Custom CSS design system, card grid with album art, dark palette — Phase 04 polishes aesthetic further |
-| Performance fix approach | TBD — caching, async scan decoupling, or query optimization | — Pending |
+| Expand beyond Discogs + Shopify | User wants more coverage | 6 adapters active; Clarity dropped NXDOMAIN |
+| UI direction: Spotify-like, record-art-forward | Less AI-feel, more personal | CRATE design system, card grid, dark palette ✓ Good |
+| Async scan decoupling via BackgroundTasks | Instant response for iOS Shortcut | PERF-01 validated ✓ Good |
+| TTLCache maxsize=1 for dashboard | Single endpoint, 5-min TTL | Works well; invalidated on mutation ✓ Good |
+| Per-adapter semaphores | Different rate limits per source | Cleaner than global semaphore ✓ Good |
+| Discogs release endpoint for artwork | Higher res than search thumb | Full-res cover art on all items ✓ Good |
+| `UNIQUE (wishlist_item_id, url)` on listings | Same URL valid for multiple wishlist items | Fixes IntegrityError on cross-item scans ✓ Good |
+| SQLite table rebuild migration | Inline UNIQUE can't be dropped otherwise | Handles legacy dev DB automatically ✓ Good |
+| Clarity Records disabled | NXDOMAIN on clarityrecords.com.au | Re-enable when site recovers ⚠ Revisit |
 
 ## Evolution
 
 This document evolves at phase transitions and milestone boundaries.
 
-**After each phase transition** (via `/gsd:transition`):
-1. Requirements invalidated? → Move to Out of Scope with reason
-2. Requirements validated? → Move to Validated with phase reference
-3. New requirements emerged? → Add to Active
-4. Decisions to log? → Add to Key Decisions
-5. "What This Is" still accurate? → Update if drifted
-
-**After each milestone** (via `/gsd:complete-milestone`):
+**After each milestone** (via `/gsd-complete-milestone`):
 1. Full review of all sections
 2. Core Value check — still the right priority?
 3. Audit Out of Scope — reasons still valid?
 4. Update Context with current state
 
 ---
-*Last updated: 2026-04-04 after Phase 04: UI Polish complete — CRATE rebrand, monochrome palette, sharp edges, high-res Discogs artwork, scan IntegrityError fixed*
+*Last updated: 2026-04-05 after v1.0 milestone — CRATE design system, 7 scraping sources, async performance, full UI polish*
