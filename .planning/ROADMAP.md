@@ -98,8 +98,8 @@ Plans:
 
 Plans:
 - [x] 05-01-PLAN.md — CSS design system fixes: contrast, focus-visible, touch targets, spacing tokens, active states, shadow fix
-- [ ] 05-02-PLAN.md — Typography hierarchy (H1/H2 distinction) + 3-column grid breakpoint
-- [ ] 05-03-PLAN.md — Modal accessibility (focus management + ARIA) + inline delete confirmation
+- [x] 05-02-PLAN.md — Typography hierarchy (H1/H2 distinction) + 3-column grid breakpoint
+- [x] 05-03-PLAN.md — Modal accessibility (focus management + ARIA) + inline delete confirmation
 
 **UI hint**: yes
 
