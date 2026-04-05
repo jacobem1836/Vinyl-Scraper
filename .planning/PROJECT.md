@@ -10,6 +10,21 @@ The app shipped v1.0 as a polished personal tool: the CRATE design system, 7 scr
 
 Show me the cheapest way to buy the records I want, right now.
 
+## Current Milestone: v1.1 UX Polish & Album Selection
+
+**Goal:** Sharpen the UI with targeted fixes, add Discogs typeahead for precise album identification, and redesign email notifications — all designed using the full design tool stack.
+
+**Target features:**
+- Album name autofill on add/edit (Discogs typeahead to pin a specific release)
+- Fix overlapping buttons (bottom right)
+- Fix scan log message ("no artist results" → correct type label)
+- Prioritize scraped store images over Discogs fallback
+- CRATE brand font upgrade
+- Email UI redesign
+- UI polish (typography scale, card hierarchy, focus states, button states, responsive grid, color contrast)
+
+**Design tooling constraint:** magic MCP + stitch + ui-ux-pro-max + design-for-ai must be invoked during planning and execution of every UI phase.
+
 ## Requirements
 
 ### Validated
@@ -39,7 +54,13 @@ Show me the cheapest way to buy the records I want, right now.
 
 ### Active
 
-_(Start fresh with /gsd-new-milestone to define v1.1 requirements)_
+- [ ] Album name autofill/selection on add and edit (Discogs typeahead)
+- [ ] Fix overlapping buttons (bottom right of dashboard)
+- [ ] Fix scan log message type label (album vs artist)
+- [ ] Prioritize scraped store images over Discogs fallback
+- [ ] CRATE brand font upgrade
+- [ ] Email UI redesign
+- [ ] UI polish: typography scale, card hierarchy, focus/active/disabled button states, responsive grid (3-col breakpoint), color contrast (text-faint)
 
 ### Out of Scope
 
@@ -89,4 +110,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-04-05 after v1.0 milestone — CRATE design system, 7 scraping sources, async performance, full UI polish*
+*Last updated: 2026-04-05 after v1.1 milestone start — album autofill, UI polish, email redesign*

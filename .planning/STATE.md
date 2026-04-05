@@ -1,44 +1,31 @@
 ---
 gsd_state_version: 1.0
-milestone: v1.0
-milestone_name: milestone
-status: v1.0 milestone complete
-last_updated: "2026-04-05T04:58:13.801Z"
+milestone: v1.1
+milestone_name: UX Polish & Album Selection
+status: Defining requirements
+last_updated: "2026-04-05T00:00:00.000Z"
 progress:
-  total_phases: 5
-  completed_phases: 5
-  total_plans: 17
-  completed_plans: 17
-  percent: 100
+  total_phases: 0
+  completed_phases: 0
+  total_plans: 0
+  completed_plans: 0
+  percent: 0
 ---
 
 # Project State
 
-## Current Phase
+## Current Position
 
-Phase 3: UI Redesign — Complete (4 of 4 plans done)
+Phase: Not started (defining requirements)
+Plan: —
+Status: Defining requirements
+Last activity: 2026-04-05 — Milestone v1.1 started
 
 ## Project Reference
 
 See: .planning/PROJECT.md
 **Core value:** Show me the cheapest way to buy the records I want, right now.
-**Milestone:** v1 — Fast, Beautiful, More Sources
-
-## Roadmap Summary
-
-| Phase | Goal | Requirements |
-|-------|------|--------------|
-| 1. Infrastructure | Fast, source-agnostic foundation | PERF-01, PERF-02, PERF-03, PERF-04, SRC-06 |
-| 2. New Sources | eBay AU, Discrepancy, Clarity, Juno, Bandcamp | SRC-01, SRC-02, SRC-03, SRC-04, SRC-05 |
-| 3. UI Redesign | Spotify-like card layout, dark palette, artwork hero | UI-01, UI-02, UI-03, UI-04, UI-05, UI-06 |
-
-## Progress
-
-```
-Phase 1 [##########] 100%
-Phase 2 [##########] 100%
-Phase 3 [##########] 100%
-```
+**Current focus:** v1.1 UX Polish & Album Selection
 
 ## Accumulated Context
 
@@ -69,8 +56,7 @@ Phase 3 [##########] 100%
 
 ### Roadmap Evolution
 
-- Phase 4 added: UI Polish — dark non-blue palette, tighter spacing, no rounded excess, styled nav title, accent color revision, higher-res Discogs artwork via release endpoint, leverages stitch/magic/ui-ux-promax tools
-- Phase 5 added: Improve UI and UX design
+- (v1.1 roadmap not yet created)
 
 ### Todos
 
@@ -82,4 +68,4 @@ Phase 3 [##########] 100%
 
 ## Last Updated
 
-2026-04-03 — Completed 03-01 (CSS design system + Tailwind removal; base.html rewritten with semantic classes), 03-02 (Artwork pipeline: artwork_url column, Discogs thumb capture, proxy endpoint, placeholder SVG), 03-03 (FX rate service: open.er-api.com TTL cache, aud_total/orig_display in listing dicts), and 03-04 (Dashboard card grid + detail page rewrite; visual verification approved)
+2026-04-05 — Milestone v1.1 started
