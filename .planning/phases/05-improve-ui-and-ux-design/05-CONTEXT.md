@@ -76,7 +76,8 @@ This phase delivers a comprehensive UI/UX polish pass on both the dashboard (`in
 - `app/static/css/style.css` — Main CSS file; contains all design tokens, card styles, button classes, grid, modal
 
 ### JavaScript
-- `app/static/js/main.js` — Client-side JS; contains modal open/close logic (focus management fix lives here)
+- `app/templates/base.html` — Inline JS; contains `openModal`/`closeModal` logic (focus management fix lives here)
+- `app/templates/index.html` — Inline JS; contains `openEdit`/`closeEdit` logic for item edit modal
 
 ### Design audit (source of truth for this phase)
 - `ui-to-improve.txt` — Full in-depth UI analysis with exact hex values, contrast ratios, and code snippets
