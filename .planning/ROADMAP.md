@@ -40,7 +40,10 @@ Full details: `.planning/milestones/v1.0-ROADMAP.md`
   3. User can re-select or change the linked Discogs release when editing an existing wishlist item
   4. Rapid typing does not fire a new request on every keystroke — debounce holds for at least 300ms before fetching
   5. iOS Shortcut (`POST /api/wishlist` with `X-API-Key`) continues to work without any change to the Shortcut itself
-**Plans**: TBD
+**Plans**: 2 plans
+Plans:
+- [ ] 06-01-PLAN.md — Backend: DB migration, schemas, typeahead API endpoint, pinned-release scanner logic
+- [ ] 06-02-PLAN.md — Frontend: typeahead CSS/JS, add/edit modal integration, human verification
 
 ### Phase 7: Image Source Priority + Scan Log Fix
 **Goal**: Record artwork shows the scraped store image when available, and scan log messages use the correct item type label
@@ -119,7 +122,7 @@ Full details: `.planning/milestones/v1.0-ROADMAP.md`
 | 3. UI Redesign | v1.0 | 4/4 | Complete | 2026-04-03 |
 | 4. UI Polish | v1.0 | 3/3 | Complete | 2026-04-05 |
 | 5. Improve UI/UX | v1.0 | 3/3 | Complete | 2026-04-05 |
-| 6. Discogs Typeahead | v1.1 | 0/? | Not started | - |
+| 6. Discogs Typeahead | v1.1 | 0/2 | Planned | - |
 | 7. Image Priority + Scan Fix | v1.1 | 0/? | Not started | - |
 | 8. Brand Font Upgrade | v1.1 | 0/? | Not started | - |
 | 9. Email Redesign | v1.1 | 0/? | Not started | - |
