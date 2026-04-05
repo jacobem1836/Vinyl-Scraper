@@ -3,7 +3,7 @@
 **Defined:** 2026-04-02
 **Core Value:** Show me the cheapest way to buy the records I want, right now.
 
-## v1 Requirements
+## v1 Requirements (Milestone v1.0 — Complete)
 
 ### Performance
 
@@ -23,14 +23,63 @@
 
 ### UI
 
-- [ ] **UI-01**: Bootstrap is removed and replaced with custom CSS using design tokens (CSS custom properties) for colours, spacing, and typography
+- [x] **UI-01**: Bootstrap is removed and replaced with custom CSS using design tokens (CSS custom properties) for colours, spacing, and typography
 - [x] **UI-02**: Dashboard displays wishlist items as a card grid where record cover artwork is the visual hero of each card
-- [ ] **UI-03**: Album art is fetched from the Discogs API at scan time, stored as a URL in the database, and served via a local proxy endpoint — Discogs CDN is never hotlinked directly from the browser
+- [x] **UI-03**: Album art is fetched from the Discogs API at scan time, stored as a URL in the database, and served via a local proxy endpoint — Discogs CDN is never hotlinked directly from the browser
 - [x] **UI-04**: Each listing shows a clear landed cost breakdown: base price + estimated shipping + AUD equivalent (with FX rate noted)
 - [x] **UI-05**: Dark colour palette applied consistently across all pages (background, cards, text, accents)
-- [ ] **UI-06**: Existing iOS Shortcut API contract (`POST /api/wishlist` with `X-API-Key`) is preserved unchanged through all UI and backend changes
+- [x] **UI-06**: Existing iOS Shortcut API contract (`POST /api/wishlist` with `X-API-Key`) is preserved unchanged through all UI and backend changes
+
+## v1.1 Requirements (Milestone v1.1 — Current)
+
+### Typeahead / Album Selection
+
+- [ ] **TYPE-01**: User sees a search-as-you-type dropdown when typing in the add-item form, showing matching Discogs releases (title, artist, year, cover thumb)
+- [ ] **TYPE-02**: User can navigate dropdown results with arrow keys and confirm with Enter or click
+- [ ] **TYPE-03**: User can re-select or change the linked Discogs release on an existing wishlist item via the edit flow
+- [ ] **TYPE-04**: Typeahead is debounced (≥300ms) and capped at 5 results to respect Discogs rate limits
+
+### Image Source Priority
+
+- [ ] **IMG-01**: Scraped store images are used as the primary artwork source when available
+- [ ] **IMG-02**: Discogs artwork falls back when no store image is present; vinyl placeholder SVG is the final fallback
+
+### Brand Font
+
+- [ ] **FONT-01**: The CRATE logotype uses a brutalist display web font loaded from a static asset (no external CDN dependency in production)
+
+### Email Design
+
+- [ ] **EMAIL-01**: Deal alert emails are redesigned with inline CSS for email client compatibility
+- [ ] **EMAIL-02**: Email shows a scannable deal summary: item name, best price, % below typical, direct link to item detail page
+- [ ] **EMAIL-03**: Email visual design is consistent with the CRATE dark aesthetic where email client support allows
+
+### UI Polish
+
+> **Design tooling constraint:** All UI Polish work must be designed using magic MCP + stitch + ui-ux-pro-max + design-for-ai. Planning and execution subagents must invoke these tools.
+
+- [ ] **UIP-01**: `--color-text-faint` is bumped to ≥#686868 to pass WCAG AA (4.5:1) at 14px on #0a0a0a
+- [ ] **UIP-02**: Typography scale expanded — heading token increased to 28–30px; card titles use body size (16px) not text-sm (14px)
+- [ ] **UIP-03**: H1 and H2 headings are visually distinct (H1 at heading scale, H2 at sub-heading scale)
+- [ ] **UIP-04**: All button classes (btn-cta, btn-secondary, btn-destructive) have :focus-visible ring (box-shadow: 0 0 0 2px var(--color-accent))
+- [ ] **UIP-05**: All button classes have :active micro-interaction (transform: scale(0.97))
+- [ ] **UIP-06**: Scan Now button has a :disabled state (opacity: 0.5, cursor: not-allowed) applied while scan is running
+- [ ] **UIP-07**: Modal has role="dialog", aria-modal="true", aria-labelledby; focus moves to first input on open and returns to trigger on close
+- [ ] **UIP-08**: Native confirm() for delete replaced with inline confirmation state ("Are you sure?" / Cancel)
+- [ ] **UIP-09**: Card grid adds a 3-column breakpoint at 1024px (repeat(3, 1fr))
+- [ ] **UIP-10**: Rogue 12px spacing values replaced with design system tokens (--space-sm or --space-md)
+
+### Bug Fixes
+
+- [ ] **BUG-01**: Overlapping buttons (bottom right of dashboard) are fixed
+- [ ] **BUG-02**: Scan log message uses correct type label ("no album results" not "no artist results" when item_type is album)
 
 ## v2 Requirements
+
+### Advanced Typeahead
+
+- **TYPE-05**: Typeahead works on artist/label/subject item types (not just album)
+- **TYPE-06**: Previously selected Discogs release is shown and highlighted in the edit dropdown
 
 ### Data Quality
 
@@ -39,8 +88,8 @@
 
 ### Sources (Deferred)
 
-- **SRC-07**: Egg Records adapter (Common Ground platform) — deferred pending platform API investigation
-- **SRC-08**: International stores beyond Juno (e.g. Boomkat, Forced Exposure) — defer until AU sources are stable
+- **SRC-07**: Clarity Records re-enabled once clarityrecords.com.au DNS resolves
+- **SRC-08**: Egg Records adapter (Common Ground platform) — deferred pending platform API investigation
 
 ### Notifications
 
@@ -54,36 +103,58 @@
 | Mobile app | iOS Shortcut handles mobile adds; web is desktop-first |
 | Purchasing / bidding | Discovery only — not transactional |
 | Import duty / GST modelling | Too complex for marginal accuracy gain; note as approximation |
-| Juno selectors (if blocked) | Requires live browser inspection; defer to execution phase — may fall back to v2 |
 | Bandcamp general marketplace search | No public search API; only artist/label-targeted search is feasible |
 | Redis / Celery / task queue | Overkill for single-user tool; BackgroundTasks + APScheduler sufficient |
+| Dark/light theme toggle | CRATE is intentionally dark-only |
 
 ## Traceability
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| PERF-01 | Phase 1: Infrastructure | Complete (01-01) |
-| PERF-02 | Phase 1: Infrastructure | Complete (01-01) |
-| PERF-03 | Phase 1: Infrastructure | Complete (01-01) |
-| PERF-04 | Phase 1: Infrastructure | Complete (01-01) |
+| PERF-01 | Phase 1: Infrastructure | Complete |
+| PERF-02 | Phase 1: Infrastructure | Complete |
+| PERF-03 | Phase 1: Infrastructure | Complete |
+| PERF-04 | Phase 1: Infrastructure | Complete |
 | SRC-06 | Phase 1: Infrastructure | Complete |
 | SRC-01 | Phase 2: New Sources | Complete |
 | SRC-02 | Phase 2: New Sources | Complete |
 | SRC-03 | Phase 2: New Sources | Complete |
 | SRC-04 | Phase 2: New Sources | Complete |
 | SRC-05 | Phase 2: New Sources | Complete |
-| UI-01 | Phase 3: UI Redesign | Pending |
+| UI-01 | Phase 3: UI Redesign | Complete |
 | UI-02 | Phase 3: UI Redesign | Complete |
-| UI-03 | Phase 3: UI Redesign | Pending |
+| UI-03 | Phase 3: UI Redesign | Complete |
 | UI-04 | Phase 3: UI Redesign | Complete |
 | UI-05 | Phase 3: UI Redesign | Complete |
-| UI-06 | Phase 3: UI Redesign | Pending |
+| UI-06 | Phase 3: UI Redesign | Complete |
+| TYPE-01 | Phase 6 | Pending |
+| TYPE-02 | Phase 6 | Pending |
+| TYPE-03 | Phase 6 | Pending |
+| TYPE-04 | Phase 6 | Pending |
+| IMG-01 | Phase 7 | Pending |
+| IMG-02 | Phase 7 | Pending |
+| BUG-02 | Phase 7 | Pending |
+| FONT-01 | Phase 8 | Pending |
+| EMAIL-01 | Phase 9 | Pending |
+| EMAIL-02 | Phase 9 | Pending |
+| EMAIL-03 | Phase 9 | Pending |
+| UIP-01 | Phase 10 | Pending |
+| UIP-02 | Phase 10 | Pending |
+| UIP-03 | Phase 10 | Pending |
+| UIP-04 | Phase 10 | Pending |
+| UIP-05 | Phase 10 | Pending |
+| UIP-06 | Phase 10 | Pending |
+| UIP-07 | Phase 10 | Pending |
+| UIP-08 | Phase 10 | Pending |
+| UIP-09 | Phase 10 | Pending |
+| UIP-10 | Phase 10 | Pending |
+| BUG-01 | Phase 10 | Pending |
 
 **Coverage:**
-- v1 requirements: 16 total
-- Mapped to phases: 16
+- v1.1 requirements: 22 total
+- Mapped to phases: 22
 - Unmapped: 0 ✓
 
 ---
 *Requirements defined: 2026-04-02*
-*Last updated: 2026-04-02 after roadmap creation*
+*Last updated: 2026-04-05 after v1.1 milestone definition*
