@@ -39,6 +39,8 @@
           const panel = modal.querySelector('[data-panel]');
           if (backdrop) backdrop.classList.remove('opacity-0');
           if (panel) panel.classList.remove('opacity-0', 'translate-y-4');
+          const firstFocusable = modal.querySelector('input, select, textarea, button');
+          if (firstFocusable) firstFocusable.focus();
         });
       };
 
@@ -50,6 +52,7 @@
         if (backdrop) backdrop.classList.add('opacity-0');
         if (panel) panel.classList.add('opacity-0', 'translate-y-4');
         setTimeout(() => modal.classList.add('hidden'), 200);
+        if (openBtn) openBtn.focus();
       };
 
       if (openBtn) {

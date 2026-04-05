@@ -39,11 +39,11 @@
   </section>
 
   <!-- Add Item Modal -->
-  <div id="addItemModal" class="hidden modal-overlay">
+  <div id="addItemModal" class="hidden modal-overlay" role="dialog" aria-modal="true" aria-labelledby="addItemModalTitle">
     <div data-backdrop class="modal-backdrop opacity-0"></div>
     <div class="modal-center">
       <div data-panel class="modal-panel opacity-0 translate-y-4">
-        <h2 style="font-size: var(--text-heading); font-weight: 600; margin-bottom: var(--space-md);">Add Wishlist Item</h2>
+        <h2 id="addItemModalTitle" style="font-size: var(--text-heading); font-weight: 600; margin-bottom: var(--space-md);">Add Wishlist Item</h2>
         <form action="/wishlist/add" method="post" class="stack-md">
           <div>
             <label class="form-label">What are you looking for?</label>
@@ -85,11 +85,11 @@
   </div>
 
   <!-- Edit Item Modal -->
-  <div id="editItemModal" class="hidden modal-overlay">
+  <div id="editItemModal" class="hidden modal-overlay" role="dialog" aria-modal="true" aria-labelledby="editItemModalTitle">
     <div data-edit-backdrop class="modal-backdrop opacity-0"></div>
     <div class="modal-center">
       <div data-edit-panel class="modal-panel opacity-0 translate-y-4">
-        <h2 style="font-size: var(--text-heading); font-weight: 600; margin-bottom: var(--space-md);">Edit Wishlist Item</h2>
+        <h2 id="editItemModalTitle" style="font-size: var(--text-heading); font-weight: 600; margin-bottom: var(--space-md);">Edit Wishlist Item</h2>
         <form id="editItemForm" action="" method="post" class="stack-md">
           <div>
             <label class="form-label">What are you looking for?</label>
@@ -179,8 +179,10 @@
   document.addEventListener('DOMContentLoaded', () => {
     const modal = document.getElementById('editItemModal');
     const form = document.getElementById('editItemForm');
+    let editTriggerBtn = null;
 
     const openEdit = (btn) => {
+      editTriggerBtn = btn;
       form.action = '/wishlist/' + btn.dataset.id + '/edit';
       document.getElementById('editQuery').value = btn.dataset.query;
       document.getElementById('editType').value = btn.dataset.type;
@@ -193,6 +195,8 @@
         const panel = modal.querySelector('[data-edit-panel]');
         if (backdrop) backdrop.classList.remove('opacity-0');
         if (panel) panel.classList.remove('opacity-0', 'translate-y-4');
+        const firstFocusable = modal.querySelector('input, select, textarea, button');
+        if (firstFocusable) firstFocusable.focus();
       });
     };
 
@@ -202,6 +206,7 @@
       if (backdrop) backdrop.classList.add('opacity-0');
       if (panel) panel.classList.add('opacity-0', 'translate-y-4');
       setTimeout(() => modal.classList.add('hidden'), 200);
+      if (editTriggerBtn) editTriggerBtn.focus();
     };
 
     document.querySelectorAll('[data-edit-item]').forEach(btn => {
