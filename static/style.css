@@ -20,7 +20,7 @@
   /* Colour — text */
   --color-text:         #f5f5f5;
   --color-text-muted:   #777777;
-  --color-text-faint:   #555555;
+  --color-text-faint:   #686868;
 
   /* Colour — accent (white) */
   --color-accent:       #ffffff;
@@ -194,7 +194,7 @@ button, input, select, textarea {
   border-radius: var(--radius-btn);
   cursor: pointer;
   transition: background 200ms;
-  min-height: 40px;
+  min-height: 44px;
   border: none;
   display: inline-flex;
   align-items: center;
@@ -213,6 +213,7 @@ button, input, select, textarea {
   border-radius: var(--radius-btn);
   cursor: pointer;
   transition: background 200ms;
+  min-height: 44px;
   display: inline-flex;
   align-items: center;
 }
@@ -231,12 +232,26 @@ button, input, select, textarea {
   border-radius: var(--radius-btn);
   cursor: pointer;
   transition: background 200ms;
+  min-height: 44px;
   display: inline-flex;
   align-items: center;
 }
 
 .btn-destructive:hover {
   background: var(--color-destructive-bg);
+}
+
+.btn-cta:focus-visible,
+.btn-secondary:focus-visible,
+.btn-destructive:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px var(--color-accent);
+}
+
+.btn-cta:active,
+.btn-secondary:active,
+.btn-destructive:active {
+  transform: scale(0.97);
 }
 
 /* ============================================================
@@ -252,13 +267,13 @@ button, input, select, textarea {
 
 .card:hover {
   transform: translateY(-2px);
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6);
+  box-shadow: 0 0 0 1px rgba(255,255,255,0.1), 0 8px 24px rgba(0, 5, 20, 0.8);
 }
 
 .card-grid {
   display: grid;
   grid-template-columns: repeat(1, 1fr);
-  gap: 12px;
+  gap: var(--space-sm);
 }
 
 @media (min-width: 768px) {
@@ -282,7 +297,7 @@ button, input, select, textarea {
 }
 
 .card-body {
-  padding: 12px;
+  padding: var(--space-sm) var(--space-md);
 }
 
 .card--scanning {
@@ -297,7 +312,7 @@ button, input, select, textarea {
   background: var(--color-surface-alt);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-input);
-  padding: var(--space-sm) 12px;
+  padding: var(--space-sm) var(--space-md);
   color: var(--color-text);
 }
 
@@ -512,11 +527,11 @@ button, input, select, textarea {
   background: var(--color-surface);
   border: 1px solid var(--color-border);
   border-radius: 0;
-  padding: 12px 20px;
+  padding: var(--space-sm) var(--space-lg);
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: var(--space-sm);
 }
 
 /* ============================================================
