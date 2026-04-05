@@ -48,9 +48,15 @@
 
       <div class="flex items-center" style="gap: var(--space-sm);">
         <button type="button" onclick="startScan({{ item.id }})" class="btn-cta">Scan Now</button>
-        <form action="/wishlist/{{ item.id }}/delete" method="post" onsubmit="return confirm('Remove this item from your crate?')">
-          <button type="submit" class="btn-destructive">Remove from Crate</button>
-        </form>
+        <div id="deleteConfirm" style="display: flex; align-items: center; gap: var(--space-sm);">
+          <button type="button" id="deleteInitBtn" class="btn-destructive" onclick="document.getElementById('deleteInitBtn').style.display='none'; document.getElementById('deleteConfirmBtns').style.display='flex';">Remove from Crate</button>
+          <div id="deleteConfirmBtns" style="display: none; align-items: center; gap: var(--space-sm);">
+            <form action="/wishlist/{{ item.id }}/delete" method="post" style="display: inline;">
+              <button type="submit" class="btn-destructive">Confirm?</button>
+            </form>
+            <button type="button" class="btn-secondary" onclick="document.getElementById('deleteInitBtn').style.display='inline-flex'; document.getElementById('deleteConfirmBtns').style.display='none';">Cancel</button>
+          </div>
+        </div>
       </div>
     </div>
   </section>
