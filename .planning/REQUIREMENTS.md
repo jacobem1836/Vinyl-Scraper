@@ -14,20 +14,20 @@
 
 ### Sources
 
-- [ ] **SRC-01**: eBay AU adapter queries the eBay Browse API (not HTML), filters buy-it-now only, targets `EBAY_AU` marketplace, and returns results in the standard listing dict format
-- [ ] **SRC-02**: Discrepancy Records adapter scrapes the Discrepancy Records storefront (Neto platform) and returns standard listing dicts with AUD prices
-- [ ] **SRC-03**: Clarity Records adapter scrapes the Clarity Records storefront (BigCommerce platform) and returns standard listing dicts with AUD prices
-- [ ] **SRC-04**: Juno Records adapter scrapes Juno Records HTML search results (with correct User-Agent header) and returns standard listing dicts
-- [ ] **SRC-05**: Bandcamp adapter performs artist/label search and returns physical vinyl listings (merch/records only, not digital); scope-limited to search — not general marketplace scraping
+- [x] **SRC-01**: eBay AU adapter queries the eBay Browse API (not HTML), filters buy-it-now only, targets `EBAY_AU` marketplace, and returns results in the standard listing dict format
+- [x] **SRC-02**: Discrepancy Records adapter scrapes the Discrepancy Records storefront (Neto platform) and returns standard listing dicts with AUD prices
+- [x] **SRC-03**: Clarity Records adapter scrapes the Clarity Records storefront (BigCommerce platform) and returns standard listing dicts with AUD prices
+- [x] **SRC-04**: Juno Records adapter scrapes Juno Records HTML search results (with correct User-Agent header) and returns standard listing dicts
+- [x] **SRC-05**: Bandcamp adapter performs artist/label search and returns physical vinyl listings (merch/records only, not digital); scope-limited to search — not general marketplace scraping
 - [x] **SRC-06**: All new sources are registered in a central adapter registry; adding or removing a source requires only a change to the registry, not to the scanner
 
 ### UI
 
 - [ ] **UI-01**: Bootstrap is removed and replaced with custom CSS using design tokens (CSS custom properties) for colours, spacing, and typography
-- [ ] **UI-02**: Dashboard displays wishlist items as a card grid where record cover artwork is the visual hero of each card
+- [x] **UI-02**: Dashboard displays wishlist items as a card grid where record cover artwork is the visual hero of each card
 - [ ] **UI-03**: Album art is fetched from the Discogs API at scan time, stored as a URL in the database, and served via a local proxy endpoint — Discogs CDN is never hotlinked directly from the browser
-- [ ] **UI-04**: Each listing shows a clear landed cost breakdown: base price + estimated shipping + AUD equivalent (with FX rate noted)
-- [ ] **UI-05**: Dark colour palette applied consistently across all pages (background, cards, text, accents)
+- [x] **UI-04**: Each listing shows a clear landed cost breakdown: base price + estimated shipping + AUD equivalent (with FX rate noted)
+- [x] **UI-05**: Dark colour palette applied consistently across all pages (background, cards, text, accents)
 - [ ] **UI-06**: Existing iOS Shortcut API contract (`POST /api/wishlist` with `X-API-Key`) is preserved unchanged through all UI and backend changes
 
 ## v2 Requirements
@@ -67,16 +67,16 @@
 | PERF-03 | Phase 1: Infrastructure | Complete (01-01) |
 | PERF-04 | Phase 1: Infrastructure | Complete (01-01) |
 | SRC-06 | Phase 1: Infrastructure | Complete |
-| SRC-01 | Phase 2: New Sources | Pending |
-| SRC-02 | Phase 2: New Sources | Pending |
-| SRC-03 | Phase 2: New Sources | Pending |
-| SRC-04 | Phase 2: New Sources | Pending |
-| SRC-05 | Phase 2: New Sources | Pending |
+| SRC-01 | Phase 2: New Sources | Complete |
+| SRC-02 | Phase 2: New Sources | Complete |
+| SRC-03 | Phase 2: New Sources | Complete |
+| SRC-04 | Phase 2: New Sources | Complete |
+| SRC-05 | Phase 2: New Sources | Complete |
 | UI-01 | Phase 3: UI Redesign | Pending |
-| UI-02 | Phase 3: UI Redesign | Pending |
+| UI-02 | Phase 3: UI Redesign | Complete |
 | UI-03 | Phase 3: UI Redesign | Pending |
-| UI-04 | Phase 3: UI Redesign | Pending |
-| UI-05 | Phase 3: UI Redesign | Pending |
+| UI-04 | Phase 3: UI Redesign | Complete |
+| UI-05 | Phase 3: UI Redesign | Complete |
 | UI-06 | Phase 3: UI Redesign | Pending |
 
 **Coverage:**

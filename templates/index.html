@@ -1,59 +1,58 @@
 {% extends "base.html" %}
 
-{% block title %}Dashboard · Vinyl Wishlist{% endblock %}
+{% block title %}Dashboard · CRATE{% endblock %}
 
 {% block content %}
-<div class="space-y-6">
-  <section class="bg-slate-800 border border-slate-700 rounded-xl p-4 sm:p-5 space-y-3">
-    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-      <div class="flex flex-wrap gap-x-4 gap-y-1 text-sm text-slate-300">
-        <span><span class="text-white font-semibold">{{ items|length }}</span> items watching</span>
-        <span class="text-slate-600">|</span>
-        <span><span class="text-white font-semibold">{{ total_listings }}</span> listings found</span>
+<div class="stack-lg">
+
+  <!-- Stats bar -->
+  <section class="card" style="padding: var(--space-md);">
+    <div class="flex items-center justify-between" style="flex-wrap: wrap; gap: var(--space-md);">
+      <div class="flex items-center" style="flex-wrap: wrap; gap: var(--space-md);">
+        <span class="text-sm text-muted">
+          <span style="color: var(--color-text); font-weight: 600;">{{ items|length }}</span> items watching
+        </span>
+        <span class="text-faint">|</span>
+        <span class="text-sm text-muted">
+          <span style="color: var(--color-text); font-weight: 600;">{{ total_listings }}</span> listings found
+        </span>
       </div>
-      <button type="button" onclick="startScan()" class="bg-amber-500 hover:bg-amber-400 text-slate-900 text-sm font-semibold px-4 py-2 rounded-md transition">
-        Scan All
-      </button>
+      <button type="button" onclick="startScan()" class="btn-cta">Scan All</button>
     </div>
     {% if total_cost is not none %}
-    <div class="flex flex-wrap gap-4 pt-1 border-t border-slate-700 text-sm">
-      <div>
-        <span class="text-slate-400">Total to Australia</span>
-        <span class="ml-2 text-amber-400 font-semibold">${{ '%.2f'|format(total_cost) }}</span>
-        <span class="ml-1 text-slate-500 text-xs">(+~${{ '%.0f'|format(shipping_estimate) }}/item shipping)</span>
+    <div style="padding-top: var(--space-sm); margin-top: var(--space-sm); border-top: 1px solid var(--color-border);">
+      <div class="flex items-center" style="flex-wrap: wrap; gap: var(--space-md);">
+        <div class="text-sm">
+          <span class="text-muted">Total to Australia</span>
+          <span class="text-accent" style="margin-left: var(--space-sm); font-weight: 600;">${{ '%.2f'|format(total_cost) }}</span>
+        </div>
+        {% if cheapest %}
+        <div class="text-sm">
+          <span class="text-muted">Cheapest</span>
+          <span class="text-success" style="margin-left: var(--space-sm);">${{ '%.2f'|format(cheapest.best_price) }}</span>
+          <span class="text-faint text-sm" style="margin-left: var(--space-xs);">{{ cheapest.query|truncate(20, true) }}</span>
+        </div>
+        {% endif %}
       </div>
-      {% if cheapest %}
-      <div>
-        <span class="text-slate-400">Cheapest</span>
-        <span class="ml-2 text-green-400 font-medium">${{ '%.2f'|format(cheapest.best_price) }}</span>
-        <span class="ml-1 text-slate-400 text-xs">{{ cheapest.query|truncate(20, true) }}</span>
-      </div>
-      {% endif %}
-      {% if most_expensive %}
-      <div>
-        <span class="text-slate-400">Most expensive</span>
-        <span class="ml-2 text-red-400 font-medium">${{ '%.2f'|format(most_expensive.best_price) }}</span>
-        <span class="ml-1 text-slate-400 text-xs">{{ most_expensive.query|truncate(20, true) }}</span>
-      </div>
-      {% endif %}
     </div>
     {% endif %}
   </section>
 
-  <div id="addItemModal" class="hidden fixed inset-0 z-50">
-    <div data-backdrop class="modal-backdrop absolute inset-0 bg-black/60 opacity-0"></div>
-    <div class="relative min-h-full flex items-center justify-center p-4">
-      <div data-panel class="modal-panel w-full max-w-lg bg-slate-800 border border-slate-700 rounded-xl p-6 opacity-0 translate-y-4">
-        <h2 class="text-lg font-semibold mb-4">Add Wishlist Item</h2>
-        <form action="/wishlist/add" method="post" class="space-y-4">
+  <!-- Add Item Modal -->
+  <div id="addItemModal" class="hidden modal-overlay" role="dialog" aria-modal="true" aria-labelledby="addItemModalTitle">
+    <div data-backdrop class="modal-backdrop opacity-0"></div>
+    <div class="modal-center">
+      <div data-panel class="modal-panel opacity-0 translate-y-4">
+        <h2 id="addItemModalTitle" style="font-size: var(--text-heading); font-weight: 600; margin-bottom: var(--space-md);">Add Wishlist Item</h2>
+        <form action="/wishlist/add" method="post" class="stack-md">
           <div>
-            <label class="block text-sm text-slate-300 mb-1">What are you looking for?</label>
-            <input name="query" required placeholder="e.g. Dark Side of the Moon" class="w-full bg-slate-900 border border-slate-700 rounded-md px-3 py-2 text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-amber-500" />
+            <label class="form-label">What are you looking for?</label>
+            <input name="query" required placeholder="e.g. Dark Side of the Moon" class="form-input" />
           </div>
 
           <div>
-            <label class="block text-sm text-slate-300 mb-1">Type</label>
-            <select name="type" class="w-full bg-slate-900 border border-slate-700 rounded-md px-3 py-2 text-white focus:outline-none focus:ring-2 focus:ring-amber-500">
+            <label class="form-label">Type</label>
+            <select name="type" class="form-input">
               <option value="album">Album</option>
               <option value="artist">Artist</option>
               <option value="label">Label</option>
@@ -62,42 +61,43 @@
           </div>
 
           <div>
-            <label class="block text-sm text-slate-300 mb-1">Notes (optional)</label>
-            <input name="notes" placeholder="Any notes..." class="w-full bg-slate-900 border border-slate-700 rounded-md px-3 py-2 text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-amber-500" />
+            <label class="form-label">Notes (optional)</label>
+            <input name="notes" placeholder="Any notes..." class="form-input" />
           </div>
 
           <div>
-            <label class="block text-sm text-slate-300 mb-1">Notify when price is this % below typical</label>
-            <input name="notify_below_pct" step="1" min="1" max="90" type="number" value="20" class="w-full bg-slate-900 border border-slate-700 rounded-md px-3 py-2 text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-amber-500" />
+            <label class="form-label">Notify when price is this % below typical</label>
+            <input name="notify_below_pct" step="1" min="1" max="90" type="number" value="20" class="form-input" />
           </div>
 
-          <label class="flex items-center gap-2 text-sm text-slate-300">
-            <input type="checkbox" name="notify_email" checked class="rounded border-slate-600 bg-slate-900 text-amber-500 focus:ring-amber-500" />
+          <label class="flex items-center gap-sm text-sm text-muted">
+            <input type="checkbox" name="notify_email" checked class="form-checkbox" />
             Email me when deals are found
           </label>
 
-          <div class="flex justify-end gap-2 pt-2">
-            <button type="button" data-close-modal class="px-4 py-2 rounded-md border border-slate-600 text-slate-300 hover:bg-slate-700 transition">Cancel</button>
-            <button type="submit" class="px-4 py-2 rounded-md bg-amber-500 hover:bg-amber-400 text-slate-900 font-semibold transition">Add to Wishlist</button>
+          <div class="flex justify-end gap-sm" style="padding-top: var(--space-sm);">
+            <button type="button" data-close-modal class="btn-secondary">Cancel</button>
+            <button type="submit" class="btn-cta">Add to Wishlist</button>
           </div>
         </form>
       </div>
     </div>
   </div>
 
-  <div id="editItemModal" class="hidden fixed inset-0 z-50">
-    <div data-edit-backdrop class="modal-backdrop absolute inset-0 bg-black/60 opacity-0"></div>
-    <div class="relative min-h-full flex items-center justify-center p-4">
-      <div data-edit-panel class="modal-panel w-full max-w-lg bg-slate-800 border border-slate-700 rounded-xl p-6 opacity-0 translate-y-4">
-        <h2 class="text-lg font-semibold mb-4">Edit Wishlist Item</h2>
-        <form id="editItemForm" action="" method="post" class="space-y-4">
+  <!-- Edit Item Modal -->
+  <div id="editItemModal" class="hidden modal-overlay" role="dialog" aria-modal="true" aria-labelledby="editItemModalTitle">
+    <div data-edit-backdrop class="modal-backdrop opacity-0"></div>
+    <div class="modal-center">
+      <div data-edit-panel class="modal-panel opacity-0 translate-y-4">
+        <h2 id="editItemModalTitle" style="font-size: var(--text-heading); font-weight: 600; margin-bottom: var(--space-md);">Edit Wishlist Item</h2>
+        <form id="editItemForm" action="" method="post" class="stack-md">
           <div>
-            <label class="block text-sm text-slate-300 mb-1">What are you looking for?</label>
-            <input id="editQuery" name="query" required class="w-full bg-slate-900 border border-slate-700 rounded-md px-3 py-2 text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-amber-500" />
+            <label class="form-label">What are you looking for?</label>
+            <input id="editQuery" name="query" required class="form-input" />
           </div>
           <div>
-            <label class="block text-sm text-slate-300 mb-1">Type</label>
-            <select id="editType" name="type" class="w-full bg-slate-900 border border-slate-700 rounded-md px-3 py-2 text-white focus:outline-none focus:ring-2 focus:ring-amber-500">
+            <label class="form-label">Type</label>
+            <select id="editType" name="type" class="form-input">
               <option value="album">Album</option>
               <option value="artist">Artist</option>
               <option value="label">Label</option>
@@ -105,117 +105,84 @@
             </select>
           </div>
           <div>
-            <label class="block text-sm text-slate-300 mb-1">Notes (optional)</label>
-            <input id="editNotes" name="notes" class="w-full bg-slate-900 border border-slate-700 rounded-md px-3 py-2 text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-amber-500" />
+            <label class="form-label">Notes (optional)</label>
+            <input id="editNotes" name="notes" class="form-input" />
           </div>
           <div>
-            <label class="block text-sm text-slate-300 mb-1">Notify when price is this % below typical</label>
-            <input id="editNotifyPct" name="notify_below_pct" type="number" step="1" min="1" max="90" class="w-full bg-slate-900 border border-slate-700 rounded-md px-3 py-2 text-white focus:outline-none focus:ring-2 focus:ring-amber-500" />
+            <label class="form-label">Notify when price is this % below typical</label>
+            <input id="editNotifyPct" name="notify_below_pct" type="number" step="1" min="1" max="90" class="form-input" />
           </div>
-          <label class="flex items-center gap-2 text-sm text-slate-300">
-            <input id="editNotifyEmail" type="checkbox" name="notify_email" class="rounded border-slate-600 bg-slate-900 text-amber-500 focus:ring-amber-500" />
+          <label class="flex items-center gap-sm text-sm text-muted">
+            <input id="editNotifyEmail" type="checkbox" name="notify_email" class="form-checkbox" />
             Email me when deals are found
           </label>
-          <div class="flex justify-end gap-2 pt-2">
-            <button type="button" data-close-edit-modal class="px-4 py-2 rounded-md border border-slate-600 text-slate-300 hover:bg-slate-700 transition">Cancel</button>
-            <button type="submit" class="px-4 py-2 rounded-md bg-amber-500 hover:bg-amber-400 text-slate-900 font-semibold transition">Save Changes</button>
+          <div class="flex justify-end gap-sm" style="padding-top: var(--space-sm);">
+            <button type="button" data-close-edit-modal class="btn-secondary">Cancel</button>
+            <button type="submit" class="btn-cta">Save Changes</button>
           </div>
         </form>
       </div>
     </div>
   </div>
 
+  <!-- Album art card grid -->
   {% if items %}
-    <section class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+    <section class="card-grid">
       {% for item in items %}
         {% set is_scanning = item.listing_count == 0 and item.last_scanned_at is none %}
-        <article
-          class="bg-slate-800 border border-slate-700 rounded-xl p-4 flex flex-col gap-4{% if is_scanning %} card--scanning{% endif %}"
-          data-item-id="{{ item.id }}"
-          {% if is_scanning %}data-scanning="true"{% endif %}
-        >
-          <div class="flex items-start justify-between gap-2">
-            <div class="flex items-center gap-2">
-              <span class="inline-flex items-center rounded-full border px-2.5 py-1 text-xs font-medium uppercase tracking-wide
-                {% if item.type == 'album' %}bg-blue-500/20 text-blue-300 border-blue-500/30
-                {% elif item.type == 'artist' %}bg-purple-500/20 text-purple-300 border-purple-500/30
-                {% else %}bg-green-500/20 text-green-300 border-green-500/30{% endif %}">
-                {{ item.type }}
-              </span>
-              {% if is_scanning %}
-              <span class="spinner" title="Scanning..."></span>
-              {% endif %}
-            </div>
-            <div class="flex gap-2">
-              <button
-                type="button"
-                data-edit-item
-                data-id="{{ item.id }}"
-                data-type="{{ item.type }}"
-                data-query="{{ item.query }}"
-                data-notes="{{ item.notes or '' }}"
-                data-notify-below-pct="{{ item.notify_below_pct }}"
-                data-notify-email="{{ item.notify_email | lower }}"
-                class="text-xs px-3 py-1.5 rounded-md border border-slate-600 text-slate-300 hover:bg-slate-700 transition">Edit</button>
-              <form action="/wishlist/{{ item.id }}/scan" method="post">
-                <button type="submit" class="text-xs px-3 py-1.5 rounded-md border border-slate-600 text-slate-300 hover:bg-slate-700 transition">Scan</button>
-              </form>
-            </div>
-          </div>
-
-          <h3 class="text-lg font-semibold leading-tight">{{ item.query }}</h3>
-          <div class="h-px bg-slate-700"></div>
-
-          {% if item.listing_count > 0 %}
-            <div class="space-y-1 text-sm">
-              {% if item.type == 'label' and item.top_listings %}
-                <p class="text-slate-400 text-xs uppercase tracking-wide font-medium mb-1">Top picks (landed AU)</p>
-                {% for l in item.top_listings %}
-                  <div class="flex items-center justify-between gap-2">
-                    <span class="text-slate-200 truncate text-xs">{{ l.title|truncate(24, true) }}</span>
-                    <span class="text-xs text-slate-400 shrink-0">{{ l.ships_from or '?' }}</span>
-                    <span class="text-amber-400 font-medium text-xs shrink-0">${{ '%.2f'|format(l.landed_price) }}</span>
-                  </div>
-                {% endfor %}
-              {% else %}
-                <p class="text-slate-300">💰 Best landed: <span class="price-best">{% if item.best_price is not none %}${{ '%.2f'|format(item.best_price) }}{% else %}—{% endif %}</span></p>
-                <p class="text-slate-400 text-xs">
-                  {% if item.best_price_raw is not none %}${{ '%.2f'|format(item.best_price_raw) }} + shipping{% endif %}
-                  {% if item.best_ships_from %} · from {{ item.best_ships_from }}{% endif %}
-                  {% if item.best_price_source %} via {{ item.best_price_source|title }}{% endif %}
-                </p>
-              {% endif %}
-              <p class="text-slate-300">📦 {{ item.listing_count }} listings found</p>
-              <p class="text-slate-300">⏱ Last scanned: {% if item.last_scanned_at %}<span data-timestamp="{{ item.last_scanned_at.isoformat() }}">{{ item.last_scanned_at }}</span>{% else %}<span>never</span>{% endif %}</p>
-              <p class="text-xs text-slate-500">notify at {{ item.notify_below_pct|int }}% below typical</p>
-            </div>
+        <a href="/item/{{ item.id }}" class="card{% if is_scanning %} card--scanning{% endif %}"
+           data-item-id="{{ item.id }}"
+           {% if is_scanning %}data-scanning="true"{% endif %}
+           style="text-decoration: none; color: inherit; display: flex; flex-direction: column;">
+          {% if item.artwork_url %}
+            <img
+              class="card-artwork"
+              src="/api/artwork?url={{ item.artwork_url | urlencode }}"
+              alt="{{ item.query }} album cover"
+              onerror="this.src='/static/vinyl-placeholder.svg'"
+              loading="lazy"
+            >
           {% else %}
-            <div class="space-y-1 text-sm">
-              <p class="text-slate-400">No listings found yet</p>
-              <p class="text-slate-300">⏱ Last scanned: {% if item.last_scanned_at %}<span data-timestamp="{{ item.last_scanned_at.isoformat() }}">{{ item.last_scanned_at }}</span>{% else %}<span>never</span>{% endif %}</p>
-            </div>
+            <img
+              class="card-artwork"
+              src="/static/vinyl-placeholder.svg"
+              alt="{{ item.query }} — no artwork available"
+            >
           {% endif %}
-
-          <div class="pt-1 mt-auto">
-            <a href="/item/{{ item.id }}" class="inline-flex items-center text-amber-400 hover:text-amber-300 text-sm font-medium">
-              View Deals →
-            </a>
+          <div class="card-body" style="display: flex; flex-direction: column; gap: var(--space-xs);">
+            {% if is_scanning %}
+              <div class="flex items-center gap-sm">
+                <span class="spinner"></span>
+                <span class="text-sm text-muted">Scanning...</span>
+              </div>
+            {% endif %}
+            <h3 class="text-sm" style="font-weight: 600; line-height: 1.3;">{{ item.query }}</h3>
+            {% if item.best_price is not none %}
+              <span class="text-sm price-best">${{ '%.2f'|format(item.best_price) }}</span>
+            {% elif not is_scanning %}
+              <span class="text-sm text-faint">No listings found yet</span>
+            {% endif %}
           </div>
-        </article>
+        </a>
       {% endfor %}
     </section>
   {% else %}
-    <section class="bg-slate-800 border border-slate-700 rounded-xl p-10 text-center text-slate-400">
-      Your wishlist is empty. Click <span class="text-amber-400 font-medium">Add Item</span> to get started.
+    <section class="empty-state">
+      <h3 style="font-size: var(--text-heading); font-weight: 600; margin-bottom: var(--space-sm);">Your crate is empty</h3>
+      <p class="text-muted">Click <span class="text-accent" style="font-weight: 500;">Add Item</span> above to start tracking prices.</p>
     </section>
   {% endif %}
+
 </div>
+
 <script>
   document.addEventListener('DOMContentLoaded', () => {
     const modal = document.getElementById('editItemModal');
     const form = document.getElementById('editItemForm');
+    let editTriggerBtn = null;
 
     const openEdit = (btn) => {
+      editTriggerBtn = btn;
       form.action = '/wishlist/' + btn.dataset.id + '/edit';
       document.getElementById('editQuery').value = btn.dataset.query;
       document.getElementById('editType').value = btn.dataset.type;
@@ -228,6 +195,8 @@
         const panel = modal.querySelector('[data-edit-panel]');
         if (backdrop) backdrop.classList.remove('opacity-0');
         if (panel) panel.classList.remove('opacity-0', 'translate-y-4');
+        const firstFocusable = modal.querySelector('input, select, textarea, button');
+        if (firstFocusable) firstFocusable.focus();
       });
     };
 
@@ -237,6 +206,7 @@
       if (backdrop) backdrop.classList.add('opacity-0');
       if (panel) panel.classList.add('opacity-0', 'translate-y-4');
       setTimeout(() => modal.classList.add('hidden'), 200);
+      if (editTriggerBtn) editTriggerBtn.focus();
     };
 
     document.querySelectorAll('[data-edit-item]').forEach(btn => {

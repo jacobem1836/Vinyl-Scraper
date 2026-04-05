@@ -26,9 +26,9 @@ Show me the cheapest way to buy the records I want, right now.
 
 - [x] Performance — page load, search, and bulk import are noticeably slow — *Validated in Phase 01: Infrastructure (scan decoupled, N+1 fixed, TTL cache, semaphore)*
 - [x] Source-agnostic scanner — adapter registry in place; adding Phase 2 sources requires only one dict entry — *Validated in Phase 01: Infrastructure*
-- [ ] UI redesign — Spotify-like aesthetic: record artwork as the hero, minimal/uncluttered, less "AI-generated"
-- [ ] Expand scraping sources — Juno Records, Bandcamp, eBay AU; Australian stores (Clarity, Egg, etc.) where feasible
-- [ ] Polish for daily use and shareable quality
+- [x] UI redesign — Spotify-like aesthetic: record artwork as the hero, minimal/uncluttered, less "AI-generated" — *Validated in Phase 03: UI Redesign (custom CSS design system, card grid, artwork pipeline, AUD FX conversion)*
+- ✓ Expand scraping sources — eBay AU, Discrepancy Records, Juno Records, Bandcamp added; Clarity Records dropped (NXDOMAIN) — *Validated in Phase 02: new-sources*
+- [x] Polish for daily use and shareable quality — *Validated in Phase 04: UI Polish (CRATE rebrand, near-black palette, white accent, sharp edges, high-res artwork, scan crash fixed)*
 
 ### Out of Scope
 
@@ -56,8 +56,8 @@ Show me the cheapest way to buy the records I want, right now.
 
 | Decision | Rationale | Outcome |
 |----------|-----------|---------|
-| Expand beyond Discogs + Shopify | User wants more coverage; Juno, Bandcamp, eBay, AU stores are targets | — Pending |
-| UI direction: Spotify-like, record-art-forward | Feels less AI, more personal and visually engaging | — Pending |
+| Expand beyond Discogs + Shopify | User wants more coverage; Juno, Bandcamp, eBay, AU stores are targets | 6 adapters active (discogs, shopify, ebay, discrepancy, juno, bandcamp); Clarity dropped — NXDOMAIN |
+| UI direction: Spotify-like, record-art-forward | Feels less AI, more personal and visually engaging | Custom CSS design system, card grid with album art, dark palette — Phase 04 polishes aesthetic further |
 | Performance fix approach | TBD — caching, async scan decoupling, or query optimization | — Pending |
 
 ## Evolution
@@ -78,4 +78,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-04-02 after Phase 01: Infrastructure complete*
+*Last updated: 2026-04-04 after Phase 04: UI Polish complete — CRATE rebrand, monochrome palette, sharp edges, high-res Discogs artwork, scan IntegrityError fixed*

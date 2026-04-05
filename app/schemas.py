@@ -50,6 +50,7 @@ class WishlistItemResponse(BaseModel):
     created_at: datetime
     last_scanned_at: Optional[datetime]
     is_active: bool
+    artwork_url: Optional[str] = None       # Discogs thumb URL (nullable for items without art)
     best_price: Optional[float] = None      # computed field, not a DB column
     best_price_source: Optional[str] = None # "discogs" or "ebay"
     listing_count: int = 0

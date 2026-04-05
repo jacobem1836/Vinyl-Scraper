@@ -56,7 +56,9 @@ async def _get_album_listings(query: str, max_results: int) -> list[dict]:
                 return []
 
             results = search_resp.json().get("results", [])
+            first_thumb = results[0].get("thumb") if results else None
             listings: list[dict] = []
+            cover_uri = None
 
             for result in results[:3]:
                 release_id = result.get("id")
@@ -73,6 +75,10 @@ async def _get_album_listings(query: str, max_results: int) -> list[dict]:
                     continue
 
                 detail = detail_resp.json()
+                if cover_uri is None:
+                    images = detail.get("images", [])
+                    if images:
+                        cover_uri = images[0].get("uri") or images[0].get("uri150")
                 num_for_sale = detail.get("num_for_sale", 0)
                 lowest_price = detail.get("lowest_price")
 
@@ -83,6 +89,8 @@ async def _get_album_listings(query: str, max_results: int) -> list[dict]:
 
                 await asyncio.sleep(0.5)
 
+            if listings and (cover_uri or first_thumb):
+                listings[0]["_cover_image"] = cover_uri or first_thumb
             return listings
     except httpx.HTTPError as e:
         print(f"[Discogs] HTTP error in album search '{query}': {e}")
@@ -107,6 +115,7 @@ async def _get_artist_listings(query: str, max_results: int) -> list[dict]:
             if not artist_results:
                 return []
 
+            first_thumb = artist_results[0].get("thumb") if artist_results else None
             artist_id = artist_results[0].get("id")
             if not artist_id:
                 return []
@@ -121,6 +130,7 @@ async def _get_artist_listings(query: str, max_results: int) -> list[dict]:
 
             releases = releases_resp.json().get("releases", [])
             listings: list[dict] = []
+            cover_uri = None
 
             for release in releases[:5]:
                 release_id = release.get("id") or release.get("main_release")
@@ -137,6 +147,10 @@ async def _get_artist_listings(query: str, max_results: int) -> list[dict]:
                     continue
 
                 detail = detail_resp.json()
+                if cover_uri is None:
+                    images = detail.get("images", [])
+                    if images:
+                        cover_uri = images[0].get("uri") or images[0].get("uri150")
                 num_for_sale = detail.get("num_for_sale", 0)
                 lowest_price = detail.get("lowest_price")
 
@@ -147,6 +161,8 @@ async def _get_artist_listings(query: str, max_results: int) -> list[dict]:
 
                 await asyncio.sleep(0.5)
 
+            if listings and (cover_uri or first_thumb):
+                listings[0]["_cover_image"] = cover_uri or first_thumb
             return listings
     except httpx.HTTPError as e:
         print(f"[Discogs] HTTP error in artist search '{query}': {e}")
@@ -171,6 +187,7 @@ async def _get_label_listings(query: str, max_results: int) -> list[dict]:
             if not label_results:
                 return []
 
+            first_thumb = label_results[0].get("thumb") if label_results else None
             label_id = label_results[0].get("id")
             if not label_id:
                 return []
@@ -185,6 +202,7 @@ async def _get_label_listings(query: str, max_results: int) -> list[dict]:
 
             releases = releases_resp.json().get("releases", [])
             listings: list[dict] = []
+            cover_uri = None
 
             for release in releases[:5]:
                 release_id = release.get("id")
@@ -201,6 +219,10 @@ async def _get_label_listings(query: str, max_results: int) -> list[dict]:
                     continue
 
                 detail = detail_resp.json()
+                if cover_uri is None:
+                    images = detail.get("images", [])
+                    if images:
+                        cover_uri = images[0].get("uri") or images[0].get("uri150")
                 num_for_sale = detail.get("num_for_sale", 0)
                 lowest_price = detail.get("lowest_price")
 
@@ -211,6 +233,8 @@ async def _get_label_listings(query: str, max_results: int) -> list[dict]:
 
                 await asyncio.sleep(0.5)
 
+            if listings and (cover_uri or first_thumb):
+                listings[0]["_cover_image"] = cover_uri or first_thumb
             return listings
     except httpx.HTTPError as e:
         print(f"[Discogs] HTTP error in label search '{query}': {e}")

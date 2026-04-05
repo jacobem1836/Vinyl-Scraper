@@ -1,8 +1,8 @@
 # Roadmap: Vinyl Wishlist Manager
 
 **Milestone:** v1 — Fast, Beautiful, More Sources
-**Phases:** 3
-**Requirements:** 16
+**Phases:** 4
+**Requirements:** 22
 
 ---
 
@@ -10,7 +10,9 @@
 
 - [x] **Phase 1: Infrastructure** - Async scan decoupling, adapter registry, and dashboard caching so the foundation is solid before any new sources are added (completed 2026-04-02)
 - [ ] **Phase 2: New Sources** - eBay AU, Discrepancy Records, Clarity Records, Juno Records, and Bandcamp adapters plugged into the registry
-- [ ] **Phase 3: UI Redesign** - Bootstrap removed, Spotify-like card layout with record artwork as the hero, custom CSS throughout
+- [x] **Phase 3: UI Redesign** - Bootstrap removed, Spotify-like card layout with record artwork as the hero, custom CSS throughout (completed 2026-04-03)
+- [ ] **Phase 4: UI Polish** - CRATE rebrand, near-black neutral palette, white accent, sharp edges, compressed spacing, high-res Discogs artwork
+- [ ] **Phase 5: Improve UI and UX Design** - Accessibility fixes, interaction states, typography hierarchy, layout gaps, and color system polish
 
 ---
 
@@ -30,8 +32,8 @@
 
 Plans:
 - [x] 01-PLAN-1.md — Backend performance: scan decoupling, N+1 fix, cache, semaphore, scheduler parallelism
-- [ ] 01-PLAN-2.md — Adapter registry: source-agnostic scanner with registry pattern
-- [ ] 01-PLAN-3.md — Frontend polling UX: scanning spinner + dashboard auto-refresh
+- [x] 01-PLAN-2.md — Adapter registry: source-agnostic scanner with registry pattern
+- [x] 01-PLAN-3.md — Frontend polling UX: scanning spinner + dashboard auto-refresh
 
 **UI hint**: no
 
@@ -45,7 +47,14 @@ Plans:
   3. Juno Records listings appear for records they carry, with correct currency conversion to AUD
   4. Bandcamp listings appear for known artist/label searches where physical vinyl is available and in stock
   5. Each new source has its own rate limiting; a full wishlist scan completes without triggering bans or 429 errors on any source
-**Plans**: TBD
+**Plans:** 3/4 plans complete
+
+Plans:
+- [x] 02-01-PLAN.md — eBay Browse API adapter + rate limit migration to per-adapter semaphores
+- [x] 02-02-PLAN.md — Discrepancy Records + Clarity Records AU HTML scrapers
+- [x] 02-03-PLAN.md — Juno Records + Bandcamp international HTML scrapers
+- [x] 02-04-PLAN.md — Gap closure: Clarity Records selector verification + enable adapter (SRC-03, SRC-06)
+
 **UI hint**: no
 
 ### Phase 3: UI Redesign
@@ -58,7 +67,40 @@ Plans:
   3. Every listing row shows a clear landed cost breakdown: base price, estimated shipping, AUD equivalent, and FX rate if applicable
   4. The entire app uses a consistent dark colour palette — no white backgrounds, no light-mode bleed
   5. The iOS Shortcut still adds records correctly; `POST /api/wishlist` with `X-API-Key` works unchanged
-**Plans**: TBD
+**Plans:** 4/4 plans complete
+
+Plans:
+- [x] 03-01-PLAN.md — CSS design system + Tailwind removal from base.html
+- [x] 03-02-PLAN.md — Artwork pipeline: model column, Discogs capture, proxy endpoint, placeholder SVG
+- [x] 03-03-PLAN.md — FX conversion service + AUD landed cost enrichment
+- [x] 03-04-PLAN.md — Dashboard card grid + detail page rewrite + visual verification
+
+**UI hint**: yes
+
+### Phase 4: UI Polish
+
+**Goal:** The app is rebranded to CRATE with a sleek monochrome aesthetic — near-black neutral palette, white accent, sharp edges, compressed card spacing, and high-res Discogs artwork
+**Requirements**: POLISH-01, POLISH-02, POLISH-03, POLISH-04, POLISH-05, POLISH-06
+**Depends on:** Phase 3
+**Plans:** 3 plans
+
+Plans:
+- [x] 04-01-PLAN.md — CSS design system update + template CRATE rename and copy changes
+- [x] 04-02-PLAN.md — Discogs high-res artwork upgrade via release endpoint
+- [ ] 04-03-PLAN.md — Gap closure: fix listing UNIQUE constraint + always-overwrite artwork on scan
+
+### Phase 5: Improve UI and UX Design
+
+**Goal:** Apply a comprehensive UI/UX polish pass addressing 10 prioritised issues from a design audit — covering accessibility failures, missing interaction states, typography hierarchy, layout gaps, and color system fixes
+**Requirements**: P1-contrast, P2-focus-visible, P3-modal-focus, P4-touch-targets, P5-typography-hierarchy, P6-grid-breakpoint, P7-spacing-tokens, P8-active-state, P9-shadow-fix, P10-delete-confirm
+**Depends on:** Phase 4
+**Plans:** 3 plans
+
+Plans:
+- [x] 05-01-PLAN.md — CSS design system fixes: contrast, focus-visible, touch targets, spacing tokens, active states, shadow fix
+- [x] 05-02-PLAN.md — Typography hierarchy (H1/H2 distinction) + 3-column grid breakpoint
+- [x] 05-03-PLAN.md — Modal accessibility (focus management + ARIA) + inline delete confirmation
+
 **UI hint**: yes
 
 ---
@@ -68,5 +110,7 @@ Plans:
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. Infrastructure | 3/3 | Complete   | 2026-04-02 |
-| 2. New Sources | 0/? | Not started | - |
-| 3. UI Redesign | 0/? | Not started | - |
+| 2. New Sources | 3/4 | Gap closure | - |
+| 3. UI Redesign | 4/4 | Complete   | 2026-04-03 |
+| 4. UI Polish | 2/3 | Gap closure | - |
+| 5. UI/UX Design | 0/3 | Planned | - |

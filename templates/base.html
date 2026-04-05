@@ -3,27 +3,24 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>{% block title %}Vinyl Wishlist{% endblock %}</title>
-  <script src="https://cdn.tailwindcss.com"></script>
+  <title>{% block title %}CRATE{% endblock %}</title>
   <link rel="stylesheet" href="/static/style.css">
 </head>
-<body class="bg-slate-900 text-white min-h-screen">
-  <nav class="border-b border-slate-700 bg-slate-900/95 backdrop-blur sticky top-0 z-40">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-      <div class="h-16 flex items-center justify-between">
-        <a href="/" class="text-lg font-semibold text-amber-400">🎵 Vinyl Wishlist</a>
-        <button
-          id="openAddItemBtn"
-          type="button"
-          class="bg-amber-500 hover:bg-amber-400 text-slate-900 text-sm font-semibold px-4 py-2 rounded-md transition"
-        >
-          Add Item
-        </button>
-      </div>
+<body>
+  <nav class="nav">
+    <div class="nav-inner">
+      <a href="/" class="nav-brand">CRATE</a>
+      <button
+        id="openAddItemBtn"
+        type="button"
+        class="btn-cta"
+      >
+        Add Item
+      </button>
     </div>
   </nav>
 
-  <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+  <main class="container" style="padding-top: var(--space-lg); padding-bottom: var(--space-lg);">
     {% block content %}{% endblock %}
   </main>
 
@@ -42,6 +39,8 @@
           const panel = modal.querySelector('[data-panel]');
           if (backdrop) backdrop.classList.remove('opacity-0');
           if (panel) panel.classList.remove('opacity-0', 'translate-y-4');
+          const firstFocusable = modal.querySelector('input, select, textarea, button');
+          if (firstFocusable) firstFocusable.focus();
         });
       };
 
@@ -53,6 +52,7 @@
         if (backdrop) backdrop.classList.add('opacity-0');
         if (panel) panel.classList.add('opacity-0', 'translate-y-4');
         setTimeout(() => modal.classList.add('hidden'), 200);
+        if (openBtn) openBtn.focus();
       };
 
       if (openBtn) {
@@ -95,9 +95,9 @@
   </script>
 
   <!-- Toast notification -->
-  <div id="toast" class="hidden fixed bottom-6 right-6 z-50 max-w-sm bg-slate-700 border border-slate-600 rounded-lg px-5 py-3 shadow-xl flex items-center gap-3">
-    <svg class="w-5 h-5 text-amber-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
-    <span id="toastMessage" class="text-sm text-white"></span>
+  <div id="toast" class="hidden toast">
+    <svg class="shrink-0 text-accent" style="width:20px;height:20px;color:var(--color-accent)" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+    <span id="toastMessage" class="text-sm"></span>
   </div>
 
   <script>
@@ -119,22 +119,22 @@
   </script>
 
   <!-- Floating scan status panel -->
-  <div id="scanPanel" class="hidden fixed bottom-4 right-4 z-50 select-none">
+  <div id="scanPanel" class="hidden scan-panel">
     <div id="scanPill"
-         class="flex items-center gap-2 bg-slate-800 border border-slate-600 rounded-full px-4 py-2 shadow-lg cursor-pointer hover:bg-slate-700 transition-colors"
+         class="scan-pill"
          onclick="toggleScanPanel()">
-      <div id="scanSpinner" class="animate-spin h-4 w-4 border-2 border-amber-500 border-t-transparent rounded-full"></div>
-      <span id="scanPillText" class="text-sm text-white font-medium">Scanning…</span>
+      <div id="scanSpinner" class="spinner"></div>
+      <span id="scanPillText" class="text-sm">Scanning…</span>
     </div>
     <div id="scanCard"
-         class="hidden mt-2 w-80 bg-slate-800 border border-slate-600 rounded-xl shadow-xl p-4 space-y-3">
-      <div class="flex items-center justify-between">
-        <span class="text-sm font-semibold text-white">Scan Progress</span>
-        <button onclick="toggleScanPanel()" class="text-slate-400 hover:text-white text-xs">collapse</button>
+         class="hidden scan-card">
+      <div class="flex items-center justify-between" style="margin-bottom:var(--space-sm)">
+        <span class="text-sm" style="font-weight:600">Scan Progress</span>
+        <button onclick="toggleScanPanel()" class="text-sm text-muted" style="cursor:pointer">collapse</button>
       </div>
-      <div id="scanActive" class="space-y-1"></div>
-      <div id="scanLog" class="space-y-1 max-h-48 overflow-y-auto"></div>
-      <div id="scanSummary" class="hidden text-sm text-emerald-400 font-semibold"></div>
+      <div id="scanActive" class="stack-sm"></div>
+      <div id="scanLog" class="stack-sm" style="max-height:192px;overflow-y:auto"></div>
+      <div id="scanSummary" class="hidden text-sm text-success" style="font-weight:600"></div>
     </div>
   </div>
 
@@ -204,7 +204,7 @@
         spinner.classList.remove('hidden');
         pillText.textContent = 'Scanning ' + s.done + '/' + s.total + '…';
         activeEl.innerHTML = s.current.map(function(c) {
-          return '<div class="text-xs text-slate-300">⟳ ' + escHtml(c.query) + ' <span class="text-slate-500">(' + escHtml(c.type) + ')</span></div>';
+          return '<div class="text-sm text-muted">⟳ ' + escHtml(c.query) + ' <span class="text-faint">(' + escHtml(c.type) + ')</span></div>';
         }).join('');
       } else {
         spinner.classList.add('hidden');
@@ -217,7 +217,7 @@
       }
 
       logEl.innerHTML = s.log.slice().reverse().map(function(entry) {
-        return '<div class="text-xs text-slate-400">' + escHtml(entry.query) + ' — <span class="text-emerald-400">+' + entry.new_listings + '</span></div>';
+        return '<div class="text-sm text-muted">' + escHtml(entry.query) + ' — <span class="text-success">+' + entry.new_listings + '</span></div>';
       }).join('');
     }
 
