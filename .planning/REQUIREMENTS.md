@@ -127,28 +127,28 @@
 | UI-04 | Phase 3: UI Redesign | Complete |
 | UI-05 | Phase 3: UI Redesign | Complete |
 | UI-06 | Phase 3: UI Redesign | Complete |
-| TYPE-01 | Phase 6 | Pending |
-| TYPE-02 | Phase 6 | Pending |
-| TYPE-03 | Phase 6 | Pending |
-| TYPE-04 | Phase 6 | Pending |
-| IMG-01 | Phase 7 | Pending |
-| IMG-02 | Phase 7 | Pending |
-| BUG-02 | Phase 7 | Pending |
-| FONT-01 | Phase 8 | Pending |
-| EMAIL-01 | Phase 9 | Pending |
-| EMAIL-02 | Phase 9 | Pending |
-| EMAIL-03 | Phase 9 | Pending |
-| UIP-01 | Phase 10 | Pending |
-| UIP-02 | Phase 10 | Pending |
-| UIP-03 | Phase 10 | Pending |
-| UIP-04 | Phase 10 | Pending |
-| UIP-05 | Phase 10 | Pending |
-| UIP-06 | Phase 10 | Pending |
-| UIP-07 | Phase 10 | Pending |
-| UIP-08 | Phase 10 | Pending |
-| UIP-09 | Phase 10 | Pending |
-| UIP-10 | Phase 10 | Pending |
-| BUG-01 | Phase 10 | Pending |
+| TYPE-01 | Phase 6: Discogs Typeahead | Pending |
+| TYPE-02 | Phase 6: Discogs Typeahead | Pending |
+| TYPE-03 | Phase 6: Discogs Typeahead | Pending |
+| TYPE-04 | Phase 6: Discogs Typeahead | Pending |
+| IMG-01 | Phase 7: Image Source Priority + Scan Log Fix | Pending |
+| IMG-02 | Phase 7: Image Source Priority + Scan Log Fix | Pending |
+| BUG-02 | Phase 7: Image Source Priority + Scan Log Fix | Pending |
+| FONT-01 | Phase 8: Brand Font Upgrade | Pending |
+| EMAIL-01 | Phase 9: Email Redesign | Pending |
+| EMAIL-02 | Phase 9: Email Redesign | Pending |
+| EMAIL-03 | Phase 9: Email Redesign | Pending |
+| UIP-01 | Phase 10: UI Polish | Pending |
+| UIP-02 | Phase 10: UI Polish | Pending |
+| UIP-03 | Phase 10: UI Polish | Pending |
+| UIP-04 | Phase 10: UI Polish | Pending |
+| UIP-05 | Phase 10: UI Polish | Pending |
+| UIP-06 | Phase 10: UI Polish | Pending |
+| UIP-07 | Phase 10: UI Polish | Pending |
+| UIP-08 | Phase 10: UI Polish | Pending |
+| UIP-09 | Phase 10: UI Polish | Pending |
+| UIP-10 | Phase 10: UI Polish | Pending |
+| BUG-01 | Phase 10: UI Polish | Pending |
 
 **Coverage:**
 - v1.1 requirements: 22 total
@@ -157,4 +157,4 @@
 
 ---
 *Requirements defined: 2026-04-02*
-*Last updated: 2026-04-05 after v1.1 milestone definition*
+*Last updated: 2026-04-05 after v1.1 roadmap created (Phases 6–10)*

@@ -2,10 +2,10 @@
 gsd_state_version: 1.0
 milestone: v1.1
 milestone_name: UX Polish & Album Selection
-status: Defining requirements
+status: Roadmap defined
 last_updated: "2026-04-05T00:00:00.000Z"
 progress:
-  total_phases: 0
+  total_phases: 5
   completed_phases: 0
   total_plans: 0
   completed_plans: 0
@@ -16,16 +16,29 @@ progress:
 
 ## Current Position
 
-Phase: Not started (defining requirements)
+Phase: Phase 6 — Discogs Typeahead (not started)
 Plan: —
-Status: Defining requirements
-Last activity: 2026-04-05 — Milestone v1.1 started
+Status: Roadmap defined, ready to plan Phase 6
+Last activity: 2026-04-05 — v1.1 roadmap created (Phases 6–10)
+
+```
+v1.1 Progress: [··········] 0% — 0/5 phases complete
+```
 
 ## Project Reference
 
 See: .planning/PROJECT.md
 **Core value:** Show me the cheapest way to buy the records I want, right now.
-**Current focus:** v1.1 UX Polish & Album Selection
+**Current focus:** v1.1 UX Polish & Album Selection — Phase 6 next
+
+## Performance Metrics
+
+| Metric | Value |
+|--------|-------|
+| Phases complete | 0 / 5 |
+| Plans complete | 0 / ? |
+| Requirements mapped | 22 / 22 |
+| v1.1 started | 2026-04-05 |
 
 ## Accumulated Context
 
@@ -56,7 +69,7 @@ See: .planning/PROJECT.md
 
 ### Roadmap Evolution
 
-- (v1.1 roadmap not yet created)
+- 2026-04-05: v1.1 roadmap created — 5 phases (6–10), 22 requirements mapped
 
 ### Todos
 
@@ -66,6 +79,16 @@ See: .planning/PROJECT.md
 
 - None yet
 
+## Session Continuity
+
+**To resume:** Run `/gsd-plan-phase 6` to begin planning Phase 6 (Discogs Typeahead).
+
+**Key constraints to keep in mind:**
+- iOS Shortcut API contract (`POST /api/wishlist`, `X-API-Key`) must not break — any new schema field must be `Optional[...] = None`
+- Phase 10 (UI Polish) requires magic MCP + stitch + ui-ux-pro-max + design-for-ai tools during planning and execution
+- Discogs typeahead must have 300ms debounce + AbortController — missing either will exhaust the 60 req/min rate limit
+- Email template must use inline hex CSS only — no CSS custom properties, no flexbox/grid
+
 ## Last Updated
 
-2026-04-05 — Milestone v1.1 started
+2026-04-05 — v1.1 roadmap created (Phases 6–10, 22 requirements)
