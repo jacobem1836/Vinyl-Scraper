@@ -46,7 +46,7 @@ All spacing values use existing `--space-*` tokens already declared in `static/s
 
 Exceptions:
 - Dropdown rows: `padding: var(--space-sm) var(--space-md)` — 8px top/bottom, 16px left/right
-- Pinned release badge: `padding: 2px 10px` — matches existing `.badge` class geometry
+- Pinned release badge: inherits `.badge` padding — see existing CSS, no override
 - Cover thumbnail in dropdown row: 40x40px — fits within the 8px row padding rhythm
 
 ---
@@ -65,7 +65,7 @@ All type values use existing `--text-*` tokens. No new font sizes or weights.
 Typeahead-specific assignments:
 - Dropdown result title (release title): 14px / weight 400 / `var(--color-text)` — `var(--text-sm)`
 - Dropdown result subtitle (artist · year): 14px / weight 400 / `var(--color-text-muted)` — `var(--text-sm)`
-- Pinned release badge text: 14px / weight 500 / uppercase / letter-spacing 0.05em — matches `.badge` class
+- Pinned release badge text: 14px / weight 400 / uppercase / letter-spacing 0.05em — matches `.badge` class
 - Locked query input placeholder: 14px / weight 400 / `var(--color-text-faint)`
 
 > Source: `static/style.css` `:root` typography tokens and `.badge` class.
