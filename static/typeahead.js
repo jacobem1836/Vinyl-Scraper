@@ -137,6 +137,17 @@
   /* ---------------------------------------------------------- */
 
   /**
+   * resetTypeahead — clear input, hidden value, and close dropdown.
+   * Call when closing a modal to prevent stale state.
+   */
+  window.resetTypeahead = function (prefix) {
+    const { input, hidden } = getEls(prefix);
+    if (input) input.value = "";
+    if (hidden) hidden.value = "";
+    closeDropdown(prefix);
+  };
+
+  /**
    * selectResult — fill the query input with the selected result.
    * For album type, also stores the release_id in the hidden input.
    * No locking — user can still edit the field freely.
@@ -239,10 +250,15 @@
             : state[prefix].activeIndex - 1;
         updateActiveRow(prefix);
       } else if (e.key === "Enter") {
-        if (isOpen && state[prefix].activeIndex >= 0) {
-          e.preventDefault();
-          const result = state[prefix].results[state[prefix].activeIndex];
-          if (result) window.selectResult(prefix, result);
+        if (isOpen) {
+          e.preventDefault(); // always prevent form submit while dropdown is open
+          if (state[prefix].activeIndex >= 0) {
+            const result = state[prefix].results[state[prefix].activeIndex];
+            if (result) window.selectResult(prefix, result);
+          } else if (state[prefix].results.length > 0) {
+            // No item highlighted — select the first result
+            window.selectResult(prefix, state[prefix].results[0]);
+          }
         }
       } else if (e.key === "Escape") {
         closeDropdown(prefix);

@@ -46,6 +46,7 @@
 
       const closeModal = () => {
         if (!modal) return;
+        if (typeof resetTypeahead === 'function') resetTypeahead('add');
         modal.dataset.open = 'false';
         const backdrop = modal.querySelector('[data-backdrop]');
         const panel = modal.querySelector('[data-panel]');

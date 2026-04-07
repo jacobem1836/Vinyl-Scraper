@@ -97,16 +97,17 @@ async def add_wishlist_item_web(
     notes: str | None = Form(None),
     notify_below_pct: float = Form(20.0),
     notify_email: bool = Form(True),
-    discogs_release_id: int | None = Form(None),
+    discogs_release_id: str = Form(""),
     db: Session = Depends(get_db),
 ):
+    release_id = int(discogs_release_id) if discogs_release_id else None
     item = WishlistItem(
         type=type,
         query=query,
         notes=notes,
         notify_below_pct=notify_below_pct,
         notify_email=notify_email,
-        discogs_release_id=discogs_release_id,
+        discogs_release_id=release_id,
         is_active=True,
     )
     db.add(item)
@@ -127,9 +128,10 @@ async def edit_wishlist_item_web(
     notes: str | None = Form(None),
     notify_below_pct: float = Form(20.0),
     notify_email: bool = Form(False),
-    discogs_release_id: int | None = Form(None),
+    discogs_release_id: str = Form(""),
     db: Session = Depends(get_db),
 ):
+    release_id = int(discogs_release_id) if discogs_release_id else None
     item = db.query(WishlistItem).filter_by(id=item_id, is_active=True).first()
     if not item:
         raise HTTPException(status_code=404, detail="Item not found")
@@ -138,7 +140,7 @@ async def edit_wishlist_item_web(
     item.notes = notes or None
     item.notify_below_pct = notify_below_pct
     item.notify_email = notify_email
-    item.discogs_release_id = discogs_release_id
+    item.discogs_release_id = release_id
     db.commit()
     invalidate_dashboard_cache()
     return RedirectResponse(url=f"/item/{item_id}?toast=Item+updated", status_code=303)

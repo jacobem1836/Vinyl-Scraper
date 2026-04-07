@@ -218,6 +218,7 @@
     };
 
     const closeEdit = () => {
+      if (typeof resetTypeahead === 'function') resetTypeahead('edit');
       const backdrop = modal.querySelector('[data-edit-backdrop]');
       const panel = modal.querySelector('[data-edit-panel]');
       if (backdrop) backdrop.classList.add('opacity-0');
