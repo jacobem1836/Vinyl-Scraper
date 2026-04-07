@@ -1,12 +1,19 @@
 import asyncio
-import html
+import re
 import smtplib
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 
+from jinja2 import Environment, FileSystemLoader
+
 from app.config import settings
 from app.models import Listing, WishlistItem
 from app.services.shipping import get_shipping_cost
+
+_email_env = Environment(
+    loader=FileSystemLoader("templates"),
+    autoescape=True,
+)
 
 
 def _landed(listing: Listing) -> float:
@@ -38,6 +45,22 @@ def should_notify(item: WishlistItem, listing: Listing, all_listings: list[Listi
     return _landed(listing) <= threshold
 
 
+def _html_to_plaintext(html_body: str) -> str:
+    """Strip HTML tags and collapse whitespace to produce a plain-text email fallback."""
+    text = re.sub(r"<br\s*/?>", "\n", html_body)
+    text = re.sub(r"</tr>", "\n", text)
+    text = re.sub(r"</td>", " | ", text)
+    text = re.sub(r"<[^>]+>", "", text)
+    text = re.sub(r"&nbsp;", " ", text)
+    text = re.sub(r"&amp;", "&", text)
+    text = re.sub(r"&lt;", "<", text)
+    text = re.sub(r"&gt;", ">", text)
+    text = re.sub(r"&#8209;", "-", text)
+    text = re.sub(r"\n{3,}", "\n\n", text)
+    lines = [line.strip() for line in text.splitlines()]
+    return "\n".join(lines).strip()
+
+
 def _send_smtp(
     subject: str,
     html_body: str,
@@ -52,6 +75,9 @@ def _send_smtp(
     msg["Subject"] = subject
     msg["From"] = from_addr
     msg["To"] = to_addr
+
+    plain_body = _html_to_plaintext(html_body)
+    msg.attach(MIMEText(plain_body, "plain"))
     msg.attach(MIMEText(html_body, "html"))
 
     with smtplib.SMTP(smtp_host, smtp_port) as server:
@@ -72,38 +98,48 @@ async def send_deal_email(item: WishlistItem, new_listings: list[Listing]) -> bo
     if not notify_listings:
         return False
 
-    subject = f"[Vinyl Wishlist] New deal for: {item.query}"
+    # Compute best landed price
+    landed_prices = [_landed(l) for l in notify_listings if l.price is not None]
+    best_landed = min(landed_prices) if landed_prices else None
 
-    table_rows: list[str] = []
+    # Compute percentage below typical
+    typical = compute_typical_price(list(item.listings or []))
+    has_typical = typical is not None and best_landed is not None
+    if has_typical:
+        pct_below = ((typical - best_landed) / typical) * 100
+        pct_below_str = f"{pct_below:.0f}%"
+    else:
+        pct_below_str = ""
+
+    # Build listing dicts for template
+    template_listings = []
     for listing in notify_listings:
         if listing.price is not None:
             landed = _landed(listing)
-            price_text = f"${listing.price:.2f} + ${landed - listing.price:.0f} shipping = ${landed:.2f} AU"
+            landed_str = f"${landed:.2f}"
         else:
-            price_text = "—"
-        ships_from_text = listing.ships_from or "Unknown"
-        table_rows.append(
-            "<tr>"
-            f"<td>{html.escape(listing.title)}</td>"
-            f"<td>{html.escape(price_text)}</td>"
-            f"<td>{html.escape(ships_from_text)}</td>"
-            f"<td>{html.escape(listing.condition or 'Unknown')}</td>"
-            f"<td>{html.escape(listing.source.title())}</td>"
-            f"<td><a href=\"{html.escape(listing.url, quote=True)}\">View listing</a></td>"
-            "</tr>"
-        )
+            landed_str = "\u2014"
+        template_listings.append({
+            "title": listing.title,
+            "landed_price": landed_str,
+            "source": listing.source.title(),
+            "ships_from": listing.ships_from or "Unknown",
+        })
 
-    notify_info_html = f"<p>Notifying on listings ≥ {item.notify_below_pct:.0f}% below typical price</p>"
-
-    html_body = (
-        f"<h2>New listing found for: {html.escape(item.query)}</h2>"
-        f"<p>Type: {html.escape(item.type)} | {len(notify_listings)} new listing(s) found</p>"
-        f"{notify_info_html}"
-        '<table border="1" cellpadding="6" cellspacing="0" style="border-collapse:collapse">'
-        "<tr><th>Title</th><th>Landed Price (AU)</th><th>Ships From</th><th>Condition</th><th>Source</th><th>Link</th></tr>"
-        f"{''.join(table_rows)}"
-        "</table>"
+    # Render template
+    template = _email_env.get_template("deal_alert.html")
+    html_body = template.render(
+        item_name=item.query,
+        item_type=item.type,
+        best_landed_price=f"${best_landed:.2f}" if best_landed is not None else "\u2014",
+        pct_below_typical=pct_below_str,
+        has_typical_price=has_typical,
+        listings=template_listings,
+        item_url=f"/item/{item.id}",
+        notify_below_pct=f"{item.notify_below_pct:.0f}%",
     )
+
+    subject = f"[CRATE] Deal alert: {item.query}"
 
     try:
         await asyncio.to_thread(
