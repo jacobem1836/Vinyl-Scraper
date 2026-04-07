@@ -141,10 +141,11 @@
    * Call when closing a modal to prevent stale state.
    */
   window.resetTypeahead = function (prefix) {
-    const { input, hidden } = getEls(prefix);
+    const { input, hidden, spinner } = getEls(prefix);
     if (input) input.value = "";
     if (hidden) hidden.value = "";
     closeDropdown(prefix);
+    if (spinner) spinner.classList.add("hidden");
   };
 
   /**
@@ -153,7 +154,7 @@
    * No locking — user can still edit the field freely.
    */
   window.selectResult = function (prefix, result) {
-    const { input, hidden } = getEls(prefix);
+    const { input, hidden, spinner } = getEls(prefix);
 
     if (input) input.value = result.title;
 
@@ -163,6 +164,7 @@
     }
 
     closeDropdown(prefix);
+    if (spinner) spinner.classList.add("hidden");
     if (input) input.focus();
   };
 
@@ -272,8 +274,9 @@
       typeSelectEl.addEventListener("change", function () {
         closeDropdown(prefix);
         // Clear stored release_id — it's type-specific
-        const { hidden } = getEls(prefix);
+        const { hidden, spinner } = getEls(prefix);
         if (hidden) hidden.value = "";
+        if (spinner) spinner.classList.add("hidden");
       });
     }
   };
