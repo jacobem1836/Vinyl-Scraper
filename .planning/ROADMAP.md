@@ -76,8 +76,9 @@ Plans:
   2. The font file is served from `/static/fonts/` — no request goes to an external CDN at runtime
   3. The wordmark does not flash or reflow during page load (no FOUT)
   4. Font selection was informed by ui-ux-pro-max + magic MCP before implementation
-**Plans**: TBD
-**UI hint**: yes
+**Plans**: 1 plan
+Plans:
+- [ ] 08-01-PLAN.md — Self-host Bodoni Moda Bold woff2, add @font-face + CSS custom property + preload, update .nav-brand
 
 ### Phase 9: Email Redesign
 **Goal**: Deal alert emails arrive with a scannable summary, CRATE-consistent dark aesthetic, and inline CSS that renders correctly in Gmail and Outlook
@@ -129,6 +130,6 @@ Plans:
 | 5. Improve UI/UX | v1.0 | 3/3 | Complete | 2026-04-05 |
 | 6. Discogs Typeahead | v1.1 | 0/2 | Planned | - |
 | 7. Image Priority + Scan Fix | v1.1 | 0/2 | Planned | - |
-| 8. Brand Font Upgrade | v1.1 | 0/? | Not started | - |
+| 8. Brand Font Upgrade | v1.1 | 0/1 | Planned | - |
 | 9. Email Redesign | v1.1 | 0/? | Not started | - |
 | 10. UI Polish | v1.1 | 0/? | Not started | - |
