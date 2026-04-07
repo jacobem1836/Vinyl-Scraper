@@ -220,7 +220,8 @@
       }
 
       logEl.innerHTML = s.log.slice().reverse().map(function(entry) {
-        return '<div class="text-sm text-muted">' + escHtml(entry.query) + ' — <span class="text-success">+' + entry.new_listings + '</span></div>';
+        var typeLabel = entry.type ? ' <span class="text-faint">(' + escHtml(entry.type) + ')</span>' : '';
+        return '<div class="text-sm text-muted">' + escHtml(entry.query) + typeLabel + ' — <span class="text-success">+' + entry.new_listings + '</span></div>';
       }).join('');
     }
 
