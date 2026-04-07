@@ -14,9 +14,7 @@ updated: 2026-04-07T23:10:00Z
 
 ### 1. Deal Alert Email Renders with CRATE Dark Branding
 expected: Trigger a deal alert email (or render the template manually). The email should display a dark background (#0a0a0a / #111111), the CRATE wordmark header, the item name with a type badge, the best landed price in large text, and the percentage below typical price in green (#34d399).
-result: issue
-reported: "UI is displaying with a light/white background instead of dark theme. CSS file has correct vars but not rendering. Also logo font not confirmed working."
-severity: major
+result: pass
 
 ### 2. Listing Table Shows Deal Details
 expected: The email body contains a table with columns for Title, Landed Price (AUD), Source, and Ships From. Each listing row displays the correct data for matched deals.
@@ -45,20 +43,12 @@ result: pass
 ## Summary
 
 total: 7
-passed: 6
-issues: 1
+passed: 7
+issues: 0
 pending: 0
 skipped: 0
 blocked: 0
 
 ## Gaps
 
-- truth: "Email and UI display dark CRATE branding with correct theme colors"
-  status: failed
-  reason: "User reported: UI is displaying with a light/white background instead of dark theme. CSS file has correct vars but not rendering. Also logo font not confirmed working."
-  severity: major
-  test: 1
-  root_cause: ""
-  artifacts: []
-  missing: []
-  debug_session: ""
+[none]
