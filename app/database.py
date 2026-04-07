@@ -99,3 +99,8 @@ def run_migrations():
             conn.commit()
         except Exception:
             pass  # index already exists
+        try:
+            conn.execute(text("ALTER TABLE wishlist_items ADD COLUMN discogs_release_id INTEGER"))
+            conn.commit()
+        except Exception:
+            pass  # Column already exists

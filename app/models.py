@@ -16,6 +16,7 @@ class WishlistItem(Base):
     last_scanned_at = Column(DateTime, nullable=True)
     is_active = Column(Boolean, default=True)
     artwork_url = Column(String, nullable=True)  # Discogs thumb URL, populated on first scan
+    discogs_release_id = Column(Integer, nullable=True)  # pinned Discogs release ID for precise scanning
 
     listings = relationship("Listing", back_populates="wishlist_item", cascade="all, delete-orphan")
 

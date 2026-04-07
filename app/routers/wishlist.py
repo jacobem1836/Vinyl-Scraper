@@ -67,6 +67,7 @@ def _enrich_item(item: WishlistItem, fx_rates: dict | None = None) -> dict:
         "last_scanned_at": item.last_scanned_at,
         "is_active": item.is_active,
         "artwork_url": item.artwork_url,
+        "discogs_release_id": item.discogs_release_id,
         "best_price": _landed(best_listing, fx_rates) if best_listing else None,        # landed price (AUD if fx_rates)
         "best_price_raw": best_listing.price if best_listing else None,        # listing price only
         "best_ships_from": best_listing.ships_from if best_listing else None,
@@ -96,6 +97,7 @@ async def add_wishlist_item_web(
     notes: str | None = Form(None),
     notify_below_pct: float = Form(20.0),
     notify_email: bool = Form(True),
+    discogs_release_id: int | None = Form(None),
     db: Session = Depends(get_db),
 ):
     item = WishlistItem(
@@ -104,6 +106,7 @@ async def add_wishlist_item_web(
         notes=notes,
         notify_below_pct=notify_below_pct,
         notify_email=notify_email,
+        discogs_release_id=discogs_release_id,
         is_active=True,
     )
     db.add(item)
@@ -123,6 +126,7 @@ async def edit_wishlist_item_web(
     notes: str | None = Form(None),
     notify_below_pct: float = Form(20.0),
     notify_email: bool = Form(False),
+    discogs_release_id: int | None = Form(None),
     db: Session = Depends(get_db),
 ):
     item = db.query(WishlistItem).filter_by(id=item_id, is_active=True).first()
@@ -133,6 +137,7 @@ async def edit_wishlist_item_web(
     item.notes = notes or None
     item.notify_below_pct = notify_below_pct
     item.notify_email = notify_email
+    item.discogs_release_id = discogs_release_id
     db.commit()
     invalidate_dashboard_cache()
     return RedirectResponse(url="/?toast=Item+updated", status_code=303)
@@ -263,6 +268,7 @@ async def create_wishlist_item_api(
         notes=payload.notes,
         notify_below_pct=payload.notify_below_pct,
         notify_email=payload.notify_email,
+        discogs_release_id=payload.discogs_release_id,
         is_active=True,
     )
     db.add(item)

@@ -9,6 +9,7 @@ class WishlistItemCreate(BaseModel):
     notes: Optional[str] = None
     notify_below_pct: float = 20.0
     notify_email: bool = True
+    discogs_release_id: Optional[int] = None  # pinned Discogs release ID; Optional to preserve iOS Shortcut compat
 
 
 class WishlistItemUpdate(BaseModel):
@@ -18,6 +19,7 @@ class WishlistItemUpdate(BaseModel):
     notify_below_pct: Optional[float] = None
     notify_email: Optional[bool] = None
     is_active: Optional[bool] = None
+    discogs_release_id: Optional[int] = None
 
 
 class ListingResponse(BaseModel):
@@ -51,6 +53,7 @@ class WishlistItemResponse(BaseModel):
     last_scanned_at: Optional[datetime]
     is_active: bool
     artwork_url: Optional[str] = None       # Discogs thumb URL (nullable for items without art)
+    discogs_release_id: Optional[int] = None  # pinned Discogs release ID
     best_price: Optional[float] = None      # computed field, not a DB column
     best_price_source: Optional[str] = None # "discogs" or "ebay"
     listing_count: int = 0
