@@ -40,3 +40,5 @@ package-lock.json
 # Claude Code
 .claude/
 .mcp.json
+.claude-flow/
+.swarm/
