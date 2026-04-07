@@ -47,7 +47,18 @@
         <form action="/wishlist/add" method="post" class="stack-md">
           <div>
             <label class="form-label">What are you looking for?</label>
-            <input name="query" required placeholder="e.g. Dark Side of the Moon" class="form-input" />
+            <div id="addPinBadge" class="typeahead-pin-badge hidden">
+              <span id="addPinText"></span>
+              <button type="button" aria-label="Clear pinned release" onclick="clearPin('add')">&times;</button>
+            </div>
+            <div class="typeahead-wrapper">
+              <input id="addQuery" name="query" required placeholder="Search Discogs..." class="form-input"
+                     role="combobox" aria-expanded="false" aria-haspopup="listbox" aria-autocomplete="list"
+                     aria-controls="add-typeahead-listbox" autocomplete="off" />
+              <div id="addSpinner" class="typeahead-spinner spinner hidden" aria-label="Searching Discogs..."></div>
+              <div id="add-typeahead-listbox" class="typeahead-dropdown" role="listbox"></div>
+            </div>
+            <input type="hidden" id="addDiscogsReleaseId" name="discogs_release_id" value="" />
           </div>
 
           <div>
@@ -220,6 +231,12 @@
         if (e.target.matches('[data-edit-backdrop]')) closeEdit();
       });
     }
+
+    // Initialize typeahead for add and edit modals
+    const addTypeSelect = document.querySelector('#addItemModal select[name="type"]');
+    if (addTypeSelect) initTypeahead('add', addTypeSelect);
+    const editTypeSelect = document.getElementById('editType');
+    if (editTypeSelect) initTypeahead('edit', editTypeSelect);
 
     // Polling for scanning items
     const POLL_INTERVAL_MS = 5000;

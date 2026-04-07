@@ -574,3 +574,117 @@ button, input, select, textarea {
 .shrink-0        { flex-shrink: 0; }
 .w-full          { width: 100%; }
 .mt-auto         { margin-top: auto; }
+
+/* ============================================================
+   18. Typeahead components
+   ============================================================ */
+
+/* Wrapper — positions dropdown absolutely below input */
+.typeahead-wrapper {
+  position: relative;
+}
+
+/* Dropdown container */
+.typeahead-dropdown {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  background: var(--color-surface-alt);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-input);
+  z-index: 60;
+  max-height: 260px;
+  overflow-y: auto;
+  display: none;
+}
+
+.typeahead-dropdown--open {
+  display: block;
+}
+
+/* Result row */
+.typeahead-row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  padding: var(--space-sm) var(--space-md);
+  cursor: pointer;
+  border-bottom: 1px solid var(--color-border-muted);
+}
+
+.typeahead-row:last-child {
+  border-bottom: none;
+}
+
+.typeahead-row--active {
+  background: var(--color-surface);
+  border-left: 2px solid var(--color-accent);
+}
+
+/* Cover thumbnail */
+.typeahead-thumb {
+  width: 40px;
+  height: 40px;
+  object-fit: cover;
+  flex-shrink: 0;
+  border-radius: 0;
+}
+
+/* Pinned release badge */
+.typeahead-pin-badge {
+  display: flex;
+  align-items: center;
+  gap: var(--space-xs);
+  margin-bottom: var(--space-sm);
+  padding: var(--space-xs) var(--space-sm);
+  background: var(--color-badge-album-bg);
+  color: var(--color-badge-album-text);
+  border: 1px solid var(--color-badge-album-border);
+  border-radius: var(--radius-badge);
+  font-size: var(--text-sm);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.typeahead-pin-badge button {
+  background: none;
+  border: none;
+  color: var(--color-text-muted);
+  cursor: pointer;
+  padding: 0;
+  font-size: 16px;
+  line-height: 1;
+}
+
+.typeahead-pin-badge button:hover {
+  color: var(--color-destructive);
+}
+
+/* Locked query input — release pinned */
+.form-input--locked {
+  opacity: 0.5;
+  cursor: not-allowed;
+  background: var(--color-surface);
+}
+
+.form-input--locked:focus {
+  box-shadow: none;
+}
+
+/* Typeahead loading spinner (positioned inside wrapper) */
+.typeahead-spinner {
+  position: absolute;
+  right: var(--space-md);
+  top: 50%;
+  transform: translateY(-50%);
+  width: 14px;
+  height: 14px;
+}
+
+/* Empty / error state row */
+.typeahead-empty {
+  color: var(--color-text-faint);
+  font-size: var(--text-sm);
+  padding: var(--space-sm) var(--space-md);
+}
