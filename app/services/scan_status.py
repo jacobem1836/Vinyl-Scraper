@@ -33,9 +33,9 @@ def item_started(item_id: int, query: str, item_type: str) -> None:
     _state["current"].append({"id": item_id, "query": query, "type": item_type})
 
 
-def item_finished(item_id: int, query: str, new_listings: int) -> None:
+def item_finished(item_id: int, query: str, new_listings: int, item_type: str = "") -> None:
     _state["current"] = [c for c in _state["current"] if c["id"] != item_id]
-    _state["log"].append({"query": query, "new_listings": new_listings})
+    _state["log"].append({"query": query, "new_listings": new_listings, "type": item_type})
     _state["done"] += 1
     _state["new_total"] += new_listings
 

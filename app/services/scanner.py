@@ -70,6 +70,7 @@ async def scan_item(db: Session, item: WishlistItem, track: bool = False) -> lis
             found_at=datetime.utcnow(),
             is_active=True,
             is_in_stock=result.get("is_in_stock", True),
+            image_url=result.get("image_url"),
         )
         db.add(listing)
         new_listings.append(listing)
@@ -80,15 +81,26 @@ async def scan_item(db: Session, item: WishlistItem, track: bool = False) -> lis
             db.refresh(listing)
 
     item.last_scanned_at = datetime.utcnow()
-    if cover_image:
+
+    # Image priority: store image > Discogs cover > existing artwork (per D-02)
+    store_image = None
+    for listing in new_listings:
+        if listing.image_url:
+            store_image = listing.image_url
+            break
+
+    if store_image:
+        item.artwork_url = store_image
+    elif cover_image:
         item.artwork_url = cover_image
+
     db.commit()
     db.refresh(item)
 
     invalidate_dashboard_cache()
 
     if track:
-        scan_status.item_finished(item.id, item.query, len(new_listings))
+        scan_status.item_finished(item.id, item.query, len(new_listings), item.type)
 
     return new_listings
 
