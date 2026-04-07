@@ -213,6 +213,15 @@ async def item_scan_status(item_id: int, db: Session = Depends(get_db)):
     }
 
 
+@web_router.get("/api/discogs/search")
+async def discogs_typeahead_search(q: str = ""):
+    if len(q.strip()) < 2:
+        return []
+    from app.services.discogs import typeahead_search
+    results = await typeahead_search(q.strip(), max_results=5)
+    return results
+
+
 @web_router.get("/api/artwork")
 async def proxy_artwork(url: str = ""):
     if not url:

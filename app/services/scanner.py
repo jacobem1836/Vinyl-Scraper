@@ -14,10 +14,14 @@ async def scan_item(db: Session, item: WishlistItem, track: bool = False) -> lis
         scan_status.item_started(item.id, item.query, item.type)
 
     adapters = get_enabled_adapters()
-    results = await asyncio.gather(
-        *[a["fn"](item.query, item.type) for a in adapters],
-        return_exceptions=True,
-    )
+    discogs_release_id = getattr(item, "discogs_release_id", None)
+    coros = []
+    for a in adapters:
+        if a["name"] == "discogs" and discogs_release_id is not None:
+            coros.append(a["fn"](item.query, item.type, discogs_release_id=discogs_release_id))
+        else:
+            coros.append(a["fn"](item.query, item.type))
+    results = await asyncio.gather(*coros, return_exceptions=True)
     all_results = []
     for i, r in enumerate(results):
         if isinstance(r, Exception):
