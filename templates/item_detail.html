@@ -47,6 +47,19 @@
       </div>
 
       <div class="flex items-center" style="gap: var(--space-sm);">
+        <button type="button"
+                class="btn-secondary"
+                data-edit-item
+                data-id="{{ item.id }}"
+                data-query="{{ item.query }}"
+                data-type="{{ item.type }}"
+                data-notes="{{ item.notes or '' }}"
+                data-notify-below-pct="{{ item.notify_below_pct }}"
+                data-notify-email="{{ 'true' if item.notify_email else 'false' }}"
+                data-discogs-release-id="{{ item.discogs_release_id or '' }}"
+                data-discogs-release-title="{{ item.query }}">
+          Edit
+        </button>
         <button type="button" onclick="startScan({{ item.id }})" class="btn-cta">Scan Now</button>
         <div id="deleteConfirm" style="display: flex; align-items: center; gap: var(--space-sm);">
           <button type="button" id="deleteInitBtn" class="btn-destructive" onclick="document.getElementById('deleteInitBtn').style.display='none'; document.getElementById('deleteConfirmBtns').style.display='flex';">Remove from Crate</button>
@@ -167,5 +180,117 @@
     {% endif %}
   </section>
 
+  <!-- Edit Item Modal -->
+  <div id="editItemModal" class="hidden modal-overlay" role="dialog" aria-modal="true" aria-labelledby="editItemModalTitle">
+    <div data-edit-backdrop class="modal-backdrop opacity-0"></div>
+    <div class="modal-center">
+      <div data-edit-panel class="modal-panel opacity-0 translate-y-4">
+        <h2 id="editItemModalTitle" style="font-size: var(--text-heading); font-weight: 600; margin-bottom: var(--space-md);">Edit Wishlist Item</h2>
+        <form id="editItemForm" action="" method="post" class="stack-md">
+          <div>
+            <label class="form-label">What are you looking for?</label>
+            <div id="editPinBadge" class="typeahead-pin-badge hidden">
+              <span id="editPinText"></span>
+              <button type="button" aria-label="Clear pinned release" onclick="clearPin('edit')">&times;</button>
+            </div>
+            <div class="typeahead-wrapper">
+              <input id="editQuery" name="query" required placeholder="Search Discogs..." class="form-input"
+                     role="combobox" aria-expanded="false" aria-haspopup="listbox" aria-autocomplete="list"
+                     aria-controls="edit-typeahead-listbox" autocomplete="off" />
+              <div id="editSpinner" class="typeahead-spinner spinner hidden" aria-label="Searching Discogs..."></div>
+              <div id="edit-typeahead-listbox" class="typeahead-dropdown" role="listbox"></div>
+            </div>
+            <input type="hidden" id="editDiscogsReleaseId" name="discogs_release_id" value="" />
+          </div>
+          <div>
+            <label class="form-label">Type</label>
+            <select id="editType" name="type" class="form-input">
+              <option value="album">Album</option>
+              <option value="artist">Artist</option>
+              <option value="label">Label</option>
+              <option value="subject">Subject</option>
+            </select>
+          </div>
+          <div>
+            <label class="form-label">Notes (optional)</label>
+            <input id="editNotes" name="notes" class="form-input" />
+          </div>
+          <div>
+            <label class="form-label">Notify when price is this % below typical</label>
+            <input id="editNotifyPct" name="notify_below_pct" type="number" step="1" min="1" max="90" class="form-input" />
+          </div>
+          <label class="flex items-center gap-sm text-sm text-muted">
+            <input id="editNotifyEmail" type="checkbox" name="notify_email" class="form-checkbox" />
+            Email me when deals are found
+          </label>
+          <div class="flex justify-end gap-sm" style="padding-top: var(--space-sm);">
+            <button type="button" data-close-edit-modal class="btn-secondary">Cancel</button>
+            <button type="submit" class="btn-cta">Save Changes</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
 </div>
+
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    const modal = document.getElementById('editItemModal');
+    const form = document.getElementById('editItemForm');
+    let editTriggerBtn = null;
+
+    const openEdit = (btn) => {
+      editTriggerBtn = btn;
+      form.action = '/wishlist/' + btn.dataset.id + '/edit';
+      document.getElementById('editQuery').value = btn.dataset.query;
+      document.getElementById('editType').value = btn.dataset.type;
+      document.getElementById('editNotes').value = btn.dataset.notes;
+      document.getElementById('editNotifyPct').value = btn.dataset.notifyBelowPct;
+      document.getElementById('editNotifyEmail').checked = btn.dataset.notifyEmail === 'true';
+      // Handle pinned Discogs release pre-state (D-04)
+      const releaseId = btn.dataset.discogsReleaseId;
+      if (releaseId) {
+        setPin('edit', releaseId, btn.dataset.discogsReleaseTitle || btn.dataset.query);
+      } else {
+        clearPin('edit');
+      }
+      modal.classList.remove('hidden');
+      requestAnimationFrame(() => {
+        const backdrop = modal.querySelector('[data-edit-backdrop]');
+        const panel = modal.querySelector('[data-edit-panel]');
+        if (backdrop) backdrop.classList.remove('opacity-0');
+        if (panel) panel.classList.remove('opacity-0', 'translate-y-4');
+        const firstFocusable = modal.querySelector('input, select, textarea, button');
+        if (firstFocusable) firstFocusable.focus();
+      });
+    };
+
+    const closeEdit = () => {
+      clearPin('edit');
+      const backdrop = modal.querySelector('[data-edit-backdrop]');
+      const panel = modal.querySelector('[data-edit-panel]');
+      if (backdrop) backdrop.classList.add('opacity-0');
+      if (panel) panel.classList.add('opacity-0', 'translate-y-4');
+      setTimeout(() => modal.classList.add('hidden'), 200);
+      if (editTriggerBtn) editTriggerBtn.focus();
+    };
+
+    document.querySelectorAll('[data-edit-item]').forEach(btn => {
+      btn.addEventListener('click', () => openEdit(btn));
+    });
+    document.querySelectorAll('[data-close-edit-modal]').forEach(btn => {
+      btn.addEventListener('click', closeEdit);
+    });
+    if (modal) {
+      modal.addEventListener('click', (e) => {
+        if (e.target.matches('[data-edit-backdrop]')) closeEdit();
+      });
+    }
+
+    // Initialize typeahead for edit modal
+    const editTypeSelect = document.getElementById('editType');
+    if (editTypeSelect) initTypeahead('edit', editTypeSelect);
+  });
+</script>
 {% endblock %}
