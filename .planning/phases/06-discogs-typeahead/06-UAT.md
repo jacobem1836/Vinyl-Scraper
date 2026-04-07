@@ -1,5 +1,5 @@
 ---
-status: diagnosed
+status: fixed
 phase: 06-discogs-typeahead
 source: 06-01-SUMMARY.md, 06-02-SUMMARY.md
 started: 2026-04-07T12:00:00Z
