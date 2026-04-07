@@ -57,8 +57,8 @@ Plans:
   3. Scan log for an album-type item says "no album results" (not "no artist results") when a source returns nothing
 **Plans**: 2 plans
 Plans:
-- [ ] 07-01-PLAN.md — Backend: Listing.image_url column, adapter image extraction, scanner image priority, scan_status type tracking
-- [ ] 07-02-PLAN.md — Frontend: scan log type label display in base.html
+- [x] 07-01-PLAN.md — Backend: Listing.image_url column, adapter image extraction, scanner image priority, scan_status type tracking
+- [x] 07-02-PLAN.md — Frontend: scan log type label display in base.html
 
 ### Phase 8: Brand Font Upgrade
 **Goal**: The CRATE logotype in the nav uses a brutalist display web font loaded from a static asset with no external CDN dependency
