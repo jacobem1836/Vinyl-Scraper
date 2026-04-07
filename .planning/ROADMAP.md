@@ -78,7 +78,7 @@ Plans:
   4. Font selection was informed by ui-ux-pro-max + magic MCP before implementation
 **Plans**: 1 plan
 Plans:
-- [ ] 08-01-PLAN.md — Self-host Bodoni Moda Bold woff2, add @font-face + CSS custom property + preload, update .nav-brand
+- [x] 08-01-PLAN.md — Self-host Bodoni Moda Bold woff2, add @font-face + CSS custom property + preload, update .nav-brand
 
 ### Phase 9: Email Redesign
 **Goal**: Deal alert emails arrive with a scannable summary, CRATE-consistent dark aesthetic, and inline CSS that renders correctly in Gmail and Outlook
