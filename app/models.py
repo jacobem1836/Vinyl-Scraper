@@ -37,6 +37,7 @@ class Listing(Base):
     found_at = Column(DateTime, default=datetime.utcnow)
     is_active = Column(Boolean, default=True)
     is_in_stock = Column(Boolean, default=True)
+    image_url = Column(String, nullable=True)  # product image URL from source adapter
 
     wishlist_item = relationship("WishlistItem", back_populates="listings")
 

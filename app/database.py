@@ -104,3 +104,8 @@ def run_migrations():
             conn.commit()
         except Exception:
             pass  # Column already exists
+        try:
+            conn.execute(text("ALTER TABLE listings ADD COLUMN image_url VARCHAR"))
+            conn.commit()
+        except Exception:
+            pass  # Column already exists

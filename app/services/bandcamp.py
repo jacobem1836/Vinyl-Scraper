@@ -83,6 +83,9 @@ async def search_and_get_listings(query: str, item_type: str) -> list[dict]:
                     except ValueError:
                         pass
 
+                art_el = result.select_one(".art img")
+                image_url = art_el.get("src") if art_el else None
+
                 listings.append(
                     {
                         "source": "bandcamp",
@@ -94,6 +97,7 @@ async def search_and_get_listings(query: str, item_type: str) -> list[dict]:
                         "seller": None,
                         "ships_from": None,  # varies by artist/label
                         "is_in_stock": True,
+                        "image_url": image_url,
                     }
                 )
 

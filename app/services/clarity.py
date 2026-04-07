@@ -86,6 +86,13 @@ async def search_and_get_listings(query: str, item_type: str) -> list[dict]:
                     except ValueError:
                         price = None
 
+            img_el = item.select_one("img")
+            image_url = img_el.get("src") if img_el else None
+            if image_url and image_url.startswith("//"):
+                image_url = "https:" + image_url
+            elif image_url and image_url.startswith("/"):
+                image_url = BASE_URL + image_url
+
             results.append(
                 {
                     "source": "clarity",
@@ -97,6 +104,7 @@ async def search_and_get_listings(query: str, item_type: str) -> list[dict]:
                     "seller": None,
                     "ships_from": "Australia",
                     "is_in_stock": True,
+                    "image_url": image_url,
                 }
             )
 

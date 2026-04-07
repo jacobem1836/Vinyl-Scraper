@@ -81,6 +81,7 @@ async def search_and_get_listings(query: str, item_type: str) -> list[dict]:
                         "seller": item.get("seller", {}).get("username"),
                         "ships_from": "Australia",
                         "is_in_stock": True,
+                        "image_url": item.get("image", {}).get("imageUrl"),
                     })
                 except (KeyError, ValueError):
                     continue

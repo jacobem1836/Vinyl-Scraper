@@ -71,6 +71,11 @@ async def search_and_get_listings(query: str, item_type: str) -> list[dict]:
                     except ValueError:
                         price = None
 
+            img_tag = thumbnail.find("img")
+            image_url = img_tag.get("src") if img_tag else None
+            if image_url and image_url.startswith("/"):
+                image_url = "https://www.discrepancy-records.com.au" + image_url
+
             results.append(
                 {
                     "source": "discrepancy",
@@ -82,6 +87,7 @@ async def search_and_get_listings(query: str, item_type: str) -> list[dict]:
                     "seller": None,
                     "ships_from": "Australia",
                     "is_in_stock": True,
+                    "image_url": image_url,
                 }
             )
 

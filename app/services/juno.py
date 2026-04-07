@@ -85,6 +85,13 @@ async def search_and_get_listings(query: str, item_type: str) -> list[dict]:
                 # Stock: .glyphicon-check present when in stock
                 in_stock = item.select_one(".pl-big-price .glyphicon-check") is not None
 
+                img_el = item.select_one("img")
+                image_url = img_el.get("src") if img_el else None
+                if image_url and image_url.startswith("//"):
+                    image_url = "https:" + image_url
+                elif image_url and image_url.startswith("/"):
+                    image_url = BASE_URL + image_url
+
                 listings.append(
                     {
                         "source": "juno",
@@ -96,6 +103,7 @@ async def search_and_get_listings(query: str, item_type: str) -> list[dict]:
                         "seller": None,
                         "ships_from": "United Kingdom",
                         "is_in_stock": in_stock,
+                        "image_url": image_url,
                     }
                 )
 

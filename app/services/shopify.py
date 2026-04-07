@@ -84,6 +84,8 @@ async def _search_store(
         except (TypeError, ValueError):
             continue
 
+        image_url = product.get("image")
+
         results.append(
             {
                 "source": store["key"],
@@ -95,6 +97,7 @@ async def _search_store(
                 "condition": None,
                 "is_in_stock": product.get("available", True),
                 "seller": None,
+                "image_url": image_url,
             }
         )
 
