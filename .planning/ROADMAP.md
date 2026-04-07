@@ -55,7 +55,10 @@ Plans:
   1. A wishlist item with a store-sourced image shows that image on the dashboard card (not the Discogs thumb)
   2. A wishlist item with no store image falls back to the Discogs artwork, then the vinyl placeholder SVG — never a broken image
   3. Scan log for an album-type item says "no album results" (not "no artist results") when a source returns nothing
-**Plans**: TBD
+**Plans**: 2 plans
+Plans:
+- [ ] 07-01-PLAN.md — Backend: Listing.image_url column, adapter image extraction, scanner image priority, scan_status type tracking
+- [ ] 07-02-PLAN.md — Frontend: scan log type label display in base.html
 
 ### Phase 8: Brand Font Upgrade
 **Goal**: The CRATE logotype in the nav uses a brutalist display web font loaded from a static asset with no external CDN dependency
@@ -125,7 +128,7 @@ Plans:
 | 4. UI Polish | v1.0 | 3/3 | Complete | 2026-04-05 |
 | 5. Improve UI/UX | v1.0 | 3/3 | Complete | 2026-04-05 |
 | 6. Discogs Typeahead | v1.1 | 0/2 | Planned | - |
-| 7. Image Priority + Scan Fix | v1.1 | 0/? | Not started | - |
+| 7. Image Priority + Scan Fix | v1.1 | 0/2 | Planned | - |
 | 8. Brand Font Upgrade | v1.1 | 0/? | Not started | - |
 | 9. Email Redesign | v1.1 | 0/? | Not started | - |
 | 10. UI Polish | v1.1 | 0/? | Not started | - |
