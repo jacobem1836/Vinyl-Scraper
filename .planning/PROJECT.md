@@ -110,4 +110,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-04-05 after v1.1 milestone start — album autofill, UI polish, email redesign*
+*Last updated: 2026-04-07 after Phase 8 complete — Bodoni Moda Bold self-hosted for CRATE wordmark*
