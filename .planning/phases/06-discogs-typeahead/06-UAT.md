@@ -1,5 +1,5 @@
 ---
-status: complete
+status: diagnosed
 phase: 06-discogs-typeahead
 source: 06-01-SUMMARY.md, 06-02-SUMMARY.md
 started: 2026-04-07T12:00:00Z
@@ -66,27 +66,36 @@ blocked: 0
   reason: "User reported: yes, but the loading icon stays"
   severity: minor
   test: 3
-  root_cause: ""
-  artifacts: []
-  missing: []
-  debug_session: ""
+  root_cause: "selectResult() destructures input/hidden from getEls() but never gets spinner — spinner shown during fetch is never hidden on selection"
+  artifacts:
+    - path: "static/typeahead.js"
+      issue: "selectResult() missing spinner hide"
+  missing:
+    - "Add spinner to getEls() destructure in selectResult, hide it"
+  debug_session: ".planning/debug/typeahead-spinner-bug.md"
 
 - truth: "After selecting a typeahead result via keyboard, the spinner should become a clear/x button"
   status: failed
   reason: "User reported: yes, but the loading icon stays after selection - should be an x"
   severity: minor
   test: 4
-  root_cause: ""
-  artifacts: []
-  missing: []
-  debug_session: ""
+  root_cause: "Same as test 3 — selectResult() never hides spinner; also resetTypeahead() has same gap"
+  artifacts:
+    - path: "static/typeahead.js"
+      issue: "resetTypeahead() missing spinner hide"
+  missing:
+    - "Add spinner to getEls() destructure in resetTypeahead, hide it"
+  debug_session: ".planning/debug/typeahead-spinner-bug.md"
 
 - truth: "Loading spinner should not persist when switching to Key Word/s type (no typeahead)"
   status: failed
   reason: "User reported: yes - although the loading icon still stays - it shouldn't"
   severity: minor
   test: 6
-  root_cause: ""
-  artifacts: []
-  missing: []
-  debug_session: ""
+  root_cause: "Type change handler calls closeDropdown() but never hides spinner"
+  artifacts:
+    - path: "static/typeahead.js"
+      issue: "type change event listener missing spinner hide"
+  missing:
+    - "Get spinner from getEls() in type change handler, hide it"
+  debug_session: ".planning/debug/typeahead-spinner-bug.md"
