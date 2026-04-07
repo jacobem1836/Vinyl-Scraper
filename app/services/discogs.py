@@ -27,15 +27,23 @@ def _build_listing(title: str, release_id: int, lowest_price: float) -> dict:
     }
 
 
-async def typeahead_search(query: str, max_results: int = 5) -> list[dict]:
-    """Search Discogs releases for typeahead suggestions. Returns up to max_results results, 1 API call only."""
+async def typeahead_search(query: str, item_type: str = "album", max_results: int = 5) -> list[dict]:
+    """Search Discogs for typeahead suggestions. Supports album (release), artist, and label types."""
     if not settings.discogs_token:
         return []
     try:
         async with httpx.AsyncClient(timeout=20.0) as client:
+            if item_type == "artist":
+                params = {"q": query, "type": "artist", "per_page": max_results}
+            elif item_type == "label":
+                params = {"q": query, "type": "label", "per_page": max_results}
+            else:
+                # album (default)
+                params = {"q": query, "type": "release", "format": "Vinyl", "per_page": max_results}
+
             resp = await client.get(
                 f"{BASE_URL}/database/search",
-                params={"q": query, "type": "release", "format": "Vinyl", "per_page": max_results},
+                params=params,
                 headers=_get_headers(),
             )
             if resp.status_code != 200:
@@ -43,24 +51,33 @@ async def typeahead_search(query: str, max_results: int = 5) -> list[dict]:
             results = resp.json().get("results", [])
             suggestions = []
             for r in results[:max_results]:
-                raw_title = r.get("title", "")
-                # Discogs title field is "Artist - Title"; split on first " - "
-                if " - " in raw_title:
-                    artist, title = raw_title.split(" - ", 1)
+                if item_type in ("artist", "label"):
+                    # Artist/label results: title is just the name, no " - " split
+                    suggestions.append({
+                        "release_id": r.get("id"),
+                        "title": r.get("title", "").strip(),
+                        "artist": "",
+                        "year": None,
+                        "thumb": r.get("thumb") or r.get("cover_image") or None,
+                    })
                 else:
-                    artist = ""
-                    title = raw_title
-                year = r.get("year")
-                if not year or str(year) == "0":
-                    year = None
-                thumb = r.get("thumb") or r.get("cover_image") or None
-                suggestions.append({
-                    "release_id": r.get("id"),
-                    "title": title.strip(),
-                    "artist": artist.strip(),
-                    "year": str(year) if year else None,
-                    "thumb": thumb,
-                })
+                    raw_title = r.get("title", "")
+                    # Discogs release title field is "Artist - Title"; split on first " - "
+                    if " - " in raw_title:
+                        artist, title = raw_title.split(" - ", 1)
+                    else:
+                        artist = ""
+                        title = raw_title
+                    year = r.get("year")
+                    if not year or str(year) == "0":
+                        year = None
+                    suggestions.append({
+                        "release_id": r.get("id"),
+                        "title": title.strip(),
+                        "artist": artist.strip(),
+                        "year": str(year) if year else None,
+                        "thumb": r.get("thumb") or r.get("cover_image") or None,
+                    })
             return suggestions
     except Exception as e:
         print(f"[Discogs] Typeahead error: {e}")

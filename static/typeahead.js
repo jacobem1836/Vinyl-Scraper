@@ -1,6 +1,6 @@
 /* ============================================================
    CRATE — Typeahead module
-   Shared functions for Discogs release search dropdown.
+   Shared functions for Discogs search dropdown.
    Used in both add modal (index.html) and edit modal
    (index.html + item_detail.html).
    ============================================================ */
@@ -9,6 +9,9 @@
   const DEBOUNCE_MS = 300;
   const MIN_QUERY_LEN = 2;
 
+  // Types that activate the typeahead dropdown
+  const ACTIVE_TYPES = ["album", "artist", "label"];
+
   // Per-prefix state map
   const state = {};
 
@@ -16,37 +19,23 @@
   /* Internal helpers                                            */
   /* ---------------------------------------------------------- */
 
-  function escapeHtml(str) {
-    return String(str)
-      .replace(/&/g, "&amp;")
-      .replace(/</g, "&lt;")
-      .replace(/>/g, "&gt;")
-      .replace(/"/g, "&quot;");
-  }
-
   function getEls(prefix) {
     return {
-      input:    document.getElementById(prefix + "Query"),
-      badge:    document.getElementById(prefix + "PinBadge"),
-      pinText:  document.getElementById(prefix + "PinText"),
-      hidden:   document.getElementById(prefix + "DiscogsReleaseId"),
-      spinner:  document.getElementById(prefix + "Spinner"),
-      listbox:  document.getElementById(prefix + "-typeahead-listbox"),
+      input:   document.getElementById(prefix + "Query"),
+      hidden:  document.getElementById(prefix + "DiscogsReleaseId"),
+      spinner: document.getElementById(prefix + "Spinner"),
+      listbox: document.getElementById(prefix + "-typeahead-listbox"),
     };
   }
 
   function closeDropdown(prefix) {
     const { input, listbox } = getEls(prefix);
-    if (listbox) {
-      listbox.classList.remove("typeahead-dropdown--open");
-    }
+    if (listbox) listbox.classList.remove("typeahead-dropdown--open");
     if (input) {
       input.setAttribute("aria-expanded", "false");
       input.removeAttribute("aria-activedescendant");
     }
-    if (state[prefix]) {
-      state[prefix].activeIndex = -1;
-    }
+    if (state[prefix]) state[prefix].activeIndex = -1;
   }
 
   function updateActiveRow(prefix) {
@@ -58,7 +47,7 @@
       if (i === idx) {
         row.classList.add("typeahead-row--active");
         row.setAttribute("aria-selected", "true");
-        input && input.setAttribute("aria-activedescendant", row.id);
+        if (input) input.setAttribute("aria-activedescendant", row.id);
       } else {
         row.classList.remove("typeahead-row--active");
         row.setAttribute("aria-selected", "false");
@@ -87,15 +76,11 @@
         row.setAttribute("aria-selected", "false");
         row.setAttribute("data-index", i);
 
-        // Thumbnail
+        // Thumbnail — use Discogs URL directly (no proxy needed for dropdown)
         const img = document.createElement("img");
         img.className = "typeahead-thumb";
         img.alt = "";
-        if (result.thumb) {
-          img.src = "/api/artwork?url=" + encodeURIComponent(result.thumb);
-        } else {
-          img.src = "/static/vinyl-placeholder.svg";
-        }
+        img.src = result.thumb || "/static/vinyl-placeholder.svg";
         img.onerror = function () { this.src = "/static/vinyl-placeholder.svg"; };
 
         // Text block
@@ -110,24 +95,24 @@
         titleSpan.style.color = "var(--color-text)";
         titleSpan.textContent = result.title;
 
-        const year = result.year && result.year !== "0" ? result.year : null;
-        const subtitle = result.artist + (year ? " \u00b7 " + year : "");
-        const subtitleSpan = document.createElement("span");
-        subtitleSpan.className = "text-sm text-muted";
-        subtitleSpan.textContent = subtitle;
-
         textDiv.appendChild(titleSpan);
-        textDiv.appendChild(subtitleSpan);
+
+        if (result.artist || result.year) {
+          const year = result.year && result.year !== "0" ? result.year : null;
+          const subtitle = result.artist + (year ? " \u00b7 " + year : "");
+          const subtitleSpan = document.createElement("span");
+          subtitleSpan.className = "text-sm text-muted";
+          subtitleSpan.textContent = subtitle;
+          textDiv.appendChild(subtitleSpan);
+        }
 
         row.appendChild(img);
         row.appendChild(textDiv);
 
-        // Click handler
         row.addEventListener("click", function () {
           window.selectResult(prefix, result);
         });
 
-        // Mouseover handler — update active index visually
         row.addEventListener("mouseover", function () {
           state[prefix].activeIndex = i;
           updateActiveRow(prefix);
@@ -144,8 +129,7 @@
 
   function isTypeaheadActive(typeSelectEl) {
     if (!typeSelectEl) return false;
-    const val = typeSelectEl.value;
-    return val === "album" || val === "subject";
+    return ACTIVE_TYPES.includes(typeSelectEl.value);
   }
 
   /* ---------------------------------------------------------- */
@@ -153,69 +137,22 @@
   /* ---------------------------------------------------------- */
 
   /**
-   * selectResult — called on click or Enter key press.
-   * Sets hidden input, locks query field, shows pin badge.
+   * selectResult — fill the query input with the selected result.
+   * For album type, also stores the release_id in the hidden input.
+   * No locking — user can still edit the field freely.
    */
   window.selectResult = function (prefix, result) {
-    const { input, badge, pinText, hidden } = getEls(prefix);
+    const { input, hidden } = getEls(prefix);
 
-    // Set hidden release ID
-    if (hidden) hidden.value = result.release_id;
+    if (input) input.value = result.title;
 
-    // Fill and lock query input
-    if (input) {
-      input.value = result.title;
-      input.classList.add("form-input--locked");
-      input.readOnly = true;
-      input.placeholder = "Release pinned \u2014 clear badge to change";
-      input.title = "Clear the pinned release above to edit this field";
+    // Only store release_id for album selections (not artist/label)
+    if (hidden) {
+      hidden.value = result.release_id || "";
     }
-
-    // Show pin badge
-    const year = result.year && result.year !== "0" ? result.year : null;
-    if (pinText) pinText.textContent = result.title + (year ? " (" + year + ")" : "");
-    if (badge) badge.classList.remove("hidden");
-
-    // Close dropdown
-    closeDropdown(prefix);
-  };
-
-  /**
-   * clearPin — clears pinned release, unlocks query input.
-   */
-  window.clearPin = function (prefix) {
-    const { input, badge, hidden } = getEls(prefix);
-
-    if (hidden) hidden.value = "";
-    if (input) {
-      input.classList.remove("form-input--locked");
-      input.readOnly = false;
-      input.placeholder = "Search Discogs...";
-      input.removeAttribute("title");
-      input.value = "";
-      input.focus();
-    }
-    if (badge) badge.classList.add("hidden");
 
     closeDropdown(prefix);
-  };
-
-  /**
-   * setPin — pre-populate badge for edit modal (D-04).
-   * Does NOT set query input value — caller handles that.
-   */
-  window.setPin = function (prefix, releaseId, displayText) {
-    const { input, badge, pinText, hidden } = getEls(prefix);
-
-    if (hidden) hidden.value = releaseId;
-    if (input) {
-      input.classList.add("form-input--locked");
-      input.readOnly = true;
-      input.placeholder = "Release pinned \u2014 clear badge to change";
-      input.title = "Clear the pinned release above to edit this field";
-    }
-    if (pinText) pinText.textContent = displayText;
-    if (badge) badge.classList.remove("hidden");
+    if (input) input.focus();
   };
 
   /**
@@ -241,13 +178,13 @@
         try { state[prefix].controller.abort(); } catch (e) {}
       }
 
-      if (input.readOnly) return;
-
       const query = input.value.trim();
       if (query.length < MIN_QUERY_LEN || !isTypeaheadActive(typeSelectEl)) {
         closeDropdown(prefix);
         return;
       }
+
+      const currentType = typeSelectEl ? typeSelectEl.value : "album";
 
       state[prefix].timer = setTimeout(function () {
         const ctrl = new AbortController();
@@ -255,7 +192,8 @@
 
         if (spinner) spinner.classList.remove("hidden");
 
-        fetch("/api/discogs/search?q=" + encodeURIComponent(query), { signal: ctrl.signal })
+        const url = "/api/discogs/search?q=" + encodeURIComponent(query) + "&type=" + encodeURIComponent(currentType);
+        fetch(url, { signal: ctrl.signal })
           .then(function (res) {
             if (!res.ok) throw new Error("HTTP " + res.status);
             return res.json();
@@ -266,8 +204,7 @@
           })
           .catch(function (err) {
             if (spinner) spinner.classList.add("hidden");
-            if (err.name === "AbortError") return; // expected — rapid typing
-            // Network/server error
+            if (err.name === "AbortError") return;
             const { listbox } = getEls(prefix);
             if (listbox) {
               listbox.innerHTML = "";
@@ -314,13 +251,13 @@
       }
     });
 
-    // Type select change — disable typeahead for artist/label
+    // Close dropdown and clear release_id when type changes
     if (typeSelectEl) {
       typeSelectEl.addEventListener("change", function () {
-        if (!isTypeaheadActive(typeSelectEl)) {
-          closeDropdown(prefix);
-          // Do NOT clear the pin if one exists — just close dropdown
-        }
+        closeDropdown(prefix);
+        // Clear stored release_id — it's type-specific
+        const { hidden } = getEls(prefix);
+        if (hidden) hidden.value = "";
       });
     }
   };

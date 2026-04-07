@@ -189,10 +189,6 @@
         <form id="editItemForm" action="" method="post" class="stack-md">
           <div>
             <label class="form-label">What are you looking for?</label>
-            <div id="editPinBadge" class="typeahead-pin-badge hidden">
-              <span id="editPinText"></span>
-              <button type="button" aria-label="Clear pinned release" onclick="clearPin('edit')">&times;</button>
-            </div>
             <div class="typeahead-wrapper">
               <input id="editQuery" name="query" required placeholder="Search Discogs..." class="form-input"
                      role="combobox" aria-expanded="false" aria-haspopup="listbox" aria-autocomplete="list"
@@ -208,7 +204,7 @@
               <option value="album">Album</option>
               <option value="artist">Artist</option>
               <option value="label">Label</option>
-              <option value="subject">Subject</option>
+              <option value="subject">Key Word/s</option>
             </select>
           </div>
           <div>
@@ -248,13 +244,9 @@
       document.getElementById('editNotes').value = btn.dataset.notes;
       document.getElementById('editNotifyPct').value = btn.dataset.notifyBelowPct;
       document.getElementById('editNotifyEmail').checked = btn.dataset.notifyEmail === 'true';
-      // Handle pinned Discogs release pre-state (D-04)
-      const releaseId = btn.dataset.discogsReleaseId;
-      if (releaseId) {
-        setPin('edit', releaseId, btn.dataset.discogsReleaseTitle || btn.dataset.query);
-      } else {
-        clearPin('edit');
-      }
+      // Pre-populate pinned release ID if present
+      const releaseIdInput = document.getElementById('editDiscogsReleaseId');
+      if (releaseIdInput) releaseIdInput.value = btn.dataset.discogsReleaseId || '';
       modal.classList.remove('hidden');
       requestAnimationFrame(() => {
         const backdrop = modal.querySelector('[data-edit-backdrop]');
@@ -267,7 +259,6 @@
     };
 
     const closeEdit = () => {
-      clearPin('edit');
       const backdrop = modal.querySelector('[data-edit-backdrop]');
       const panel = modal.querySelector('[data-edit-panel]');
       if (backdrop) backdrop.classList.add('opacity-0');

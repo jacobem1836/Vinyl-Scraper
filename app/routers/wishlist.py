@@ -113,6 +113,7 @@ async def add_wishlist_item_web(
     db.commit()
     db.refresh(item)
 
+    invalidate_dashboard_cache()
     background_tasks.add_task(_scan_in_background, item.id)
 
     return RedirectResponse(url="/?toast=Item+added%2C+scanning+in+background", status_code=303)
@@ -140,7 +141,7 @@ async def edit_wishlist_item_web(
     item.discogs_release_id = discogs_release_id
     db.commit()
     invalidate_dashboard_cache()
-    return RedirectResponse(url="/?toast=Item+updated", status_code=303)
+    return RedirectResponse(url=f"/item/{item_id}?toast=Item+updated", status_code=303)
 
 
 @web_router.post("/wishlist/{item_id}/delete")
@@ -214,11 +215,11 @@ async def item_scan_status(item_id: int, db: Session = Depends(get_db)):
 
 
 @web_router.get("/api/discogs/search")
-async def discogs_typeahead_search(q: str = ""):
+async def discogs_typeahead_search(q: str = "", type: str = "album"):
     if len(q.strip()) < 2:
         return []
     from app.services.discogs import typeahead_search
-    results = await typeahead_search(q.strip(), max_results=5)
+    results = await typeahead_search(q.strip(), item_type=type, max_results=5)
     return results
 
 

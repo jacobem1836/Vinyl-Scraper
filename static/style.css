@@ -673,6 +673,10 @@ button, input, select, textarea {
 }
 
 /* Typeahead loading spinner (positioned inside wrapper) */
+@keyframes spin-positioned {
+  from { transform: translateY(-50%) rotate(0deg); }
+  to   { transform: translateY(-50%) rotate(360deg); }
+}
 .typeahead-spinner {
   position: absolute;
   right: var(--space-md);
@@ -680,6 +684,7 @@ button, input, select, textarea {
   transform: translateY(-50%);
   width: 14px;
   height: 14px;
+  animation: spin-positioned 0.8s linear infinite;
 }
 
 /* Empty / error state row */
