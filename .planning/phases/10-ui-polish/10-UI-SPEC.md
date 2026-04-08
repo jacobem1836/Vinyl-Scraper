@@ -53,7 +53,7 @@ All tokens already defined in `static/style.css :root`. No changes to token name
 Source: D-08 (CONTEXT.md), RESEARCH.md Architecture Patterns / Spacing Tier Application.
 
 Exceptions:
-- Table row padding: 10–12px (falls between `--space-sm` and `--space-md`; use 12px explicitly as a one-off override within `.table td` only — source: D-11)
+- Table row padding: `var(--space-md)` (16px) vertical padding on `.table td` — standard token, no off-scale overrides (source: D-11)
 - Stats bar label/value spacing: 2–4px between value and label within a stat unit (use `var(--space-xs)`)
 
 ---
@@ -62,37 +62,35 @@ Exceptions:
 
 ### Token Changes (D-07)
 
-The existing scale is compressed (14→28px, 2x range). This phase widens it to a 3:4 proportional ratio. Tokens are updated in `static/style.css :root`.
+The existing scale is compressed. This phase widens it and reduces it to exactly 4 sizes and 2 weights.
 
-**New and changed tokens:**
+**Declared font sizes (4 total):**
 
-| Token | Old Value | New Value | Source |
-|-------|-----------|-----------|--------|
-| `--text-label` | (new) | 12px | D-07 |
-| `--text-sm` | 14px | 14px (unchanged) | backward compat |
-| `--text-body` | 16px | 16px (unchanged) | — |
-| `--text-title` | (new) | 21px | D-07 — card album names |
-| `--text-price` | 20px | 28px | D-07 — core value signal |
-| `--text-subheading` | (new) | 22px | D-04 — H2 section headings |
-| `--text-heading-secondary` | (new) | 21px | D-07 — "All Listings" |
-| `--text-heading` | 28px | 36px | D-07 — page-level H1s |
+| Token | Size | Weight | Line Height | Where Used |
+|-------|------|--------|-------------|-----------|
+| `--text-label` | 12px | 400 | 1.4 | Stats bar labels, badge text, muted metadata |
+| `--text-body` | 16px | 400 | 1.5 | Card titles, card descriptions, table cells, form inputs, modal body, nav items, helper text, "All Listings" H2 |
+| `--text-subheading` | 22px | 700 | 1.2 | "Best Deals" H2, stats bar values, section headings |
+| `--text-heading` | 36px | 700 | 1.1 | Page-level H1s, card best price (deal cards), detail page deal price |
 
-### Usage Table
+**Declared font weights (2 total):** 400 (default) and 700 (emphasized).
 
-| Role | Token | Size | Weight | Line Height | Where Used |
-|------|-------|------|--------|-------------|-----------|
-| Metadata / secondary labels | `--text-label` | 12px | 400 | 1.4 | Stats bar labels, badge text, muted metadata |
-| Body / UI text | `--text-sm` | 14px | 400 | 1.5 | Table cells, nav items, helper text |
-| Body primary | `--text-body` | 16px | 400 | 1.5 | Card descriptions, form inputs, modal body |
-| Card title / section secondary | `--text-title` / `--text-heading-secondary` | 21px | 500 | 1.3 | Card album names (D-12: weight reduced 600→500); "All Listings" H2 |
-| Subheading / H2 | `--text-subheading` | 22px | 600 | 1.2 | "Best Deals" H2 on detail page |
-| Stats bar values | — | 22–24px | 600 | 1.1 | Stats bar numbers (D-10; use `var(--text-subheading)`) |
-| Price signal | `--text-price` | 28px | 700 | 1.0 | Card best price (deal cards), detail page deal price |
-| Page heading / H1 | `--text-heading` | 36px | 700 | 1.1 | Page-level H1s, "Best Deals" primary heading |
+**Token mapping changes:**
+
+| Token | Old Value | New Value | Notes |
+|-------|-----------|-----------|-------|
+| `--text-label` | (new) | 12px | New token |
+| `--text-sm` | 14px | removed | Elements previously at 14px reassigned to `--text-body` (16px) |
+| `--text-body` | 16px | 16px | Unchanged |
+| `--text-title` | (new) | removed | Card album names use `--text-body` (16px); size hierarchy carried by weight only at card level |
+| `--text-heading-secondary` | (new) | removed | "All Listings" H2 uses `--text-body` (16px) at weight 400 — visually subordinate to 22px "Best Deals" |
+| `--text-price` | 20px | removed | Price signal uses `--text-heading` (36px) |
+| `--text-subheading` | (new) | 22px | D-04 — H2 section headings, stats bar values |
+| `--text-heading` | 28px | 36px | D-07 — page-level H1s and price signal |
 
 **Two-family limit (enforced):** System sans-serif (`--font-sans`) for all UI text. Bodoni Moda (`--font-display`) restricted to CRATE brand wordmark only — Bodoni hairlines vanish below 30px.
 
-**D-13 (monospace font — discretion):** Include JetBrains Mono for price cells. Rationale: at 28px price size, monospace reinforces "data vs label" distinction within the two-family limit (brand display font + mono = two families; system sans-serif is the default, not a named family). Self-host woff2 in `static/fonts/` consistent with BodoniModa pattern. Apply via a new `--font-mono` token. If the design tool audit (magic MCP, ui-ux-pro-max) during execution confirms size alone is sufficient, skip the font addition.
+**D-13 (monospace font — discretion):** Include JetBrains Mono for price cells. Rationale: at 36px price size, monospace reinforces "data vs label" distinction within the two-family limit (brand display font + mono = two families; system sans-serif is the default, not a named family). Self-host woff2 in `static/fonts/` consistent with BodoniModa pattern. Apply via a new `--font-mono` token. If the design tool audit (magic MCP, ui-ux-pro-max) during execution confirms size alone is sufficient, skip the font addition.
 
 Source: D-07, D-04, D-10, D-12, D-13 (CONTEXT.md); RESEARCH.md Standard Stack / Code Examples.
 
@@ -150,12 +148,14 @@ This phase adds no new CTA flows. Copy requirements are confined to state labels
 | Disabled scan button tooltip | (none — opacity + cursor communicates state) | D-05; no tooltip needed for personal tool |
 | Empty state — no wishlist items | "No records added yet." | Existing; preserved |
 | Error state — scan failure | "Scan failed. Try again." | Existing toast pattern; preserved |
-| Delete confirmation | "Delete this record? / Confirm Delete / Cancel" | UIP-08 — already implemented inline, verify not regressed |
-| Typeahead — no results | "No results" | Existing; preserved |
+| Delete confirmation — dialog | "Delete this record?" | UIP-08 — inline confirmation |
+| Delete confirmation — confirm button | "Confirm Delete" | UIP-08 |
+| Delete confirmation — cancel button | "Keep Record" | UIP-08; specific label, not generic "Cancel" |
+| Typeahead — no results | "Nothing matched — try a different title or artist" | Replaces generic "No results" |
 | Typeahead — spinner visible | (no text label — spinner only) | Existing pattern |
 
 **Destructive actions in this phase:**
-- Delete wishlist item: inline confirmation already implemented (UIP-08). Copy: "Are you sure?" with "Confirm Delete" and "Cancel" buttons. No native `confirm()`. Verify regression only.
+- Delete wishlist item: inline confirmation already implemented (UIP-08). Confirm button: "Confirm Delete". Cancel button: "Keep Record". No native `confirm()`. Verify regression only.
 
 Source: UIP-08, D-05, D-09 (CONTEXT.md); REQUIREMENTS.md UIP section.
 
@@ -184,7 +184,7 @@ All three button classes (`.btn-cta`, `.btn-secondary`, `.btn-destructive`) must
 ### Table
 
 - Remove `border-top` from `.table td`
-- Increase row padding to 10–12px vertical
+- Row padding: `var(--space-md)` (16px) vertical — standard token, no off-scale overrides
 - Right-align numeric columns: price, landed cost
 - No hover state change required on table rows (personal tool, low priority)
 
@@ -213,13 +213,15 @@ No new components are introduced. Existing components are modified.
 
 | Component | File | Change |
 |-----------|------|--------|
-| Card (`.card`, `.card-body`, `.card-title`) | `static/style.css`, `templates/index.html` | Add tier classes (`.card--deal`, `.card--empty`), new title token |
-| Stats bar | `templates/index.html` | Upgrade font sizes + add class-based styling |
-| Table (`.table`) | `static/style.css` | Remove row borders, increase padding, right-align numerics |
+| Card (`.card`, `.card-body`, `.card-title`) | `static/style.css`, `templates/index.html` | Add tier classes (`.card--deal`, `.card--empty`), apply `--text-body` to card titles |
+| Stats bar | `templates/index.html` | Upgrade font sizes: values at `--text-subheading` (22px/700), labels at `--text-label` (12px/400) |
+| Table (`.table`) | `static/style.css` | Remove row borders, set row padding to `var(--space-md)`, right-align numerics |
 | Button states | `static/style.css` | Add `:disabled` rule |
 | H2 headings | `templates/item_detail.html` | Replace inline styles with `--text-subheading` token |
+| Typeahead — no-results message | `templates/index.html` | Update copy to "Nothing matched — try a different title or artist" |
+| Delete confirmation — cancel button | `templates/index.html`, `templates/item_detail.html` | Label changed from "Cancel" to "Keep Record" |
 | Typeahead spinner | `static/style.css` | Add `.typeahead-spinner.hidden { animation: none }` |
-| CSS `:root` | `static/style.css` | New tokens: `--text-label`, `--text-title`, `--text-subheading`, `--text-heading-secondary`; changed: `--text-price` (28px), `--text-heading` (36px) |
+| CSS `:root` | `static/style.css` | New tokens: `--text-label` (12px), `--text-subheading` (22px); changed: `--text-heading` (36px); removed: `--text-sm`, `--text-title`, `--text-heading-secondary`, `--text-price` |
 
 ---
 
@@ -251,14 +253,14 @@ The executor must invoke design tools before and after each implementation wave.
 Per CONTEXT.md D-specifics and design audit convergence:
 
 1. Spacing tiers (`.card-grid` gap → 16px, `.stack-lg` gap → 48px) — highest impact, zero risk
-2. Widen type scale (add/change tokens in `:root`) — token-only, no layout risk until applied
-3. Apply type tokens to components (card title, price, headings, stats bar)
+2. Collapse type scale to 4 sizes / 2 weights (add/change/remove tokens in `:root`)
+3. Apply type tokens to components (card title → 16px, price → 36px, headings, stats bar)
 4. Card tier classification (Jinja2 + CSS `.card--deal`, `.card--empty`)
-5. Strip table row borders + right-align numerics
-6. Weight reduction on card titles (600→500) — applied after size changes confirmed
-7. `:disabled` button state (CSS + JS `startScan()` modification)
-8. Typeahead spinner fix (CSS `.typeahead-spinner.hidden`)
-9. Replace H2 inline styles with `--text-subheading` token
+5. Strip table row borders + set padding to `var(--space-md)` + right-align numerics
+6. `:disabled` button state (CSS + JS `startScan()` modification)
+7. Typeahead spinner fix (CSS `.typeahead-spinner.hidden`)
+8. Replace H2 inline styles with `--text-subheading` token
+9. Update "Keep Record" cancel label and "Nothing matched" typeahead copy
 10. Verify Phase 5 carry-forwards not regressed (UIP-01, UIP-04, UIP-05, UIP-07, UIP-08, UIP-09, BUG-01)
 
 ---
