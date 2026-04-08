@@ -116,7 +116,11 @@ Plans:
   3. The card grid switches to 3 columns at 1024px viewport width
   4. Clicking delete on a card shows an inline "Are you sure? / Cancel" confirmation — native browser `confirm()` is gone
   5. No buttons overlap in the bottom-right corner of the dashboard
-**Plans**: TBD
+**Plans**: 3 plans
+Plans:
+- [ ] 10-01-PLAN.md — CSS design tokens: type scale, spacing tiers, card tier classes, disabled buttons, table cleanup, spinner fix
+- [ ] 10-02-PLAN.md — Template updates: card tiers, stats bar, H2 tokens, disabled button JS, copy updates
+- [ ] 10-03-PLAN.md — Verification: automated requirement checks + visual human checkpoint
 **UI hint**: yes
 
 ## Progress
@@ -132,4 +136,4 @@ Plans:
 | 7. Image Priority + Scan Fix | v1.1 | 0/2 | Planned | - |
 | 8. Brand Font Upgrade | v1.1 | 0/1 | Planned | - |
 | 9. Email Redesign | v1.1 | 0/? | Not started | - |
-| 10. UI Polish | v1.1 | 0/? | Not started | - |
+| 10. UI Polish | v1.1 | 0/3 | Planned | - |
