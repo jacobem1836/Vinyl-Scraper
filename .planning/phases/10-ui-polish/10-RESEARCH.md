@@ -471,22 +471,16 @@ Use `mcp__stitch__*` for visual screen generation to preview token changes.
 
 ---
 
-## Open Questions
+## Open Questions (RESOLVED)
 
 1. **Deal percentage field availability**
-   - What we know: The dashboard route passes enriched items; `typical_price` is computed during scanning.
-   - What's unclear: Does the enriched item dict in `app/routers/wishlist.py` include a pre-computed deal percentage, or does the template need to compute it from `best_price` / `typical_price`?
-   - Recommendation: Executor reads `app/routers/wishlist.py` dashboard route before writing template code.
+   - RESOLVED: The dashboard route in `app/routers/wishlist.py` exposes `best_price` (line 71), `typical_price` (line 76), `listing_count` (line 75), and `notify_below_pct` (line 64). No pre-computed deal percentage exists — the template must compute it from `best_price / typical_price`. Both fields are available in the enriched item dict.
 
 2. **Typeahead spinner root cause**
-   - What we know: `spinner.classList.add("hidden")` is called in selectResult(), resetTypeahead(), and type change handler. IDs appear correct.
-   - What's unclear: Whether CSS animation on the spinner element is preventing `display:none` from visually taking effect.
-   - Recommendation: Add `animation: none` to `.typeahead-spinner.hidden` as the first attempted fix; if spinner still shows, use browser devtools to confirm element state.
+   - RESOLVED: Root cause is likely CSS animation preventing `display:none` from visually taking effect. Fix: add `animation: none` to `.typeahead-spinner.hidden` as the primary fix. If spinner still shows at execution time, use browser devtools to confirm element state and fall back to `visibility: hidden` + `opacity: 0`.
 
 3. **D-13 monospace font decision**
-   - What we know: JetBrains Mono woff2 can be self-hosted (consistent with current BodoniModa self-hosting pattern). Would give price cells distinct data identity.
-   - What's unclear: Whether the visual benefit at 28px price size justifies adding a third woff2 to static assets.
-   - Recommendation: Include if the design tool audit (mcp__magic__*, ui-ux-pro-max) confirms it adds hierarchy signal. Skip if audited result shows size alone is sufficient.
+   - RESOLVED: Claude's discretion at execution time. If the design tool audit (mcp__magic__*, ui-ux-pro-max) confirms JetBrains Mono adds hierarchy signal at 28px price size, include it. Otherwise skip — size alone may be sufficient differentiation.
 
 ---
 
