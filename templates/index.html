@@ -7,30 +7,30 @@
 
   <!-- Stats bar -->
   <section class="card" style="padding: var(--space-md);">
-    <div class="flex items-center justify-between" style="flex-wrap: wrap; gap: var(--space-md);">
-      <div class="flex items-center" style="flex-wrap: wrap; gap: var(--space-md);">
-        <span class="text-sm text-muted">
-          <span style="color: var(--color-text); font-weight: 600;">{{ items|length }}</span> items watching
-        </span>
-        <span class="text-faint">|</span>
-        <span class="text-sm text-muted">
-          <span style="color: var(--color-text); font-weight: 600;">{{ total_listings }}</span> listings found
-        </span>
+    <div class="flex items-center justify-between" style="flex-wrap: wrap; gap: var(--space-lg);">
+      <div class="flex items-center" style="flex-wrap: wrap; gap: var(--space-lg);">
+        <div style="display: flex; flex-direction: column; gap: var(--space-xs);">
+          <span style="font-size: var(--text-subheading); font-weight: 700; color: var(--color-text);">{{ items|length }}</span>
+          <span style="font-size: var(--text-label); color: var(--color-text-faint);">items watching</span>
+        </div>
+        <div style="display: flex; flex-direction: column; gap: var(--space-xs);">
+          <span style="font-size: var(--text-subheading); font-weight: 700; color: var(--color-text);">{{ total_listings }}</span>
+          <span style="font-size: var(--text-label); color: var(--color-text-faint);">listings found</span>
+        </div>
       </div>
-      <button type="button" onclick="startScan()" class="btn-cta">Scan All</button>
+      <button type="button" onclick="startScan()" class="btn-cta" data-scan-btn>Scan All</button>
     </div>
     {% if total_cost is not none %}
     <div style="padding-top: var(--space-sm); margin-top: var(--space-sm); border-top: 1px solid var(--color-border);">
-      <div class="flex items-center" style="flex-wrap: wrap; gap: var(--space-md);">
-        <div class="text-sm">
-          <span class="text-muted">Total to Australia</span>
-          <span class="text-accent" style="margin-left: var(--space-sm); font-weight: 600;">${{ '%.2f'|format(total_cost) }}</span>
+      <div class="flex items-center" style="flex-wrap: wrap; gap: var(--space-lg);">
+        <div style="display: flex; flex-direction: column; gap: var(--space-xs);">
+          <span class="text-accent" style="font-size: var(--text-subheading); font-weight: 700;">${{ '%.2f'|format(total_cost) }}</span>
+          <span style="font-size: var(--text-label); color: var(--color-text-faint);">total to Australia</span>
         </div>
         {% if cheapest %}
-        <div class="text-sm">
-          <span class="text-muted">Cheapest</span>
-          <span class="text-success" style="margin-left: var(--space-sm);">${{ '%.2f'|format(cheapest.best_price) }}</span>
-          <span class="text-faint text-sm" style="margin-left: var(--space-xs);">{{ cheapest.query|truncate(20, true) }}</span>
+        <div style="display: flex; flex-direction: column; gap: var(--space-xs);">
+          <span class="text-success" style="font-size: var(--text-subheading); font-weight: 700;">${{ '%.2f'|format(cheapest.best_price) }}</span>
+          <span style="font-size: var(--text-label); color: var(--color-text-faint);">best find -- {{ cheapest.query|truncate(20, true) }}</span>
         </div>
         {% endif %}
       </div>
@@ -144,7 +144,9 @@
     <section class="card-grid">
       {% for item in items %}
         {% set is_scanning = item.listing_count == 0 and item.last_scanned_at is none %}
-        <a href="/item/{{ item.id }}" class="card{% if is_scanning %} card--scanning{% endif %}"
+        {% set has_deal = item.best_price is not none and item.typical_price is not none and item.typical_price > 0 and ((item.typical_price - item.best_price) / item.typical_price * 100) >= item.notify_below_pct %}
+        {% set no_listings = item.listing_count == 0 and item.last_scanned_at is not none %}
+        <a href="/item/{{ item.id }}" class="card{% if has_deal %} card--deal{% endif %}{% if no_listings or is_scanning %} card--empty{% endif %}{% if is_scanning %} card--scanning{% endif %}"
            data-item-id="{{ item.id }}"
            {% if is_scanning %}data-scanning="true"{% endif %}
            style="text-decoration: none; color: inherit; display: flex; flex-direction: column;">
@@ -163,18 +165,26 @@
               alt="{{ item.query }} — no artwork available"
             >
           {% endif %}
+          {% if has_deal %}
+            {% set deal_pct = ((item.typical_price - item.best_price) / item.typical_price * 100)|int %}
+            <span class="card-deal-badge">DEAL -{{ deal_pct }}%</span>
+          {% endif %}
           <div class="card-body" style="display: flex; flex-direction: column; gap: var(--space-xs);">
             {% if is_scanning %}
               <div class="flex items-center gap-sm">
                 <span class="spinner"></span>
-                <span class="text-sm text-muted">Scanning...</span>
+                <span class="text-muted" style="font-size: var(--text-label);">Scanning...</span>
               </div>
             {% endif %}
-            <h3 class="text-sm" style="font-weight: 600; line-height: 1.3;">{{ item.query }}</h3>
+            <h3 class="text-title">{{ item.query }}</h3>
             {% if item.best_price is not none %}
-              <span class="text-sm price-best">${{ '%.2f'|format(item.best_price) }}</span>
+              {% if has_deal %}
+                <span class="text-price price-best">${{ '%.2f'|format(item.best_price) }}</span>
+              {% else %}
+                <span class="price-best" style="font-size: var(--text-body);">${{ '%.2f'|format(item.best_price) }}</span>
+              {% endif %}
             {% elif not is_scanning %}
-              <span class="text-sm text-faint">No listings found yet</span>
+              <span class="text-faint" style="font-size: var(--text-label);">No listings found yet</span>
             {% endif %}
           </div>
         </a>
