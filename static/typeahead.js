@@ -65,7 +65,7 @@
     if (!results || results.length === 0) {
       const empty = document.createElement("div");
       empty.className = "typeahead-empty";
-      empty.textContent = "No results for \u201c" + query + "\u201d";
+      empty.textContent = "Nothing matched \u2014 try a different title or artist";
       listbox.appendChild(empty);
     } else {
       results.forEach(function (result, i) {
