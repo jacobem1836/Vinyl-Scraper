@@ -268,6 +268,14 @@ button, input, select, textarea {
   transform: scale(0.97);
 }
 
+.btn-cta:disabled,
+.btn-secondary:disabled,
+.btn-destructive:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
 /* ============================================================
    7. Cards
    ============================================================ */
@@ -276,6 +284,7 @@ button, input, select, textarea {
   border: 1px solid var(--color-border);
   border-radius: var(--radius-card);
   overflow: hidden;
+  position: relative;
   transition: transform 200ms ease, box-shadow 200ms ease;
 }
 
@@ -322,6 +331,33 @@ button, input, select, textarea {
 
 .card--scanning {
   animation: pulse-border 2s ease-in-out infinite;
+}
+
+/* Card tier -- deal (D-09 Tier 1) */
+.card--deal {
+  border-left: 3px solid var(--color-success);
+}
+
+/* Card tier -- empty/no listings (D-09 Tier 3) */
+.card--empty {
+  opacity: 0.5;
+  border-style: dashed;
+}
+
+/* Deal badge on card */
+.card-deal-badge {
+  position: absolute;
+  top: var(--space-sm);
+  right: var(--space-sm);
+  background: var(--color-success);
+  color: var(--color-bg);
+  font-size: var(--text-label);
+  font-weight: 700;
+  padding: 2px var(--space-sm);
+  border-radius: var(--radius-badge);
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  z-index: 1;
 }
 
 /* ============================================================
@@ -413,8 +449,11 @@ button, input, select, textarea {
 }
 
 .table td {
-  padding: var(--space-md);
-  border-top: 1px solid rgba(51, 65, 85, 0.7);
+  padding: 10px var(--space-md);
+}
+
+.table .col-landed {
+  text-align: right;
 }
 
 .listing-row:hover {
@@ -703,6 +742,10 @@ button, input, select, textarea {
   width: 14px;
   height: 14px;
   animation: spin-positioned 0.8s linear infinite;
+}
+
+.typeahead-spinner.hidden {
+  animation: none;
 }
 
 /* Empty / error state row */
