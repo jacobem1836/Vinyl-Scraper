@@ -99,7 +99,7 @@
   <!-- Toast notification -->
   <div id="toast" class="hidden toast">
     <svg class="shrink-0 text-accent" style="width:20px;height:20px;color:var(--color-accent)" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
-    <span id="toastMessage" class="text-sm"></span>
+    <span id="toastMessage"></span>
   </div>
 
   <script>
@@ -126,17 +126,17 @@
          class="scan-pill"
          onclick="toggleScanPanel()">
       <div id="scanSpinner" class="spinner"></div>
-      <span id="scanPillText" class="text-sm">Scanning…</span>
+      <span id="scanPillText" style="font-size: var(--text-label);">Scanning…</span>
     </div>
     <div id="scanCard"
          class="hidden scan-card">
       <div class="flex items-center justify-between" style="margin-bottom:var(--space-sm)">
-        <span class="text-sm" style="font-weight:600">Scan Progress</span>
-        <button onclick="toggleScanPanel()" class="text-sm text-muted" style="cursor:pointer">collapse</button>
+        <span style="font-size: var(--text-body); font-weight:600">Scan Progress</span>
+        <button onclick="toggleScanPanel()" class="text-muted" style="font-size: var(--text-label); cursor:pointer">collapse</button>
       </div>
       <div id="scanActive" class="stack-sm"></div>
       <div id="scanLog" class="stack-sm" style="max-height:192px;overflow-y:auto"></div>
-      <div id="scanSummary" class="hidden text-sm text-success" style="font-weight:600"></div>
+      <div id="scanSummary" class="hidden text-success" style="font-size: var(--text-label); font-weight:600"></div>
     </div>
   </div>
 
@@ -150,11 +150,30 @@
     var _expanded = false;
 
     function startScan(itemId) {
+      // Disable all scan buttons
+      document.querySelectorAll('[data-scan-btn]').forEach(function(btn) {
+        btn.disabled = true;
+      });
+
       var url = (itemId != null) ? '/api/scan/start?item_id=' + itemId : '/api/scan/start';
       fetch(url, { method: 'POST', headers: { 'X-API-Key': window.VINYL_API_KEY || '' } })
         .then(function(r) { return r.json(); })
-        .then(function(data) { if (data.started) { showPanel(); startPolling(); } })
-        .catch(console.error);
+        .then(function(data) {
+          if (data.started) { showPanel(); startPolling(); }
+          else {
+            // Scan didn't start -- re-enable buttons
+            document.querySelectorAll('[data-scan-btn]').forEach(function(btn) {
+              btn.disabled = false;
+            });
+          }
+        })
+        .catch(function(err) {
+          console.error(err);
+          // Error -- re-enable buttons
+          document.querySelectorAll('[data-scan-btn]').forEach(function(btn) {
+            btn.disabled = false;
+          });
+        });
     }
 
     function showPanel() {
@@ -208,7 +227,7 @@
         spinner.classList.remove('hidden');
         pillText.textContent = 'Scanning ' + s.done + '/' + s.total + '…';
         activeEl.innerHTML = s.current.map(function(c) {
-          return '<div class="text-sm text-muted">⟳ ' + escHtml(c.query) + ' <span class="text-faint">(' + escHtml(c.type) + ')</span></div>';
+          return '<div class="text-muted" style="font-size:var(--text-label)">⟳ ' + escHtml(c.query) + ' <span class="text-faint">(' + escHtml(c.type) + ')</span></div>';
         }).join('');
       } else {
         spinner.classList.add('hidden');
@@ -217,12 +236,15 @@
         summaryEl.textContent = s.new_total + ' new listing' + (s.new_total !== 1 ? 's' : '') + ' found';
         summaryEl.classList.remove('hidden');
         stopPolling();
+        document.querySelectorAll('[data-scan-btn]').forEach(function(btn) {
+          btn.disabled = false;
+        });
         _dismissTimer = setTimeout(hidePanel, 10000);
       }
 
       logEl.innerHTML = s.log.slice().reverse().map(function(entry) {
         var typeLabel = entry.type ? ' <span class="text-faint">(' + escHtml(entry.type) + ')</span>' : '';
-        return '<div class="text-sm text-muted">' + escHtml(entry.query) + typeLabel + ' — <span class="text-success">+' + entry.new_listings + '</span></div>';
+        return '<div class="text-muted" style="font-size:var(--text-label)">' + escHtml(entry.query) + typeLabel + ' — <span class="text-success">+' + entry.new_listings + '</span></div>';
       }).join('');
     }
 
