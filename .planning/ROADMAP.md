@@ -118,8 +118,8 @@ Plans:
   5. No buttons overlap in the bottom-right corner of the dashboard
 **Plans**: 3 plans
 Plans:
-- [ ] 10-01-PLAN.md — CSS design tokens: type scale, spacing tiers, card tier classes, disabled buttons, table cleanup, spinner fix
-- [ ] 10-02-PLAN.md — Template updates: card tiers, stats bar, H2 tokens, disabled button JS, copy updates
+- [x] 10-01-PLAN.md — CSS design tokens: type scale, spacing tiers, card tier classes, disabled buttons, table cleanup, spinner fix
+- [x] 10-02-PLAN.md — Template updates: card tiers, stats bar, H2 tokens, disabled button JS, copy updates
 - [ ] 10-03-PLAN.md — Verification: automated requirement checks + visual human checkpoint
 **UI hint**: yes
 
@@ -136,4 +136,19 @@ Plans:
 | 7. Image Priority + Scan Fix | v1.1 | 0/2 | Planned | - |
 | 8. Brand Font Upgrade | v1.1 | 0/1 | Planned | - |
 | 9. Email Redesign | v1.1 | 0/? | Not started | - |
-| 10. UI Polish | v1.1 | 0/3 | Planned | - |
+| 10. UI Polish | v1.1 | 2/3 | In Progress|  |
+| 11. UI Fixes | v1.1 | 0/5 | Planned | - |
+
+### Phase 11: UI Fixes
+
+**Goal:** Visual overhaul and UX fixes -- warm B&W palette, reverted typography, card system with hover-reveal deals, logo + font branding, image loading states, overlapping button fix, email template update
+**Requirements**: D-01 through D-18 (see 11-CONTEXT.md), BUG-01
+**Depends on:** Phase 10
+**Plans:** 5 plans
+
+Plans:
+- [ ] 11-01-PLAN.md — Token + palette reset: warm dark bg, B&W colours, typography revert
+- [ ] 11-02-PLAN.md — Card system + interactions: deal badge hover, ghost cards, margins, micro-interactions, scrollbar
+- [ ] 11-03-PLAN.md — Functional fixes: BUG-01 overlap, image skeleton loading, default item type, placeholder image
+- [ ] 11-04-PLAN.md — Logo + font: AI-generated logo options, font selection, nav brand update (checkpoint gates)
+- [ ] 11-05-PLAN.md — Email template: warm dark palette, muted deal colour, logo wordmark, "View deal" CTA
