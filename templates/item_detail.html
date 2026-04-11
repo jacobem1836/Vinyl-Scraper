@@ -12,20 +12,25 @@
     <div class="flex" style="gap: var(--space-lg); flex-wrap: wrap;">
       <!-- Artwork thumbnail 120x120 -->
       <div style="flex-shrink: 0;">
+        <div class="card-artwork-wrapper" style="width: 120px; height: 120px; aspect-ratio: unset;">
         {% if item.artwork_url %}
           <img
             src="/api/artwork?url={{ item.artwork_url | urlencode }}"
             alt="{{ item.query }} album cover"
-            onerror="this.src='/static/vinyl-placeholder.svg'"
+            onerror="this.src='/static/vinyl-placeholder.svg'; this.classList.add('loaded'); this.parentElement.classList.add('loaded');"
+            onload="this.classList.add('loaded'); this.parentElement.classList.add('loaded');"
             style="width: 120px; height: 120px; object-fit: cover; border-radius: 0;"
           >
         {% else %}
           <img
-            src="/static/vinyl-placeholder.svg"
+            src="/static/empty-vinyl-placeholder.png"
             alt="{{ item.query }} — no artwork available"
+            onerror="this.src='/static/vinyl-placeholder.svg'; this.classList.add('loaded'); this.parentElement.classList.add('loaded');"
+            onload="this.classList.add('loaded'); this.parentElement.classList.add('loaded');"
             style="width: 120px; height: 120px; object-fit: cover; border-radius: 0;"
           >
         {% endif %}
+        </div>
       </div>
 
       <div style="flex: 1; min-width: 200px;">
