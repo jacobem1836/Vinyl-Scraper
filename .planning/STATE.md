@@ -72,6 +72,7 @@ See: .planning/PROJECT.md
 
 - 2026-04-05: v1.1 roadmap created — 5 phases (6–10), 22 requirements mapped
 - 2026-04-09: Phase 11 added: UI fixes
+- 2026-04-11: Phase 12 added: UI Fixes Round 2
 
 ### Todos
 

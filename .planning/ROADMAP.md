@@ -152,3 +152,13 @@ Plans:
 - [x] 11-03-PLAN.md — Functional fixes: BUG-01 overlap, image skeleton loading, default item type, placeholder image
 - [x] 11-04-PLAN.md — Logo + font: AI-generated logo options, font selection, nav brand update (checkpoint gates)
 - [x] 11-05-PLAN.md — Email template: warm dark palette, muted deal colour, logo wordmark, "View deal" CTA
+
+### Phase 12: UI Fixes Round 2
+
+**Goal:** Fix visual/UX issues from Phase 11 — ghost card visibility, consistent price sizing, font overhaul, email logo+font, deal alert bug, remove tick icon, add scrollbar, larger card titles
+**Requirements**: FIX-01 through FIX-08
+**Depends on:** Phase 11
+**Plans:** 0 plans
+
+Plans:
+- [ ] TBD (run /gsd-plan-phase 12 to break down)
