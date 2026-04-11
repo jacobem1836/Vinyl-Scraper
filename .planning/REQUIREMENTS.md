@@ -30,49 +30,47 @@
 - [x] **UI-05**: Dark colour palette applied consistently across all pages (background, cards, text, accents)
 - [x] **UI-06**: Existing iOS Shortcut API contract (`POST /api/wishlist` with `X-API-Key`) is preserved unchanged through all UI and backend changes
 
-## v1.1 Requirements (Milestone v1.1 — Current)
+## v1.1 Requirements (Milestone v1.1 — Complete)
 
 ### Typeahead / Album Selection
 
-- [ ] **TYPE-01**: User sees a search-as-you-type dropdown when typing in the add-item form, showing matching Discogs releases (title, artist, year, cover thumb)
-- [ ] **TYPE-02**: User can navigate dropdown results with arrow keys and confirm with Enter or click
-- [ ] **TYPE-03**: User can re-select or change the linked Discogs release on an existing wishlist item via the edit flow
-- [ ] **TYPE-04**: Typeahead is debounced (≥300ms) and capped at 5 results to respect Discogs rate limits
+- [x] **TYPE-01**: User sees a search-as-you-type dropdown when typing in the add-item form, showing matching Discogs releases (title, artist, year, cover thumb)
+- [x] **TYPE-02**: User can navigate dropdown results with arrow keys and confirm with Enter or click
+- [x] **TYPE-03**: User can re-select or change the linked Discogs release on an existing wishlist item via the edit flow
+- [x] **TYPE-04**: Typeahead is debounced (≥300ms) and capped at 5 results to respect Discogs rate limits
 
 ### Image Source Priority
 
-- [ ] **IMG-01**: Scraped store images are used as the primary artwork source when available
-- [ ] **IMG-02**: Discogs artwork falls back when no store image is present; vinyl placeholder SVG is the final fallback
+- [x] **IMG-01**: Scraped store images are used as the primary artwork source when available
+- [x] **IMG-02**: Discogs artwork falls back when no store image is present; vinyl placeholder SVG is the final fallback
 
 ### Brand Font
 
-- [ ] **FONT-01**: The CRATE logotype uses a brutalist display web font loaded from a static asset (no external CDN dependency in production)
+- [x] **FONT-01**: The CRATE logotype uses a brutalist display web font loaded from a static asset (no external CDN dependency in production)
 
 ### Email Design
 
-- [ ] **EMAIL-01**: Deal alert emails are redesigned with inline CSS for email client compatibility
-- [ ] **EMAIL-02**: Email shows a scannable deal summary: item name, best price, % below typical, direct link to item detail page
-- [ ] **EMAIL-03**: Email visual design is consistent with the CRATE dark aesthetic where email client support allows
+- [x] **EMAIL-01**: Deal alert emails are redesigned with inline CSS for email client compatibility
+- [x] **EMAIL-02**: Email shows a scannable deal summary: item name, best price, % below typical, direct link to item detail page
+- [x] **EMAIL-03**: Email visual design is consistent with the CRATE dark aesthetic where email client support allows
 
 ### UI Polish
 
-> **Design tooling constraint:** All UI Polish work must be designed using magic MCP + stitch + ui-ux-pro-max + design-for-ai. Planning and execution subagents must invoke these tools.
-
-- [ ] **UIP-01**: `--color-text-faint` is bumped to ≥#686868 to pass WCAG AA (4.5:1) at 14px on #0a0a0a
-- [ ] **UIP-02**: Typography scale expanded — heading token increased to 28–30px; card titles use body size (16px) not text-sm (14px)
-- [ ] **UIP-03**: H1 and H2 headings are visually distinct (H1 at heading scale, H2 at sub-heading scale)
-- [ ] **UIP-04**: All button classes (btn-cta, btn-secondary, btn-destructive) have :focus-visible ring (box-shadow: 0 0 0 2px var(--color-accent))
-- [ ] **UIP-05**: All button classes have :active micro-interaction (transform: scale(0.97))
-- [ ] **UIP-06**: Scan Now button has a :disabled state (opacity: 0.5, cursor: not-allowed) applied while scan is running
-- [ ] **UIP-07**: Modal has role="dialog", aria-modal="true", aria-labelledby; focus moves to first input on open and returns to trigger on close
-- [ ] **UIP-08**: Native confirm() for delete replaced with inline confirmation state ("Are you sure?" / Cancel)
-- [ ] **UIP-09**: Card grid adds a 3-column breakpoint at 1024px (repeat(3, 1fr))
-- [ ] **UIP-10**: Rogue 12px spacing values replaced with design system tokens (--space-sm or --space-md)
+- [x] **UIP-01**: `--color-text-faint` is bumped to ≥#686868 to pass WCAG AA (4.5:1) at 14px on #0a0a0a
+- [x] **UIP-02**: Typography scale expanded — heading token increased to 28–30px; card titles use body size (16px) not text-sm (14px)
+- [x] **UIP-03**: H1 and H2 headings are visually distinct (H1 at heading scale, H2 at sub-heading scale)
+- [x] **UIP-04**: All button classes (btn-cta, btn-secondary, btn-destructive) have :focus-visible ring (box-shadow: 0 0 0 2px var(--color-accent))
+- [x] **UIP-05**: All button classes have :active micro-interaction (transform: scale(0.97))
+- [x] **UIP-06**: Scan Now button has a :disabled state (opacity: 0.5, cursor: not-allowed) applied while scan is running
+- [x] **UIP-07**: Modal has role="dialog", aria-modal="true", aria-labelledby; focus moves to first input on open and returns to trigger on close
+- [x] **UIP-08**: Native confirm() for delete replaced with inline confirmation state ("Are you sure?" / Cancel)
+- [x] **UIP-09**: Card grid adds a 3-column breakpoint at 1024px (repeat(3, 1fr))
+- [x] **UIP-10**: Rogue 12px spacing values replaced with design system tokens (--space-sm or --space-md)
 
 ### Bug Fixes
 
-- [ ] **BUG-01**: Overlapping buttons (bottom right of dashboard) are fixed
-- [ ] **BUG-02**: Scan log message uses correct type label ("no album results" not "no artist results" when item_type is album)
+- [x] **BUG-01**: Overlapping buttons (bottom right of dashboard) are fixed
+- [x] **BUG-02**: Scan log message uses correct type label ("no album results" not "no artist results" when item_type is album)
 
 ## v2 Requirements
 
@@ -127,34 +125,34 @@
 | UI-04 | Phase 3: UI Redesign | Complete |
 | UI-05 | Phase 3: UI Redesign | Complete |
 | UI-06 | Phase 3: UI Redesign | Complete |
-| TYPE-01 | Phase 6: Discogs Typeahead | Pending |
-| TYPE-02 | Phase 6: Discogs Typeahead | Pending |
-| TYPE-03 | Phase 6: Discogs Typeahead | Pending |
-| TYPE-04 | Phase 6: Discogs Typeahead | Pending |
-| IMG-01 | Phase 7: Image Source Priority + Scan Log Fix | Pending |
-| IMG-02 | Phase 7: Image Source Priority + Scan Log Fix | Pending |
-| BUG-02 | Phase 7: Image Source Priority + Scan Log Fix | Pending |
-| FONT-01 | Phase 8: Brand Font Upgrade | Pending |
-| EMAIL-01 | Phase 9: Email Redesign | Pending |
-| EMAIL-02 | Phase 9: Email Redesign | Pending |
-| EMAIL-03 | Phase 9: Email Redesign | Pending |
-| UIP-01 | Phase 10: UI Polish | Pending |
-| UIP-02 | Phase 10: UI Polish | Pending |
-| UIP-03 | Phase 10: UI Polish | Pending |
-| UIP-04 | Phase 10: UI Polish | Pending |
-| UIP-05 | Phase 10: UI Polish | Pending |
-| UIP-06 | Phase 10: UI Polish | Pending |
-| UIP-07 | Phase 10: UI Polish | Pending |
-| UIP-08 | Phase 10: UI Polish | Pending |
-| UIP-09 | Phase 10: UI Polish | Pending |
-| UIP-10 | Phase 10: UI Polish | Pending |
-| BUG-01 | Phase 10: UI Polish | Pending |
+| TYPE-01 | Phase 6: Discogs Typeahead | Complete |
+| TYPE-02 | Phase 6: Discogs Typeahead | Complete |
+| TYPE-03 | Phase 6: Discogs Typeahead | Complete |
+| TYPE-04 | Phase 6: Discogs Typeahead | Complete |
+| IMG-01 | Phase 7: Image Source Priority + Scan Log Fix | Complete |
+| IMG-02 | Phase 7: Image Source Priority + Scan Log Fix | Complete |
+| BUG-02 | Phase 7: Image Source Priority + Scan Log Fix | Complete |
+| FONT-01 | Phase 8: Brand Font Upgrade | Complete |
+| EMAIL-01 | Phase 9: Email Redesign | Complete |
+| EMAIL-02 | Phase 9: Email Redesign | Complete |
+| EMAIL-03 | Phase 9: Email Redesign | Complete |
+| UIP-01 | Phase 10: UI Polish | Complete |
+| UIP-02 | Phase 10: UI Polish | Complete |
+| UIP-03 | Phase 10: UI Polish | Complete |
+| UIP-04 | Phase 10: UI Polish | Complete |
+| UIP-05 | Phase 10: UI Polish | Complete |
+| UIP-06 | Phase 10: UI Polish | Complete |
+| UIP-07 | Phase 10: UI Polish | Complete |
+| UIP-08 | Phase 10: UI Polish | Complete |
+| UIP-09 | Phase 10: UI Polish | Complete |
+| UIP-10 | Phase 10: UI Polish | Complete |
+| BUG-01 | Phase 10: UI Polish | Complete |
 
 **Coverage:**
 - v1.1 requirements: 22 total
 - Mapped to phases: 22
-- Unmapped: 0 ✓
+- Complete: 22 ✓
 
 ---
 *Requirements defined: 2026-04-02*
-*Last updated: 2026-04-05 after v1.1 roadmap created (Phases 6–10)*
+*Last updated: 2026-04-11 after v1.1 milestone completion*

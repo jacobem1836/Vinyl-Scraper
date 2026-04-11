@@ -3,7 +3,7 @@
 ## Milestones
 
 - ✅ **v1.0 MVP** — Phases 1–5 (shipped 2026-04-05)
-- **v1.1 UX Polish & Album Selection** — Phases 6–10 (current)
+- ✅ **v1.1 UX Polish & Album Selection** — Phases 6–12 (shipped 2026-04-11)
 
 ## Phases
 
@@ -22,11 +22,13 @@ Full details: `.planning/milestones/v1.0-ROADMAP.md`
 
 ### v1.1 UX Polish & Album Selection
 
-- [ ] **Phase 6: Discogs Typeahead** — Album search-as-you-type in add/edit modals, pinning a specific Discogs release
-- [ ] **Phase 7: Image Source Priority + Scan Log Fix** — Store images preferred over Discogs fallback; scan log type label corrected
-- [ ] **Phase 8: Brand Font Upgrade** — CRATE logotype uses self-hosted brutalist display font with no CDN dependency
-- [ ] **Phase 9: Email Redesign** — Deal alert emails redesigned with inline CSS, CRATE aesthetic, and scannable deal summary
-- [ ] **Phase 10: UI Polish** — Typography scale, button states, modal accessibility, responsive grid, inline delete confirmation, overlapping button fix
+- [x] **Phase 6: Discogs Typeahead** — Album search-as-you-type in add/edit modals, pinning a specific Discogs release
+- [x] **Phase 7: Image Source Priority + Scan Log Fix** — Store images preferred over Discogs fallback; scan log type label corrected
+- [x] **Phase 8: Brand Font Upgrade** — CRATE logotype uses self-hosted brutalist display font with no CDN dependency
+- [x] **Phase 9: Email Redesign** — Deal alert emails redesigned with inline CSS, CRATE aesthetic, and scannable deal summary
+- [x] **Phase 10: UI Polish** — Typography scale, button states, modal accessibility, responsive grid, inline delete confirmation, overlapping button fix
+- [x] **Phase 11: UI Fixes** — Warm B&W palette, card system with hover-reveal deals, logo/font branding, image loading states, email template update
+- [x] **Phase 12: UI Fixes Round 2** — Inter font, ghost card readability, price sizing, toast fix, email branding, notify checkbox bug
 
 ## Phase Details
 
@@ -44,7 +46,7 @@ Full details: `.planning/milestones/v1.0-ROADMAP.md`
 Plans:
 - [x] 06-01-PLAN.md — Backend: DB migration, schemas, typeahead API endpoint, pinned-release scanner logic
 - [x] 06-02-PLAN.md — Frontend: typeahead CSS/JS, add/edit modal integration, human verification
-- [ ] 06-03-PLAN.md — Gap closure: spinner visibility fixes (selectResult, type change handler)
+- [x] 06-03-PLAN.md — Gap closure: spinner visibility fixes (selectResult, type change handler)
 
 
 ### Phase 7: Image Source Priority + Scan Log Fix
@@ -62,66 +64,50 @@ Plans:
 
 ### Phase 8: Brand Font Upgrade
 **Goal**: The CRATE logotype in the nav uses a brutalist display web font loaded from a static asset with no external CDN dependency
-
-**REQUIRED TOOLING** — plan-phase and execute-phase subagents MUST invoke ALL of the following before making any design decisions:
-- `ui-ux-pro-max` Claude skill — font pairing and typographic direction
-- `design-for-ai` Claude skill — visual design principles
-- `mcp__magic__*` — 21st Magic component inspiration for font/brand patterns
-- `mcp__stitch__*` — design system application
-
 **Depends on**: Nothing (fully isolated — one font file, one CSS rule)
 **Requirements**: FONT-01
-**Success Criteria** (what must be TRUE):
-  1. The CRATE nav wordmark renders in a brutalist display font (not the system fallback) on page load
-  2. The font file is served from `/static/fonts/` — no request goes to an external CDN at runtime
-  3. The wordmark does not flash or reflow during page load (no FOUT)
-  4. Font selection was informed by ui-ux-pro-max + magic MCP before implementation
 **Plans**: 1 plan
 Plans:
 - [x] 08-01-PLAN.md — Self-host Bodoni Moda Bold woff2, add @font-face + CSS custom property + preload, update .nav-brand
 
 ### Phase 9: Email Redesign
 **Goal**: Deal alert emails arrive with a scannable summary, CRATE-consistent dark aesthetic, and inline CSS that renders correctly in Gmail and Outlook
-
-**REQUIRED TOOLING** — plan-phase and execute-phase subagents MUST invoke ALL of the following before making any design decisions:
-- `ui-ux-pro-max` Claude skill — email layout and visual hierarchy direction
-- `design-for-ai` Claude skill — visual design principles
-- `mcp__magic__*` — 21st Magic component inspiration for email patterns
-- `mcp__stitch__*` — design system application
-
 **Depends on**: Nothing (self-contained — only `notifier.py` and a new template file)
 **Requirements**: EMAIL-01, EMAIL-02, EMAIL-03
-**Success Criteria** (what must be TRUE):
-  1. A deal alert email renders correctly in Gmail web (no broken layout, no stripped styles)
-  2. Email body shows item name, best price, percentage below typical price, and a direct link to the item detail page
-  3. Email visual design is dark-themed (near-black background, white text) consistent with the CRATE dashboard aesthetic, using only inline CSS and hex color literals (no CSS custom properties)
-  4. Email layout was designed using ui-ux-pro-max + magic MCP before implementation
-**Plans**: TBD
-**UI hint**: yes
+**Plans**: 2 plans
+Plans:
+- [x] 09-01-PLAN.md — Email template with inline CSS, dark aesthetic, deal summary
+- [x] 09-02-PLAN.md — Notifier integration and email rendering
 
 ### Phase 10: UI Polish
 **Goal**: The dashboard is visually refined — readable typography, accessible controls, responsive at 3 columns, and free of layout bugs
-
-**REQUIRED TOOLING** — plan-phase and execute-phase subagents MUST invoke ALL of the following before making any design decisions:
-- `ui-ux-pro-max` Claude skill — design direction and audit for every change
-- `design-for-ai` Claude skill — visual design principles
-- `mcp__magic__*` — 21st Magic component builder/refiner for UI patterns
-- `mcp__stitch__*` — design system application and screen generation
-
 **Depends on**: Phases 6–9 complete (polish after all logic and content changes are stable)
 **Requirements**: UIP-01, UIP-02, UIP-03, UIP-04, UIP-05, UIP-06, UIP-07, UIP-08, UIP-09, UIP-10, BUG-01
-**Success Criteria** (what must be TRUE):
-  1. All body text at 14px on the dark background meets WCAG AA contrast (4.5:1) — `--color-text-faint` is at least #686868
-  2. All buttons (btn-cta, btn-secondary, btn-destructive) show a visible focus ring when focused via keyboard, an active press micro-animation, and a disabled appearance when unavailable
-  3. The card grid switches to 3 columns at 1024px viewport width
-  4. Clicking delete on a card shows an inline "Are you sure? / Cancel" confirmation — native browser `confirm()` is gone
-  5. No buttons overlap in the bottom-right corner of the dashboard
 **Plans**: 3 plans
 Plans:
-- [ ] 10-01-PLAN.md — CSS design tokens: type scale, spacing tiers, card tier classes, disabled buttons, table cleanup, spinner fix
-- [ ] 10-02-PLAN.md — Template updates: card tiers, stats bar, H2 tokens, disabled button JS, copy updates
-- [ ] 10-03-PLAN.md — Verification: automated requirement checks + visual human checkpoint
-**UI hint**: yes
+- [x] 10-01-PLAN.md — CSS design tokens: type scale, spacing tiers, card tier classes, disabled buttons, table cleanup, spinner fix
+- [x] 10-02-PLAN.md — Template updates: card tiers, stats bar, H2 tokens, disabled button JS, copy updates
+- [x] 10-03-PLAN.md — Verification: automated requirement checks + visual human checkpoint
+
+### Phase 11: UI Fixes
+**Goal**: Visual overhaul and UX fixes — warm B&W palette, reverted typography, card system with hover-reveal deals, logo + font branding, image loading states, overlapping button fix, email template update
+**Depends on**: Phase 10 complete
+**Requirements**: D-01 through D-18 (see 11-CONTEXT.md), BUG-01
+**Plans**: 5 plans
+Plans:
+- [x] 11-01-PLAN.md — CSS design token update: warm B&W palette, typography revert
+- [x] 11-02-PLAN.md — Card system and interaction layer
+- [x] 11-03-PLAN.md — BUG-01 fix, skeleton loading, placeholder image
+- [x] 11-04-PLAN.md — Logo + font identity
+- [x] 11-05-PLAN.md — Email palette update
+
+### Phase 12: UI Fixes Round 2
+**Goal**: Final visual polish — Inter font, ghost card readability, consistent price sizing, toast visibility fix, email font consistency, notify email checkbox bug
+**Depends on**: Phase 11 complete
+**Plans**: 2 plans
+Plans:
+- [x] 12-01-PLAN.md — Visual polish: Inter font, ghost cards, price sizing, tick icon, scrollbar, card titles
+- [x] 12-02-PLAN.md — Notify email checkbox bug fix and email branding
 
 ## Progress
 
@@ -132,8 +118,10 @@ Plans:
 | 3. UI Redesign | v1.0 | 4/4 | Complete | 2026-04-03 |
 | 4. UI Polish | v1.0 | 3/3 | Complete | 2026-04-05 |
 | 5. Improve UI/UX | v1.0 | 3/3 | Complete | 2026-04-05 |
-| 6. Discogs Typeahead | v1.1 | 0/2 | Planned | - |
-| 7. Image Priority + Scan Fix | v1.1 | 0/2 | Planned | - |
-| 8. Brand Font Upgrade | v1.1 | 0/1 | Planned | - |
-| 9. Email Redesign | v1.1 | 0/? | Not started | - |
-| 10. UI Polish | v1.1 | 0/3 | Planned | - |
+| 6. Discogs Typeahead | v1.1 | 3/3 | Complete | 2026-04-09 |
+| 7. Image Priority + Scan Fix | v1.1 | 2/2 | Complete | 2026-04-09 |
+| 8. Brand Font Upgrade | v1.1 | 1/1 | Complete | 2026-04-09 |
+| 9. Email Redesign | v1.1 | 2/2 | Complete | 2026-04-09 |
+| 10. UI Polish | v1.1 | 3/3 | Complete | 2026-04-11 |
+| 11. UI Fixes | v1.1 | 5/5 | Complete | 2026-04-11 |
+| 12. UI Fixes Round 2 | v1.1 | 2/2 | Complete | 2026-04-11 |
