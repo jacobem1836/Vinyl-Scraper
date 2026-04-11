@@ -158,7 +158,8 @@ Plans:
 **Goal:** Fix visual/UX issues from Phase 11 — ghost card visibility, consistent price sizing, font overhaul, email logo+font, deal alert bug, remove tick icon, add scrollbar, larger card titles
 **Requirements**: FIX-01 through FIX-08
 **Depends on:** Phase 11
-**Plans:** 0 plans
+**Plans:** 2 plans
 
 Plans:
-- [ ] TBD (run /gsd-plan-phase 12 to break down)
+- [ ] 12-01-PLAN.md — CSS + template visual fixes: ghost card opacity, price sizing, Inter font, tick removal, scrollbar, card titles
+- [ ] 12-02-PLAN.md — Backend bug fix + email template: notify checkbox bug, email logo and font
