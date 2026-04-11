@@ -60,7 +60,7 @@
           <div>
             <label class="form-label">Type</label>
             <select name="type" class="form-input">
-              <option value="album">Album</option>
+              <option value="album" selected>Album</option>
               <option value="artist">Artist</option>
               <option value="label">Label</option>
               <option value="subject">Key Word/s</option>
@@ -159,8 +159,9 @@
           {% else %}
             <img
               class="card-artwork"
-              src="/static/vinyl-placeholder.svg"
+              src="/static/empty-vinyl-placeholder.png"
               alt="{{ item.query }} — no artwork available"
+              onerror="this.src='/static/vinyl-placeholder.svg'"
             >
           {% endif %}
           <div class="card-body" style="display: flex; flex-direction: column; gap: var(--space-xs);">
