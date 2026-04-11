@@ -17,9 +17,9 @@
 
 :root {
   /* Colour — background / surface */
-  --color-bg:           #0a0a0a;
-  --color-surface:      #111111;
-  --color-surface-alt:  #0a0a0a;
+  --color-bg:           #0d0b0a;
+  --color-surface:      #141210;
+  --color-surface-alt:  #0d0b0a;
 
   /* Colour — borders */
   --color-border:       #222222;
@@ -35,28 +35,28 @@
   --color-accent-hover: #e0e0e0;
   --color-accent-bg:    rgba(255,255,255,0.08);
   --color-accent-cta:   #ffffff;
-  --color-cta-text:     #0a0a0a;
+  --color-cta-text:     #0d0b0a;
 
   /* Colour — destructive */
-  --color-destructive:        #f87171;
-  --color-destructive-border: rgba(239, 68, 68, 0.4);
-  --color-destructive-bg:     rgba(239, 68, 68, 0.1);
+  --color-destructive:        #c46060;
+  --color-destructive-border: rgba(196, 96, 96, 0.4);
+  --color-destructive-bg:     rgba(196, 96, 96, 0.1);
 
   /* Colour — success */
-  --color-success: #34d399;
+  --color-success: #5a9e7a;
 
-  /* Colour — type badges (desaturated, lower contrast) */
-  --color-badge-album-bg:     rgba(100, 120, 180, 0.15);
-  --color-badge-album-text:   #a0b0d0;
-  --color-badge-album-border: rgba(100, 120, 180, 0.25);
+  /* Colour — type badges (B&W at rest, D-03) */
+  --color-badge-album-bg:     rgba(255, 255, 255, 0.06);
+  --color-badge-album-text:   #999999;
+  --color-badge-album-border: rgba(255, 255, 255, 0.12);
 
-  --color-badge-artist-bg:    rgba(140, 100, 180, 0.15);
-  --color-badge-artist-text:  #b8a0d8;
-  --color-badge-artist-border:rgba(140, 100, 180, 0.25);
+  --color-badge-artist-bg:    rgba(255, 255, 255, 0.06);
+  --color-badge-artist-text:  #999999;
+  --color-badge-artist-border:rgba(255, 255, 255, 0.12);
 
-  --color-badge-other-bg:     rgba(80, 160, 100, 0.15);
-  --color-badge-other-text:   #90c8a0;
-  --color-badge-other-border: rgba(80, 160, 100, 0.25);
+  --color-badge-other-bg:     rgba(255, 255, 255, 0.06);
+  --color-badge-other-text:   #999999;
+  --color-badge-other-border: rgba(255, 255, 255, 0.12);
 
   /* Colour — source badges */
   --color-source-discogs-bg:   rgba(200, 200, 200, 0.1);
@@ -80,15 +80,15 @@
   --space-2xl: 48px;
   --space-3xl: 64px;
 
-  /* Typography — D-07 full 7-token set */
+  /* Typography — D-09 reverted scale */
   --text-label:             12px;   /* metadata, badges, secondary labels */
   --text-sm:                14px;   /* kept for backward compat — per D-07 */
   --text-body:              16px;   /* body text, card titles, table cells */
-  --text-title:             21px;   /* card album names */
-  --text-price:             28px;   /* core value signal — was 20px */
-  --text-heading:           36px;   /* page-level headings — was 28px */
-  --text-subheading:        22px;   /* D-04: H2 section headings, stats bar values */
-  --text-heading-secondary: 21px;   /* "All Listings" — distinct from "Best Deals" */
+  --text-title:             16px;   /* card album names — subordinate to artwork */
+  --text-price:             28px;   /* core value signal */
+  --text-heading:           24px;   /* page-level headings — reverted from 36px */
+  --text-subheading:        20px;   /* H2 section headings, stats bar values — reverted */
+  --text-heading-secondary: 20px;   /* "All Listings" — matches subheading */
 
   --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
   --font-display: "Bodoni Moda", var(--font-sans);
@@ -511,8 +511,8 @@ button, input, select, textarea {
 .text-label      { font-size: var(--text-label); }
 .text-sm         { font-size: var(--text-sm); }
 .text-body       { font-size: var(--text-body); }
-.text-title      { font-size: var(--text-title); font-weight: 500; line-height: 1.3; }
-.text-subheading { font-size: var(--text-subheading); font-weight: 700; line-height: 1.2; }
+.text-title      { font-size: var(--text-title); font-weight: 400; line-height: 1.3; }
+.text-subheading { font-size: var(--text-subheading); font-weight: 600; line-height: 1.2; }
 .text-heading    { font-size: var(--text-heading); font-weight: 700; line-height: 1.1; }
 .text-price      { font-size: var(--text-price); font-weight: 600; line-height: 1.2; }
 .text-muted      { color: var(--color-text-muted); }
