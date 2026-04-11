@@ -148,12 +148,14 @@
            data-item-id="{{ item.id }}"
            {% if is_scanning %}data-scanning="true"{% endif %}
            style="text-decoration: none; color: inherit; display: flex; flex-direction: column;">
+          <div class="card-artwork-wrapper">
           {% if item.artwork_url %}
             <img
               class="card-artwork"
               src="/api/artwork?url={{ item.artwork_url | urlencode }}"
               alt="{{ item.query }} album cover"
-              onerror="this.src='/static/vinyl-placeholder.svg'"
+              onerror="this.src='/static/vinyl-placeholder.svg'; this.classList.add('loaded'); this.parentElement.classList.add('loaded');"
+              onload="this.classList.add('loaded'); this.parentElement.classList.add('loaded');"
               loading="lazy"
             >
           {% else %}
@@ -161,9 +163,11 @@
               class="card-artwork"
               src="/static/empty-vinyl-placeholder.png"
               alt="{{ item.query }} — no artwork available"
-              onerror="this.src='/static/vinyl-placeholder.svg'"
+              onerror="this.src='/static/vinyl-placeholder.svg'; this.classList.add('loaded'); this.parentElement.classList.add('loaded');"
+              onload="this.classList.add('loaded'); this.parentElement.classList.add('loaded');"
             >
           {% endif %}
+          </div>
           <div class="card-body" style="display: flex; flex-direction: column; gap: var(--space-xs);">
             {% if is_scanning %}
               <div class="flex items-center gap-sm">
@@ -263,6 +267,12 @@
           const data = await res.json();
           if (data.has_listings) {
             clearInterval(timer);
+            if (data.artwork_url) {
+              const img = card.querySelector('img');
+              if (img) {
+                img.src = '/api/artwork?url=' + encodeURIComponent(data.artwork_url) + '&t=' + Date.now();
+              }
+            }
             window.location.reload();
           }
         } catch (e) {
