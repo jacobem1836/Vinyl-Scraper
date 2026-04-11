@@ -1,5 +1,16 @@
 # Phase 12: UI Fixes Round 2
 
+## Design Direction
+
+**Figma Prototype:** https://www.figma.com/make/yLWS0UbwWBygxN2NPiQaIC/Vinyl-Wishlist-Dashboard-Redesign?p=f&t=wBWyMHuho0qIJiNJ-0&fullscreen=1
+
+This prototype should **inform** design decisions — not be hard-copied. Use it as a directional reference for:
+- Item screen layout
+- Main screen layout
+- Animations
+
+The goal is to move the UI closer to this aesthetic and feel, not replicate it pixel-for-pixel.
+
 ## Issues from Phase 11 Review
 
 ### FIX-01: Ghost cards too dark
