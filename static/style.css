@@ -333,18 +333,18 @@ button, input, select, textarea {
   animation: pulse-border 2s ease-in-out infinite;
 }
 
-/* Card tier -- deal (D-09 Tier 1) */
+/* Card tier -- deal (D-09 Tier 1, D-06) — no border at rest; badge reveals on hover */
 .card--deal {
-  border-left: 3px solid var(--color-success);
+  border-left: none;
 }
 
-/* Card tier -- empty/no listings (D-09 Tier 3) */
+/* Card tier -- empty/no listings (D-09 Tier 3, D-07) */
 .card--empty {
-  opacity: 0.5;
-  border-style: dashed;
+  opacity: 0.35;
+  border: none;
 }
 
-/* Deal badge on card */
+/* Deal badge on card — hidden at rest, fades in on parent hover (D-06) */
 .card-deal-badge {
   position: absolute;
   top: var(--space-sm);
@@ -358,6 +358,14 @@ button, input, select, textarea {
   letter-spacing: 0.05em;
   text-transform: uppercase;
   z-index: 1;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 150ms ease-out, visibility 150ms ease-out;
+}
+
+.card:hover .card-deal-badge {
+  opacity: 1;
+  visibility: visible;
 }
 
 /* ============================================================

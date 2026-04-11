@@ -141,7 +141,7 @@
 
   <!-- Album art card grid -->
   {% if items %}
-    <section class="card-grid">
+    <section class="card-grid" style="margin-inline: calc(-1 * var(--space-sm));">
       {% for item in items %}
         {% set is_scanning = item.listing_count == 0 and item.last_scanned_at is none %}
         {% set has_deal = item.best_price is not none and item.typical_price is not none and item.typical_price > 0 and ((item.typical_price - item.best_price) / item.typical_price * 100) >= item.notify_below_pct %}
