@@ -137,18 +137,18 @@ Plans:
 | 8. Brand Font Upgrade | v1.1 | 0/1 | Planned | - |
 | 9. Email Redesign | v1.1 | 0/? | Not started | - |
 | 10. UI Polish | v1.1 | 2/3 | In Progress|  |
-| 11. UI Fixes | v1.1 | 0/5 | Planned | - |
+| 11. UI Fixes | v1.1 | 5/5 | Complete    | 2026-04-11 |
 
 ### Phase 11: UI Fixes
 
 **Goal:** Visual overhaul and UX fixes -- warm B&W palette, reverted typography, card system with hover-reveal deals, logo + font branding, image loading states, overlapping button fix, email template update
 **Requirements**: D-01 through D-18 (see 11-CONTEXT.md), BUG-01
 **Depends on:** Phase 10
-**Plans:** 5 plans
+**Plans:** 5/5 plans complete
 
 Plans:
-- [ ] 11-01-PLAN.md — Token + palette reset: warm dark bg, B&W colours, typography revert
-- [ ] 11-02-PLAN.md — Card system + interactions: deal badge hover, ghost cards, margins, micro-interactions, scrollbar
-- [ ] 11-03-PLAN.md — Functional fixes: BUG-01 overlap, image skeleton loading, default item type, placeholder image
-- [ ] 11-04-PLAN.md — Logo + font: AI-generated logo options, font selection, nav brand update (checkpoint gates)
-- [ ] 11-05-PLAN.md — Email template: warm dark palette, muted deal colour, logo wordmark, "View deal" CTA
+- [x] 11-01-PLAN.md — Token + palette reset: warm dark bg, B&W colours, typography revert
+- [x] 11-02-PLAN.md — Card system + interactions: deal badge hover, ghost cards, margins, micro-interactions, scrollbar
+- [x] 11-03-PLAN.md — Functional fixes: BUG-01 overlap, image skeleton loading, default item type, placeholder image
+- [x] 11-04-PLAN.md — Logo + font: AI-generated logo options, font selection, nav brand update (checkpoint gates)
+- [x] 11-05-PLAN.md — Email template: warm dark palette, muted deal colour, logo wordmark, "View deal" CTA
