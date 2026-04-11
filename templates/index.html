@@ -183,11 +183,7 @@
             {% endif %}
             <h3 class="text-title">{{ item.query }}</h3>
             {% if item.best_price is not none %}
-              {% if has_deal %}
-                <span class="text-price price-best">${{ '%.2f'|format(item.best_price) }}</span>
-              {% else %}
-                <span class="price-best" style="font-size: var(--text-body);">${{ '%.2f'|format(item.best_price) }}</span>
-              {% endif %}
+              <span class="card-price price-best">${{ '%.2f'|format(item.best_price) }}</span>
             {% elif not is_scanning %}
               <span class="text-faint" style="font-size: var(--text-label);">No listings found yet</span>
             {% endif %}

@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>{% block title %}CRATE{% endblock %}</title>
   <link rel="preload" href="/static/fonts/BodoniModa-Bold.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="/static/fonts/Inter-VariableFont_opsz,wght.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="stylesheet" href="/static/style.css">
 </head>
 <body>
@@ -100,7 +101,6 @@
 
   <!-- Toast notification -->
   <div id="toast" class="hidden toast">
-    <svg class="shrink-0 text-accent" style="width:20px;height:20px;color:var(--color-accent)" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
     <span id="toastMessage"></span>
   </div>
 
