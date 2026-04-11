@@ -96,17 +96,18 @@ async def add_wishlist_item_web(
     query: str = Form(...),
     notes: str | None = Form(None),
     notify_below_pct: float = Form(20.0),
-    notify_email: bool = Form(True),
+    notify_email: str = Form(""),
     discogs_release_id: str = Form(""),
     db: Session = Depends(get_db),
 ):
     release_id = int(discogs_release_id) if discogs_release_id else None
+    notify_email_bool = notify_email.lower() in ("on", "true", "1", "yes")
     item = WishlistItem(
         type=type,
         query=query,
         notes=notes,
         notify_below_pct=notify_below_pct,
-        notify_email=notify_email,
+        notify_email=notify_email_bool,
         discogs_release_id=release_id,
         is_active=True,
     )
@@ -127,11 +128,12 @@ async def edit_wishlist_item_web(
     query: str = Form(...),
     notes: str | None = Form(None),
     notify_below_pct: float = Form(20.0),
-    notify_email: bool = Form(False),
+    notify_email: str = Form(""),
     discogs_release_id: str = Form(""),
     db: Session = Depends(get_db),
 ):
     release_id = int(discogs_release_id) if discogs_release_id else None
+    notify_email_bool = notify_email.lower() in ("on", "true", "1", "yes")
     item = db.query(WishlistItem).filter_by(id=item_id, is_active=True).first()
     if not item:
         raise HTTPException(status_code=404, detail="Item not found")
@@ -139,7 +141,7 @@ async def edit_wishlist_item_web(
     item.query = query
     item.notes = notes or None
     item.notify_below_pct = notify_below_pct
-    item.notify_email = notify_email
+    item.notify_email = notify_email_bool
     item.discogs_release_id = release_id
     db.commit()
     invalidate_dashboard_cache()

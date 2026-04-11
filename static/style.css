@@ -17,9 +17,9 @@
 
 :root {
   /* Colour — background / surface */
-  --color-bg:           #0d0b0a;
-  --color-surface:      #141210;
-  --color-surface-alt:  #0d0b0a;
+  --color-bg:           #0a0a0a;
+  --color-surface:      #111111;
+  --color-surface-alt:  #0a0a0a;
 
   /* Colour — borders */
   --color-border:       #222222;
@@ -35,28 +35,28 @@
   --color-accent-hover: #e0e0e0;
   --color-accent-bg:    rgba(255,255,255,0.08);
   --color-accent-cta:   #ffffff;
-  --color-cta-text:     #0d0b0a;
+  --color-cta-text:     #0a0a0a;
 
   /* Colour — destructive */
-  --color-destructive:        #c46060;
-  --color-destructive-border: rgba(196, 96, 96, 0.4);
-  --color-destructive-bg:     rgba(196, 96, 96, 0.1);
+  --color-destructive:        #f87171;
+  --color-destructive-border: rgba(239, 68, 68, 0.4);
+  --color-destructive-bg:     rgba(239, 68, 68, 0.1);
 
   /* Colour — success */
-  --color-success: #5a9e7a;
+  --color-success: #34d399;
 
-  /* Colour — type badges (B&W at rest, D-03) */
-  --color-badge-album-bg:     rgba(255, 255, 255, 0.06);
-  --color-badge-album-text:   #999999;
-  --color-badge-album-border: rgba(255, 255, 255, 0.12);
+  /* Colour — type badges (desaturated, lower contrast) */
+  --color-badge-album-bg:     rgba(100, 120, 180, 0.15);
+  --color-badge-album-text:   #a0b0d0;
+  --color-badge-album-border: rgba(100, 120, 180, 0.25);
 
-  --color-badge-artist-bg:    rgba(255, 255, 255, 0.06);
-  --color-badge-artist-text:  #999999;
-  --color-badge-artist-border:rgba(255, 255, 255, 0.12);
+  --color-badge-artist-bg:    rgba(140, 100, 180, 0.15);
+  --color-badge-artist-text:  #b8a0d8;
+  --color-badge-artist-border:rgba(140, 100, 180, 0.25);
 
-  --color-badge-other-bg:     rgba(255, 255, 255, 0.06);
-  --color-badge-other-text:   #999999;
-  --color-badge-other-border: rgba(255, 255, 255, 0.12);
+  --color-badge-other-bg:     rgba(80, 160, 100, 0.15);
+  --color-badge-other-text:   #90c8a0;
+  --color-badge-other-border: rgba(80, 160, 100, 0.25);
 
   /* Colour — source badges */
   --color-source-discogs-bg:   rgba(200, 200, 200, 0.1);
@@ -80,15 +80,11 @@
   --space-2xl: 48px;
   --space-3xl: 64px;
 
-  /* Typography — D-09 reverted scale */
-  --text-label:             12px;   /* metadata, badges, secondary labels */
-  --text-sm:                14px;   /* kept for backward compat — per D-07 */
-  --text-body:              16px;   /* body text, card titles, table cells */
-  --text-title:             16px;   /* card album names — subordinate to artwork */
-  --text-price:             28px;   /* core value signal */
-  --text-heading:           24px;   /* page-level headings — reverted from 36px */
-  --text-subheading:        20px;   /* H2 section headings, stats bar values — reverted */
-  --text-heading-secondary: 20px;   /* "All Listings" — matches subheading */
+  /* Typography */
+  --text-sm:      14px;
+  --text-body:    16px;
+  --text-heading: 28px;
+  --text-price:   20px;
 
   --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
   --font-display: "Bodoni Moda", var(--font-sans);
@@ -161,7 +157,7 @@ button, input, select, textarea {
 .stack-lg {
   display: flex;
   flex-direction: column;
-  gap: var(--space-2xl);
+  gap: var(--space-lg);
 }
 
 /* ============================================================
@@ -187,9 +183,6 @@ button, input, select, textarea {
 }
 
 .nav-brand {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--space-sm);
   font-family: var(--font-display);
   font-size: var(--text-body);
   font-weight: 700;
@@ -205,12 +198,12 @@ button, input, select, textarea {
 .btn-cta {
   background: var(--color-accent-cta);
   color: var(--color-cta-text);
-  font-size: var(--text-body);
+  font-size: var(--text-sm);
   font-weight: 600;
   padding: var(--space-sm) var(--space-md);
   border-radius: var(--radius-btn);
   cursor: pointer;
-  transition: background 150ms, color 150ms, transform 150ms ease-out;
+  transition: background 200ms;
   min-height: 44px;
   border: none;
   display: inline-flex;
@@ -225,40 +218,37 @@ button, input, select, textarea {
   background: transparent;
   border: 1px solid var(--color-border);
   color: var(--color-text-muted);
-  font-size: var(--text-body);
+  font-size: var(--text-sm);
   padding: var(--space-sm) var(--space-md);
   border-radius: var(--radius-btn);
   cursor: pointer;
-  transition: background 150ms, color 150ms, transform 150ms ease-out;
+  transition: background 200ms;
   min-height: 44px;
   display: inline-flex;
   align-items: center;
 }
 
 .btn-secondary:hover {
-  background: #ffffff;
-  color: #0d0b0a;
+  background: var(--color-surface);
 }
 
 .btn-destructive {
   background: transparent;
   border: 1px solid var(--color-destructive-border);
   color: var(--color-destructive);
-  font-size: var(--text-body);
+  font-size: var(--text-sm);
   font-weight: 500;
   padding: var(--space-sm) var(--space-md);
   border-radius: var(--radius-btn);
   cursor: pointer;
-  transition: background 150ms, color 150ms, transform 150ms ease-out;
+  transition: background 200ms;
   min-height: 44px;
   display: inline-flex;
   align-items: center;
 }
 
 .btn-destructive:hover {
-  background: var(--color-destructive);
-  color: #ffffff;
-  border-color: var(--color-destructive);
+  background: var(--color-destructive-bg);
 }
 
 .btn-cta:focus-visible,
@@ -268,20 +258,10 @@ button, input, select, textarea {
   box-shadow: 0 0 0 2px var(--color-accent);
 }
 
-/* Instant press-down, ease-out release (D-13) */
 .btn-cta:active,
 .btn-secondary:active,
 .btn-destructive:active {
   transform: scale(0.97);
-  transition-duration: 0ms;
-}
-
-.btn-cta:disabled,
-.btn-secondary:disabled,
-.btn-destructive:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-  pointer-events: none;
 }
 
 /* ============================================================
@@ -292,19 +272,18 @@ button, input, select, textarea {
   border: 1px solid var(--color-border);
   border-radius: var(--radius-card);
   overflow: hidden;
-  position: relative;
-  transition: transform 150ms ease-out, box-shadow 150ms ease-out;
+  transition: transform 200ms ease, box-shadow 200ms ease;
 }
 
 .card:hover {
   transform: translateY(-2px);
-  box-shadow: 0 4px 16px rgba(0,0,0,0.4);
+  box-shadow: 0 0 0 1px rgba(255,255,255,0.1), 0 8px 24px rgba(0, 5, 20, 0.8);
 }
 
 .card-grid {
   display: grid;
   grid-template-columns: repeat(1, 1fr);
-  gap: var(--space-md);
+  gap: var(--space-sm);
 }
 
 @media (min-width: 768px) {
@@ -341,41 +320,6 @@ button, input, select, textarea {
   animation: pulse-border 2s ease-in-out infinite;
 }
 
-/* Card tier -- deal (D-09 Tier 1, D-06) — no border at rest; badge reveals on hover */
-.card--deal {
-  border-left: none;
-}
-
-/* Card tier -- empty/no listings (D-09 Tier 3, D-07) */
-.card--empty {
-  opacity: 0.35;
-  border: none;
-}
-
-/* Deal badge on card — hidden at rest, fades in on parent hover (D-06) */
-.card-deal-badge {
-  position: absolute;
-  top: var(--space-sm);
-  right: var(--space-sm);
-  background: var(--color-success);
-  color: var(--color-bg);
-  font-size: var(--text-label);
-  font-weight: 700;
-  padding: 2px var(--space-sm);
-  border-radius: var(--radius-badge);
-  letter-spacing: 0.05em;
-  text-transform: uppercase;
-  z-index: 1;
-  opacity: 0;
-  visibility: hidden;
-  transition: opacity 150ms ease-out, visibility 150ms ease-out;
-}
-
-.card:hover .card-deal-badge {
-  opacity: 1;
-  visibility: visible;
-}
-
 /* ============================================================
    8. Forms
    ============================================================ */
@@ -395,7 +339,7 @@ button, input, select, textarea {
 
 .form-label {
   display: block;
-  font-size: var(--text-label);
+  font-size: var(--text-sm);
   color: var(--color-text-muted);
   margin-bottom: var(--space-xs);
 }
@@ -452,7 +396,7 @@ button, input, select, textarea {
 .table {
   width: 100%;
   min-width: 980px;
-  font-size: var(--text-body);
+  font-size: var(--text-sm);
   border-collapse: collapse;
 }
 
@@ -465,11 +409,8 @@ button, input, select, textarea {
 }
 
 .table td {
-  padding: 10px var(--space-md);
-}
-
-.table .col-landed {
-  text-align: right;
+  padding: var(--space-md);
+  border-top: 1px solid rgba(51, 65, 85, 0.7);
 }
 
 .listing-row:hover {
@@ -485,7 +426,7 @@ button, input, select, textarea {
   border-radius: var(--radius-badge);
   border: 1px solid;
   padding: 2px 10px;
-  font-size: var(--text-label);
+  font-size: var(--text-sm);
   font-weight: 500;
   text-transform: uppercase;
   letter-spacing: 0.05em;
@@ -524,18 +465,14 @@ button, input, select, textarea {
 /* ============================================================
    12. Typography helpers
    ============================================================ */
-.text-label      { font-size: var(--text-label); }
-.text-sm         { font-size: var(--text-sm); }
-.text-body       { font-size: var(--text-body); }
-.text-title      { font-size: var(--text-title); font-weight: 400; line-height: 1.3; }
-.text-subheading { font-size: var(--text-subheading); font-weight: 600; line-height: 1.2; }
-.text-heading    { font-size: var(--text-heading); font-weight: 700; line-height: 1.1; }
-.text-price      { font-size: var(--text-price); font-weight: 600; line-height: 1.2; }
-.text-muted      { color: var(--color-text-muted); }
-.text-faint      { color: var(--color-text-faint); }
-.text-accent     { color: var(--color-accent); }
+.text-sm      { font-size: var(--text-sm); }
+.text-heading { font-size: var(--text-heading); font-weight: 600; line-height: 1.2; }
+.text-price   { font-size: var(--text-price); font-weight: 600; line-height: 1.2; }
+.text-muted   { color: var(--color-text-muted); }
+.text-faint   { color: var(--color-text-faint); }
+.text-accent  { color: var(--color-accent); }
 .text-destructive { color: var(--color-destructive); }
-.text-success    { color: var(--color-success); }
+.text-success { color: var(--color-success); }
 
 /* Preserved from existing */
 .price-best { color: var(--color-accent); font-weight: 600; }
@@ -599,9 +536,9 @@ button, input, select, textarea {
    ============================================================ */
 .toast {
   position: fixed;
-  bottom: 80px;
+  bottom: var(--space-lg);
   right: var(--space-lg);
-  z-index: 55;
+  z-index: 50;
   max-width: 24rem;
   background: var(--color-surface);
   border: 1px solid var(--color-border);
@@ -614,42 +551,7 @@ button, input, select, textarea {
 }
 
 /* ============================================================
-   15. Image loading skeleton (D-16)
-   ============================================================ */
-@keyframes skeleton-pulse {
-  0%   { background-position: 200% 0; }
-  100% { background-position: -200% 0; }
-}
-
-.card-artwork-wrapper {
-  position: relative;
-  aspect-ratio: 1 / 1;
-  width: 100%;
-  background: linear-gradient(90deg, #1a1a1a 25%, #2a2a2a 50%, #1a1a1a 75%);
-  background-size: 200% 100%;
-  animation: skeleton-pulse 1.2s ease-in-out infinite;
-}
-
-.card-artwork-wrapper img {
-  opacity: 0;
-  transition: opacity 200ms ease-out;
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  display: block;
-}
-
-.card-artwork-wrapper img.loaded {
-  opacity: 1;
-}
-
-.card-artwork-wrapper.loaded {
-  animation: none;
-  background: transparent;
-}
-
-/* ============================================================
-   15b. Keyframe animations — preserved
+   15. Keyframe animations — preserved
    ============================================================ */
 @keyframes pulse-border {
   0%, 100% { border-color: rgba(255, 255, 255, 0.2); }
@@ -750,7 +652,7 @@ button, input, select, textarea {
   color: var(--color-badge-album-text);
   border: 1px solid var(--color-badge-album-border);
   border-radius: var(--radius-badge);
-  font-size: var(--text-label);
+  font-size: var(--text-sm);
   text-transform: uppercase;
   letter-spacing: 0.05em;
 }
@@ -795,39 +697,9 @@ button, input, select, textarea {
   animation: spin-positioned 0.8s linear infinite;
 }
 
-.typeahead-spinner.hidden {
-  animation: none;
-}
-
 /* Empty / error state row */
 .typeahead-empty {
   color: var(--color-text-faint);
-  font-size: var(--text-label);
+  font-size: var(--text-sm);
   padding: var(--space-sm) var(--space-md);
-}
-
-/* ============================================================
-   19. Scrollbar — B&W palette (D-17)
-   ============================================================ */
-::-webkit-scrollbar {
-  width: 6px;
-}
-
-::-webkit-scrollbar-track {
-  background: #1a1a1a;
-}
-
-::-webkit-scrollbar-thumb {
-  background: #444444;
-  border-radius: 3px;
-}
-
-::-webkit-scrollbar-thumb:hover {
-  background: #666666;
-}
-
-/* Firefox scrollbar */
-* {
-  scrollbar-width: thin;
-  scrollbar-color: #444444 #1a1a1a;
 }

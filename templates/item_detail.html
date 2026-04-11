@@ -7,30 +7,25 @@
 
   <!-- Header section with artwork thumbnail -->
   <section class="card" style="padding: var(--space-lg);">
-    <a href="/" class="text-accent" style="font-size: var(--text-label); display: inline-block; margin-bottom: var(--space-md);">← Back to Dashboard</a>
+    <a href="/" class="text-sm text-accent" style="display: inline-block; margin-bottom: var(--space-md);">← Back to Dashboard</a>
 
     <div class="flex" style="gap: var(--space-lg); flex-wrap: wrap;">
       <!-- Artwork thumbnail 120x120 -->
       <div style="flex-shrink: 0;">
-        <div class="card-artwork-wrapper" style="width: 120px; height: 120px; aspect-ratio: unset;">
         {% if item.artwork_url %}
           <img
             src="/api/artwork?url={{ item.artwork_url | urlencode }}"
             alt="{{ item.query }} album cover"
-            onerror="this.src='/static/vinyl-placeholder.svg'; this.classList.add('loaded'); this.parentElement.classList.add('loaded');"
-            onload="this.classList.add('loaded'); this.parentElement.classList.add('loaded');"
+            onerror="this.src='/static/vinyl-placeholder.svg'"
             style="width: 120px; height: 120px; object-fit: cover; border-radius: 0;"
           >
         {% else %}
           <img
-            src="/static/empty-vinyl-placeholder.png"
+            src="/static/vinyl-placeholder.svg"
             alt="{{ item.query }} — no artwork available"
-            onerror="this.src='/static/vinyl-placeholder.svg'; this.classList.add('loaded'); this.parentElement.classList.add('loaded');"
-            onload="this.classList.add('loaded'); this.parentElement.classList.add('loaded');"
             style="width: 120px; height: 120px; object-fit: cover; border-radius: 0;"
           >
         {% endif %}
-        </div>
       </div>
 
       <div style="flex: 1; min-width: 200px;">
@@ -42,10 +37,10 @@
         </div>
 
         {% if item.notes %}
-          <p class="text-muted" style="font-size: var(--text-label); margin-bottom: var(--space-sm);">{{ item.notes }}</p>
+          <p class="text-sm text-muted" style="margin-bottom: var(--space-sm);">{{ item.notes }}</p>
         {% endif %}
 
-        <div class="text-muted" style="font-size: var(--text-label); display: flex; flex-direction: column; gap: var(--space-xs);">
+        <div class="text-sm text-muted" style="display: flex; flex-direction: column; gap: var(--space-xs);">
           <p>Notify when ≥ <span class="text-accent">{{ item.notify_below_pct|int }}%</span> below typical price{% if item.typical_price is not none %} (~${{ '%.2f'|format(item.typical_price) }}){% endif %}</p>
           <p>Last scanned: {% if item.last_scanned_at %}<span data-timestamp="{{ item.last_scanned_at.isoformat() }}">{{ item.last_scanned_at }}</span>{% else %}never{% endif %}</p>
         </div>
@@ -65,14 +60,14 @@
                 data-discogs-release-title="{{ item.query }}">
           Edit
         </button>
-        <button type="button" onclick="startScan({{ item.id }})" class="btn-cta" data-scan-btn>Scan Now</button>
+        <button type="button" onclick="startScan({{ item.id }})" class="btn-cta">Scan Now</button>
         <div id="deleteConfirm" style="display: flex; align-items: center; gap: var(--space-sm);">
           <button type="button" id="deleteInitBtn" class="btn-destructive" onclick="document.getElementById('deleteInitBtn').style.display='none'; document.getElementById('deleteConfirmBtns').style.display='flex';">Remove from Crate</button>
           <div id="deleteConfirmBtns" style="display: none; align-items: center; gap: var(--space-sm);">
             <form action="/wishlist/{{ item.id }}/delete" method="post" style="display: inline;">
-              <button type="submit" class="btn-destructive">Confirm Delete</button>
+              <button type="submit" class="btn-destructive">Confirm?</button>
             </form>
-            <button type="button" class="btn-secondary" onclick="document.getElementById('deleteInitBtn').style.display='inline-flex'; document.getElementById('deleteConfirmBtns').style.display='none';">Keep Record</button>
+            <button type="button" class="btn-secondary" onclick="document.getElementById('deleteInitBtn').style.display='inline-flex'; document.getElementById('deleteConfirmBtns').style.display='none';">Cancel</button>
           </div>
         </div>
       </div>
@@ -81,20 +76,20 @@
 
   <!-- Best Deals section -->
   <section style="display: flex; flex-direction: column; gap: var(--space-md);">
-    <h2 class="text-subheading">Best Deals</h2>
+    <h2 style="font-size: 22px; font-weight: 600;">Best Deals</h2>
     {% if item.top_listings %}
       <div class="card-grid">
         {% for l in item.top_listings %}
           <article class="card" style="padding: var(--space-md); display: flex; flex-direction: column; gap: var(--space-sm);">
             <div>
-              <p class="text-price price-best">${{ '%.2f'|format(l.landed_price) }} <span class="text-muted" style="font-size: var(--text-label); font-weight: 400;">landed AU</span></p>
-              <p class="text-faint" style="font-size: var(--text-label);">${{ '%.2f'|format(l.price) }} + shipping from {{ l.ships_from or 'Unknown' }}</p>
+              <p class="text-price price-best">${{ '%.2f'|format(l.landed_price) }} <span class="text-sm text-muted" style="font-weight: 400;">landed AU</span></p>
+              <p class="text-sm text-faint">${{ '%.2f'|format(l.price) }} + shipping from {{ l.ships_from or 'Unknown' }}</p>
             </div>
             <span class="badge {% if l.source == 'discogs' %}badge-source-discogs{% else %}badge-source-other{% endif %}" style="align-self: flex-start;">
               {{ l.source|title }}
             </span>
-            <p class="truncate" style="font-size: var(--text-body); color: var(--color-text-muted);">{{ l.title }}</p>
-            <a href="{{ l.url }}" target="_blank" rel="noopener noreferrer" class="text-accent" style="font-size: var(--text-label);">View Listing →</a>
+            <p class="text-sm truncate" style="color: var(--color-text-muted);">{{ l.title }}</p>
+            <a href="{{ l.url }}" target="_blank" rel="noopener noreferrer" class="text-sm text-accent">View Listing →</a>
           </article>
         {% endfor %}
       </div>
@@ -107,14 +102,14 @@
 
   <!-- All Listings table -->
   <section style="display: flex; flex-direction: column; gap: var(--space-md);">
-    <h2 style="font-size: var(--text-heading-secondary); font-weight: 400;">All Listings</h2>
+    <h2 style="font-size: 22px; font-weight: 600;">All Listings</h2>
 
     {% if listings %}
       <div class="table-container">
         <table class="table">
           <thead>
             <tr>
-              <th class="col-landed">Landed (AU)</th>
+              <th>Landed (AU)</th>
               <th>Ships From</th>
               <th>Condition</th>
               <th>Source</th>
@@ -127,15 +122,15 @@
           <tbody>
             {% for listing in listings if listing.price is not none %}
               <tr class="listing-row{% if not listing.is_in_stock %}" style="opacity: 0.5{% endif %}">
-                <td class="col-landed">
+                <td>
                   {% if listing.aud_total is not none %}
                     <span class="price-best">${{ '%.2f'|format(listing.aud_total) }}</span>
-                    <span class="text-muted" style="font-size: var(--text-label); display: block;">
+                    <span class="text-sm text-muted" style="display: block;">
                       {{ listing.orig_display }}
                     </span>
                   {% elif listing.landed_price is not none %}
                     <span class="price-best">${{ '%.2f'|format(listing.landed_price) }}</span>
-                    <span class="text-faint" style="font-size: var(--text-label); display: block;">
+                    <span class="text-sm text-faint" style="display: block;">
                       {{ listing.currency }} {{ '%.2f'|format(listing.price) }} + shipping
                     </span>
                   {% else %}
@@ -149,7 +144,7 @@
                     {{ listing.source|title }}
                   </span>
                   {% if not listing.is_in_stock %}
-                  <span class="text-destructive" style="font-size: var(--text-label); display: block; margin-top: var(--space-xs);">Out of stock</span>
+                  <span class="text-sm text-destructive" style="display: block; margin-top: var(--space-xs);">Out of stock</span>
                   {% endif %}
                 </td>
                 <td class="title-cell">{{ listing.title }}</td>
@@ -220,7 +215,8 @@
             <label class="form-label">Notify when price is this % below typical</label>
             <input id="editNotifyPct" name="notify_below_pct" type="number" step="1" min="1" max="90" class="form-input" />
           </div>
-          <label class="flex items-center gap-sm text-muted" style="font-size: var(--text-label);">
+          <label class="flex items-center gap-sm text-sm text-muted">
+            <input type="hidden" name="notify_email" value="" />
             <input id="editNotifyEmail" type="checkbox" name="notify_email" class="form-checkbox" />
             Email me when deals are found
           </label>
