@@ -1,5 +1,27 @@
 # Milestones
 
+## v1.1 UX Polish & Album Selection (Shipped: 2026-04-12)
+
+**Phases completed:** 7 phases, 16 plans, 19 tasks
+
+**Key accomplishments:**
+
+- One-liner:
+- Discogs typeahead dropdown in add/edit modals with debounced search, keyboard nav, and artist/label support
+- Hide typeahead spinner in all user-initiated exit paths (selectResult, resetTypeahead, type change)
+- One-liner:
+- One-liner:
+- One-liner:
+- 1. D-13 — JetBrains Mono font skipped
+- 1. [Rule 2 - Missing] text-sm in JS innerHTML strings (base.html)
+- One-liner:
+- One-liner:
+- Placeholder 28x28 logo SVG saved and wired into CRATE nav bar left of Bodoni Moda wordmark; user to swap SVG for final design
+- One-liner:
+- One-liner:
+
+---
+
 ## v1.0 MVP (Shipped: 2026-04-05)
 
 **Phases completed:** 5 phases, 17 plans, 18 tasks
