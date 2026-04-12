@@ -4,13 +4,30 @@
 
 A personal vinyl record wishlist manager that scrapes multiple stores and marketplaces to track prices and availability for records you want to buy. You add records you're after; it finds them across the web, computes landed costs (including shipping to AU), and alerts you to deals. Accessed via a web dashboard and an iOS Shortcut for quick adds.
 
-The app shipped v1.0 as a polished personal tool: the CRATE design system, 7 scraping sources, async scanning, and a clean dark UI with record artwork as the hero.
+The app shipped v1.0 as a polished personal tool and v1.1 sharpened UX: CRATE design system, 7 scraping sources, async scanning, Discogs typeahead, warm B&W palette, and a redesigned email template.
 
 ## Core Value
 
 Show me the cheapest way to buy the records I want, right now.
 
-## Current Milestone: v1.1 UX Polish & Album Selection
+## Current State
+
+**Latest milestone:** v1.1 UX Polish & Album Selection — shipped 2026-04-11 (Phases 6–12)
+
+Key outcomes:
+- Discogs typeahead with pinned-release scanning on add/edit
+- Warm B&W palette, Inter body + Bodoni Moda display, card system with hover-reveal deals
+- Store images prioritized over Discogs fallback; scan-log type labels corrected
+- Deal alert emails redesigned with inline CSS + CRATE aesthetic
+- Self-hosted brand font; no CDN dependency
+- Two rounds of visual fixes (Phases 11, 12) consolidating polish
+
+## Next Milestone
+
+*Not yet scoped.* Candidate directions: reliability/monitoring, new scraping sources, purchase workflow, mobile-first web view. Scope with `/gsd-new-milestone` when ready.
+
+<details>
+<summary>Prior milestone brief: v1.1 UX Polish & Album Selection</summary>
 
 **Goal:** Sharpen the UI with targeted fixes, add Discogs typeahead for precise album identification, and redesign email notifications — all designed using the full design tool stack.
 
@@ -23,7 +40,9 @@ Show me the cheapest way to buy the records I want, right now.
 - Email UI redesign
 - UI polish (typography scale, card hierarchy, focus states, button states, responsive grid, color contrast)
 
-**Design tooling constraint:** magic MCP + stitch + ui-ux-pro-max + design-for-ai must be invoked during planning and execution of every UI phase.
+**Design tooling constraint:** magic MCP + stitch + ui-ux-pro-max + design-for-ai were invoked during planning and execution of every UI phase.
+
+</details>
 
 ## Requirements
 
@@ -52,15 +71,17 @@ Show me the cheapest way to buy the records I want, right now.
 - ✓ **UI-05**: Dark palette consistently applied — v1.0
 - ✓ **UI-06**: iOS Shortcut API contract (`POST /api/wishlist`, `X-API-Key`) preserved — v1.0
 
+- ✓ **TYPE-01–04**: Discogs typeahead + pinned release scanning — v1.1
+- ✓ **IMG-01–02**: Store image priority with Discogs/placeholder fallback — v1.1
+- ✓ **BUG-01**: Overlapping buttons fix — v1.1
+- ✓ **BUG-02**: Scan log type label fix — v1.1
+- ✓ **FONT-01**: Self-hosted CRATE brand font — v1.1
+- ✓ **EMAIL-01–03**: Redesigned deal alert email (inline CSS, CRATE aesthetic) — v1.1
+- ✓ **UIP-01–10 / D-01–D-18**: UI polish — typography, card system, palette, states, responsive grid — v1.1
+
 ### Active
 
-- [ ] Album name autofill/selection on add and edit (Discogs typeahead)
-- [ ] Fix overlapping buttons (bottom right of dashboard)
-- [ ] Fix scan log message type label (album vs artist)
-- [ ] Prioritize scraped store images over Discogs fallback
-- [ ] CRATE brand font upgrade
-- [ ] Email UI redesign
-- [ ] UI polish: typography scale, card hierarchy, focus/active/disabled button states, responsive grid (3-col breakpoint), color contrast (text-faint)
+_None — v1.1 shipped. Next milestone not yet scoped._
 
 ### Out of Scope
 
@@ -110,4 +131,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-04-07 after Phase 8 complete — Bodoni Moda Bold self-hosted for CRATE wordmark*
+*Last updated: 2026-04-12 — v1.1 milestone shipped (Phases 6–12)*

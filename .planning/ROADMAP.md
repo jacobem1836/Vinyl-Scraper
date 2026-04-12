@@ -20,17 +20,25 @@ Full details: `.planning/milestones/v1.0-ROADMAP.md`
 
 </details>
 
-### v1.1 UX Polish & Album Selection
+<details>
+<summary>✅ v1.1 UX Polish & Album Selection (Phases 6–12) — SHIPPED 2026-04-11</summary>
 
-- [x] **Phase 6: Discogs Typeahead** — Album search-as-you-type in add/edit modals, pinning a specific Discogs release
-- [x] **Phase 7: Image Source Priority + Scan Log Fix** — Store images preferred over Discogs fallback; scan log type label corrected
-- [x] **Phase 8: Brand Font Upgrade** — CRATE logotype uses self-hosted brutalist display font with no CDN dependency
-- [x] **Phase 9: Email Redesign** — Deal alert emails redesigned with inline CSS, CRATE aesthetic, and scannable deal summary
-- [x] **Phase 10: UI Polish** — Typography scale, button states, modal accessibility, responsive grid, inline delete confirmation, overlapping button fix
-- [x] **Phase 11: UI Fixes** — Warm B&W palette, card system with hover-reveal deals, logo/font branding, image loading states, email template update
-- [x] **Phase 12: UI Fixes Round 2** — Inter font, ghost card readability, price sizing, toast fix, email branding, notify checkbox bug
+- [x] Phase 6: Discogs Typeahead (3/3 plans) — completed 2026-04-09
+- [x] Phase 7: Image Priority + Scan Fix (2/2 plans) — completed 2026-04-09
+- [x] Phase 8: Brand Font Upgrade (1/1 plans) — completed 2026-04-09
+- [x] Phase 9: Email Redesign (2/2 plans) — completed 2026-04-09
+- [x] Phase 10: UI Polish (3/3 plans) — completed 2026-04-11
+- [x] Phase 11: UI Fixes (5/5 plans) — completed 2026-04-11
+- [x] Phase 12: UI Fixes Round 2 (2/2 plans) — completed 2026-04-11
 
-## Phase Details
+Full details: `.planning/milestones/v1.1-ROADMAP.md`
+
+</details>
+
+## Phase Details (Archived)
+
+<details>
+<summary>v1.1 phase details — see milestones/v1.1-ROADMAP.md for full content</summary>
 
 ### Phase 6: Discogs Typeahead
 **Goal**: Users can search for and pin a specific Discogs album release when adding or editing a wishlist item
@@ -108,6 +116,8 @@ Plans:
 Plans:
 - [x] 12-01-PLAN.md — Visual polish: Inter font, ghost cards, price sizing, tick icon, scrollbar, card titles
 - [x] 12-02-PLAN.md — Notify email checkbox bug fix and email branding
+
+</details>
 
 ## Progress
 
