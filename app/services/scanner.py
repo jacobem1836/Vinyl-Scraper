@@ -3,10 +3,13 @@ from datetime import datetime
 
 from sqlalchemy.orm import Session
 
+from app.config import settings
 from app.models import Listing, WishlistItem
 from app.services import scan_status
 from app.services.adapter import get_enabled_adapters
 from app.services.cache import invalidate_dashboard_cache
+from app.services.digital_filter import is_digital
+from app.services.relevance import score_listing
 
 
 async def scan_item(db: Session, item: WishlistItem, track: bool = False) -> list[Listing]:
@@ -29,6 +32,16 @@ async def scan_item(db: Session, item: WishlistItem, track: bool = False) -> lis
         else:
             all_results.extend(r)
 
+    # FILTER-02 (D-08/D-09): drop digital listings before persistence.
+    digital_dropped = 0
+    kept_results = []
+    for r in all_results:
+        if is_digital(r):
+            digital_dropped += 1
+            continue
+        kept_results.append(r)
+    all_results = kept_results
+
     # Extract artwork URL before processing listings (always overwrite with latest high-res image)
     cover_image = None
     for r in all_results:
@@ -41,10 +54,22 @@ async def scan_item(db: Session, item: WishlistItem, track: bool = False) -> lis
 
     new_listings: list[Listing] = []
 
+    pre_filter_total = len(all_results) + digital_dropped  # all source results before any filtering
+    relevance_below = 0
+    location_missing = 0
+
     for result in all_results:
         url = result.get("url")
         if not url:
             continue
+
+        score = score_listing(item.query or "", "", result.get("title") or "")
+        result["_relevance_score"] = score
+        effective_thr = item.relevance_threshold if item.relevance_threshold is not None else settings.relevance_threshold_default
+        if score < effective_thr:
+            relevance_below += 1
+        if not (result.get("ships_from") or "").strip():
+            location_missing += 1
 
         existing = (
             db.query(Listing)
@@ -71,6 +96,7 @@ async def scan_item(db: Session, item: WishlistItem, track: bool = False) -> lis
             is_active=True,
             is_in_stock=result.get("is_in_stock", True),
             image_url=result.get("image_url"),
+            relevance_score=result.get("_relevance_score"),
         )
         db.add(listing)
         new_listings.append(listing)
@@ -101,6 +127,13 @@ async def scan_item(db: Session, item: WishlistItem, track: bool = False) -> lis
 
     if track:
         scan_status.item_finished(item.id, item.query, len(new_listings), item.type)
+
+    kept_count = pre_filter_total - digital_dropped - relevance_below
+    print(
+        f"[filter] item={item.id} kept={kept_count}/{pre_filter_total} "
+        f"(relevance<thr: {relevance_below}, digital: {digital_dropped}, "
+        f"location_missing: {location_missing})"
+    )
 
     return new_listings
 
