@@ -17,6 +17,7 @@ class WishlistItem(Base):
     is_active = Column(Boolean, default=True)
     artwork_url = Column(String, nullable=True)  # Discogs thumb URL, populated on first scan
     discogs_release_id = Column(Integer, nullable=True)  # pinned Discogs release ID for precise scanning
+    relevance_threshold = Column(Float, nullable=True)  # D-05: per-item override of settings.relevance_threshold_default
 
     listings = relationship("Listing", back_populates="wishlist_item", cascade="all, delete-orphan")
 
@@ -38,6 +39,7 @@ class Listing(Base):
     is_active = Column(Boolean, default=True)
     is_in_stock = Column(Boolean, default=True)
     image_url = Column(String, nullable=True)  # product image URL from source adapter
+    relevance_score = Column(Float, nullable=True)  # D-03: rapidfuzz score 0-100 vs item "artist title"
 
     wishlist_item = relationship("WishlistItem", back_populates="listings")
 
