@@ -82,6 +82,12 @@ See: .planning/PROJECT.md
 
 - None yet
 
+### Quick Tasks Completed
+
+| # | Description | Date | Commit | Directory |
+|---|-------------|------|--------|-----------|
+| 260414-d0c | Show persistent scanning toast that updates while scan is running | 2026-04-14 | 6848f91 | [260414-d0c-show-persistent-scanning-toast-that-upda](.planning/quick/260414-d0c-show-persistent-scanning-toast-that-upda/) |
+
 ## Session Continuity
 
 **To resume:** Run `/gsd-plan-phase 6` to begin planning Phase 6 (Discogs Typeahead).
