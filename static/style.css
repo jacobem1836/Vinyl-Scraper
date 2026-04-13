@@ -612,6 +612,7 @@ button, input, select, textarea {
   bottom: 80px;
   right: var(--space-lg);
   z-index: 55;
+  min-width: 14rem;
   max-width: 24rem;
   background: var(--color-surface);
   border: 1px solid var(--color-border);
