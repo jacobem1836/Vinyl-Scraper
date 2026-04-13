@@ -32,6 +32,9 @@ Plans:
   2. "Item added, scanning…" uses the same CRATE toast/modal primitive as other feedback
   3. Opening the add-item modal defaults the type selector to "album"
   4. iOS Shortcut API default unchanged (UI-only default)
+**Plans**: 1 plan
+Plans:
+- [ ] 14-01-PLAN.md — Add showToast() helper, wire per-item scan completion to toast, reset add-item modal type to album on open (FEEDBACK-01, FEEDBACK-02, FEEDBACK-03)
 
 ### Phase 15: Notification Expansion
 **Goal**: Users receive deduped back-in-stock + price-drop alerts as unified digest emails
