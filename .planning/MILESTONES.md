@@ -1,5 +1,23 @@
 # Milestones
 
+## v1.2 Signal Intelligence & Notifications (Shipped: 2026-04-14)
+
+**Phases completed:** 3 phases (13–15), 8 plans
+
+**Key accomplishments:**
+
+- Relevance scoring + digital listing filter — suppress noise, rank by match quality
+- `ships_from` enriched via Discogs marketplace API on every scan
+- Relevance threshold applied at query time in dashboard and detail routes
+- Consistent toast feedback system: all UI actions use single `#toast` primitive
+- Add-item modal always opens with Type = "album" (capture-phase reset)
+- Back-in-stock and price-drop detection with prev snapshot columns
+- Cooldown deduplication prevents repeat sends within configurable window
+- Collect-then-dispatch scheduler: one unified digest email per scan run
+- 9 unit tests covering all notification scenarios (NOTIF-01 through NOTIF-04)
+
+---
+
 ## v1.1 UX Polish & Album Selection (Shipped: 2026-04-12)
 
 **Phases completed:** 7 phases, 16 plans, 19 tasks

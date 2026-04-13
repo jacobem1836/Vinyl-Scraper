@@ -4,6 +4,7 @@
 
 - ✅ **v1.0 MVP** — Phases 1–5 (shipped 2026-04-05)
 - ✅ **v1.1 UX Polish & Album Selection** — Phases 6–12 (shipped 2026-04-11)
+- ✅ **v1.2 Signal Intelligence & Notifications** — Phases 13–15 (shipped 2026-04-14)
 
 ## Phases
 
@@ -32,6 +33,17 @@ Full details: `.planning/milestones/v1.0-ROADMAP.md`
 - [x] Phase 12: UI Fixes Round 2 (2/2 plans) — completed 2026-04-11
 
 Full details: `.planning/milestones/v1.1-ROADMAP.md`
+
+</details>
+
+<details>
+<summary>✅ v1.2 Signal Intelligence & Notifications (Phases 13–15) — SHIPPED 2026-04-14</summary>
+
+- [x] Phase 13: Signal Filters (3/3 plans) — completed 2026-04-13
+- [x] Phase 14: Feedback Primitives UI Hint (1/1 plans) — completed 2026-04-13
+- [x] Phase 15: Notification Expansion (4/4 plans) — completed 2026-04-13
+
+Full details: `.planning/milestones/v1.2-ROADMAP.md`
 
 </details>
 
@@ -135,3 +147,6 @@ Plans:
 | 10. UI Polish | v1.1 | 3/3 | Complete | 2026-04-11 |
 | 11. UI Fixes | v1.1 | 5/5 | Complete | 2026-04-11 |
 | 12. UI Fixes Round 2 | v1.1 | 2/2 | Complete | 2026-04-11 |
+| 13. Signal Filters | v1.2 | 3/3 | Complete | 2026-04-13 |
+| 14. Feedback Primitives UI Hint | v1.2 | 1/1 | Complete | 2026-04-13 |
+| 15. Notification Expansion | v1.2 | 4/4 | Complete | 2026-04-13 |

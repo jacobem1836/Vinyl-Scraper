@@ -1,15 +1,15 @@
 ---
 gsd_state_version: 1.0
-milestone: v1.1
-milestone_name: UX Polish & Album Selection
-status: executing
-last_updated: "2026-04-12T00:57:48.485Z"
-last_activity: 2026-04-12
+milestone: v1.2
+milestone_name: Signal Intelligence & Notifications
+status: shipped
+last_updated: "2026-04-14T00:00:00.000Z"
+last_activity: 2026-04-14
 progress:
-  total_phases: 7
-  completed_phases: 6
-  total_plans: 16
-  completed_plans: 18
+  total_phases: 3
+  completed_phases: 3
+  total_plans: 8
+  completed_plans: 8
   percent: 100
 ---
 
@@ -17,20 +17,18 @@ progress:
 
 ## Current Position
 
-Phase: 12 (ui-fixes-round-2) — EXECUTING
-Plan: 1 of 2
-Status: Executing Phase 12
-Last activity: 2026-04-12
+Milestone v1.2 shipped — 3 phases, 8 plans complete.
+Status: Milestone complete, awaiting next milestone scope.
 
 ```
-v1.1 Progress: [████░░░░░░] 40% — 2/5 phases complete
+v1.2 Progress: [██████████] 100% — 3/3 phases complete
 ```
 
 ## Project Reference
 
 See: .planning/PROJECT.md
 **Core value:** Show me the cheapest way to buy the records I want, right now.
-**Current focus:** Phase 12 — ui-fixes-round-2
+**Current focus:** Post-v1.2 — use `/gsd-new-milestone` to scope v1.3
 
 ## Performance Metrics
 
