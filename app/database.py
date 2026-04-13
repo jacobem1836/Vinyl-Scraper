@@ -119,3 +119,33 @@ def run_migrations():
             conn.commit()
         except Exception:
             pass  # Column already exists
+        try:
+            conn.execute(text("ALTER TABLE listings ADD COLUMN prev_price FLOAT"))
+            conn.commit()
+        except Exception:
+            pass  # Column already exists
+        try:
+            conn.execute(text("ALTER TABLE listings ADD COLUMN prev_is_in_stock INTEGER"))
+            conn.commit()
+        except Exception:
+            pass  # Column already exists
+        try:
+            conn.execute(text("ALTER TABLE wishlist_items ADD COLUMN last_notified_at DATETIME"))
+            conn.commit()
+        except Exception:
+            pass  # Column already exists
+        try:
+            conn.execute(text("ALTER TABLE wishlist_items ADD COLUMN notify_drop_mode VARCHAR NOT NULL DEFAULT 'pct'"))
+            conn.commit()
+        except Exception:
+            pass  # Column already exists
+        try:
+            conn.execute(text("ALTER TABLE wishlist_items ADD COLUMN notify_drop_pct FLOAT"))
+            conn.commit()
+        except Exception:
+            pass  # Column already exists
+        try:
+            conn.execute(text("ALTER TABLE wishlist_items ADD COLUMN notify_drop_usd FLOAT"))
+            conn.commit()
+        except Exception:
+            pass  # Column already exists

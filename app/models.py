@@ -18,6 +18,10 @@ class WishlistItem(Base):
     artwork_url = Column(String, nullable=True)  # Discogs thumb URL, populated on first scan
     discogs_release_id = Column(Integer, nullable=True)  # pinned Discogs release ID for precise scanning
     relevance_threshold = Column(Float, nullable=True)  # D-05: per-item override of settings.relevance_threshold_default
+    last_notified_at = Column(DateTime, nullable=True)   # timestamp of last digest email sent for this item
+    notify_drop_mode = Column(String, nullable=False, default="pct")  # "pct" or "usd" — price-drop trigger mode
+    notify_drop_pct = Column(Float, nullable=True)       # per-item pct threshold override; null falls back to global default
+    notify_drop_usd = Column(Float, nullable=True)       # per-item usd threshold override; null falls back to global default
 
     listings = relationship("Listing", back_populates="wishlist_item", cascade="all, delete-orphan")
 
@@ -40,6 +44,8 @@ class Listing(Base):
     is_in_stock = Column(Boolean, default=True)
     image_url = Column(String, nullable=True)  # product image URL from source adapter
     relevance_score = Column(Float, nullable=True)  # D-03: rapidfuzz score 0-100 vs item "artist title"
+    prev_price = Column(Float, nullable=True)           # price at previous scan; None on first scan
+    prev_is_in_stock = Column(Boolean, nullable=True)   # stock status at previous scan; None on first scan
 
     wishlist_item = relationship("WishlistItem", back_populates="listings")
 
