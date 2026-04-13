@@ -45,6 +45,12 @@ Plans:
   2. A listing's price dropping vs prior scan triggers a price-drop alert
   3. Repeat events within the cool-down window do not re-send
   4. Multiple events from one scan arrive in a single digest email
+**Plans**: 4 plans
+Plans:
+- [ ] 15-01-PLAN.md — Schema foundation: 6 column migrations + ORM updates (Listing.prev_price/prev_is_in_stock, WishlistItem.last_notified_at/notify_drop_mode/notify_drop_pct/notify_drop_usd) + 3 config settings (NOTIF-01/02/03)
+- [ ] 15-02-PLAN.md — Test scaffold: tests/ package, conftest fixtures, 9 failing unit tests covering _price_dropped / _back_in_stock / _within_cooldown / send_digest_email per RESEARCH test map (NOTIF-01/02/03/04)
+- [ ] 15-03-PLAN.md — Scanner prev_ snapshot + price overwrite, notifier detection helpers, send_digest_email, digest_alert.html template — turns Plan 02 tests green (NOTIF-01/02/03/04)
+- [ ] 15-04-PLAN.md — Scheduler refactor: scan-level event collection + single digest dispatch + cooldown gate + last_notified_at commit + human verification checkpoint (NOTIF-01/02/03/04)
 
 ### Phase 16: Branding Polish (UI hint)
 **Goal**: Logo parity + refined scrollbars across every surface
