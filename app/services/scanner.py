@@ -77,6 +77,13 @@ async def scan_item(db: Session, item: WishlistItem, track: bool = False) -> lis
             .first()
         )
         if existing:
+            # Snapshot previous state before overwriting (NOTIF-01, NOTIF-02)
+            existing.prev_price = existing.price
+            existing.prev_is_in_stock = existing.is_in_stock
+            # Update current values from scan result
+            new_price = result.get("price")
+            if new_price is not None:
+                existing.price = new_price
             new_stock = result.get("is_in_stock")
             if new_stock is not None:
                 existing.is_in_stock = new_stock
