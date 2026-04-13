@@ -2,7 +2,7 @@
 
 **Milestone goal:** Fix the quality issues killing daily usefulness — filter noisy/irrelevant results, give consistent feedback on every action, finish the UI polish arc, and close out security hygiene.
 
-**Status:** Defined 2026-04-13. Ready for roadmap.
+**Status:** Defined 2026-04-13. Roadmap created 2026-04-12.
 
 ---
 
@@ -69,28 +69,26 @@ See `.planning/FUTURE-MILESTONES.md` for the full roadmap. High level:
 
 ## Traceability
 
-Filled by roadmap.
-
 | REQ-ID | Phase | Status |
 |--------|-------|--------|
-| FILTER-01 | — | Pending |
-| FILTER-02 | — | Pending |
-| FILTER-03 | — | Pending |
-| FEEDBACK-01 | — | Pending |
-| FEEDBACK-02 | — | Pending |
-| FEEDBACK-03 | — | Pending |
-| NOTIF-01 | — | Pending |
-| NOTIF-02 | — | Pending |
-| NOTIF-03 | — | Pending |
-| NOTIF-04 | — | Pending |
-| BRAND-01 | — | Pending |
-| BRAND-02 | — | Pending |
-| BRAND-03 | — | Pending |
-| SEC-01 | — | Pending |
-| SEC-02 | — | Pending |
-| SEC-03 | — | Pending |
-| SEC-04 | — | Pending |
-| SEC-05 | — | Pending |
+| FILTER-01 | Phase 13 | Pending |
+| FILTER-02 | Phase 13 | Pending |
+| FILTER-03 | Phase 13 | Pending |
+| FEEDBACK-01 | Phase 14 | Pending |
+| FEEDBACK-02 | Phase 14 | Pending |
+| FEEDBACK-03 | Phase 14 | Pending |
+| NOTIF-01 | Phase 15 | Pending |
+| NOTIF-02 | Phase 15 | Pending |
+| NOTIF-03 | Phase 15 | Pending |
+| NOTIF-04 | Phase 15 | Pending |
+| BRAND-01 | Phase 16 | Pending |
+| BRAND-02 | Phase 16 | Pending |
+| BRAND-03 | Phase 16 | Pending |
+| SEC-01 | Phase 17 | Pending |
+| SEC-02 | Phase 17 | Pending |
+| SEC-03 | Phase 17 | Pending |
+| SEC-04 | Phase 17 | Pending |
+| SEC-05 | Phase 17 | Pending |
 
 ---
-*Last updated: 2026-04-13*
+*Last updated: 2026-04-12 — phase mappings added (v1.2 roadmap)*

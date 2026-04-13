@@ -4,6 +4,59 @@
 
 - ✅ **v1.0 MVP** — Phases 1–5 (shipped 2026-04-05)
 - ✅ **v1.1 UX Polish & Album Selection** — Phases 6–12 (shipped 2026-04-11)
+- 🚧 **v1.2 Signal & Polish** — Phases 13–17 (in progress)
+
+## v1.2 Phases
+
+### Phase 13: Signal Filters
+**Goal**: Only relevant, physical, accurately-located listings reach the user
+**Depends on**: Nothing (foundational — clean data unblocks all downstream phases)
+**Requirements**: FILTER-01, FILTER-02, FILTER-03
+**Success Criteria**:
+  1. Listings scoring below relevance threshold are hidden from dashboard and detail view
+  2. Digital-only listings (MP3, FLAC, "File", Bandcamp digital) never appear in scan results
+  3. Discogs listings display the correct seller location string (not "no location")
+  4. Baseline listing count per source does not drop by more than the expected filter rate
+
+### Phase 14: Feedback Primitives (UI hint)
+**Goal**: Every user action produces consistent CRATE-styled feedback
+**Depends on**: Nothing (UI-only, but ships after Phase 13 so toast counts reflect filtered data)
+**Requirements**: FEEDBACK-01, FEEDBACK-02, FEEDBACK-03
+**Success Criteria**:
+  1. Clicking scan-now on an individual item shows a spinner then a toast with result count
+  2. "Item added, scanning…" uses the same CRATE toast/modal primitive as other feedback
+  3. Opening the add-item modal defaults the type selector to "album"
+  4. iOS Shortcut API default unchanged (UI-only default)
+
+### Phase 15: Notification Expansion
+**Goal**: Users receive deduped back-in-stock + price-drop alerts as unified digest emails
+**Depends on**: Phase 13 (needs clean filtered data to avoid noisy alerts)
+**Requirements**: NOTIF-01, NOTIF-02, NOTIF-03, NOTIF-04
+**Success Criteria**:
+  1. A listing transitioning out-of-stock → in-stock triggers a back-in-stock alert
+  2. A listing's price dropping vs prior scan triggers a price-drop alert
+  3. Repeat events within the cool-down window do not re-send
+  4. Multiple events from one scan arrive in a single digest email
+
+### Phase 16: Branding Polish (UI hint)
+**Goal**: Logo parity + refined scrollbars across every surface
+**Depends on**: Nothing (parallelizable with Phase 15)
+**Requirements**: BRAND-01, BRAND-02, BRAND-03
+**Success Criteria**:
+  1. Site nav shows the new logo
+  2. Email header logo matches the site logo visually
+  3. Custom scrollbars render in Firefox (`scrollbar-*`) and Webkit (`::-webkit-scrollbar`)
+
+### Phase 17: Security Audit
+**Goal**: Locked-scope hygiene capstone over all v1.2 surface area
+**Depends on**: Phases 13–16 complete (audits final surface)
+**Requirements**: SEC-01, SEC-02, SEC-03, SEC-04, SEC-05
+**Success Criteria**:
+  1. API key comparison uses `hmac.compare_digest`
+  2. `pip-audit` reports zero unresolved high/critical advisories
+  3. Web mutation routes reject requests without valid CSRF token
+  4. Logs and error responses contain no secrets or PII
+  5. Public-facing endpoints have documented rate-limit posture
 
 ## Phases
 
