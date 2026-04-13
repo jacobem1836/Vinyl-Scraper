@@ -255,14 +255,6 @@
     // Initialize typeahead for add and edit modals
     const addTypeSelect = document.querySelector('#addItemModal select[name="type"]');
     if (addTypeSelect) initTypeahead('add', addTypeSelect);
-
-    // Reset add-item modal Type to 'album' on every open (capture phase so it fires before openModal)
-    const openAddBtn = document.getElementById('openAddItemBtn');
-    if (openAddBtn && addTypeSelect) {
-      openAddBtn.addEventListener('click', () => {
-        addTypeSelect.value = 'album';
-      }, true);
-    }
     const editTypeSelect = document.getElementById('editType');
     if (editTypeSelect) initTypeahead('edit', editTypeSelect);
 

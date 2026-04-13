@@ -22,23 +22,9 @@ Key outcomes:
 - Self-hosted brand font; no CDN dependency
 - Two rounds of visual fixes (Phases 11, 12) consolidating polish
 
-## Current Milestone: v1.2 Signal & Polish
+## Next Milestone
 
-**Goal:** Fix the quality issues killing daily usefulness — filter noisy/irrelevant results, give consistent feedback on every action, and finish the UI polish arc.
-
-**Target features:**
-- Filter irrelevant listings (relevance scoring by title match)
-- Filter out digital-only listings
-- Fix Discogs seller location display ("no location" bug)
-- Scan-now feedback for individual items (spinner/toast matching CRATE)
-- "Item added, scanning…" dialog consistency with CRATE system
-- Default type = "album" when opening add-item modal
-- Logo change + email logo matches real logo
-- Email UI: additional notification types (back-in-stock, price drop, deal)
-- Prettier scrollbars
-- Security audit pass
-
-Future milestones (v1.3 Media Expansion, v1.4 Identity & Auto-Populate, v1.5 AI Aggregation + Geography, v1.6 Mobile App + Spine View) tracked in `.planning/FUTURE-MILESTONES.md`.
+*Not yet scoped.* Candidate directions: reliability/monitoring, new scraping sources, purchase workflow, mobile-first web view. Scope with `/gsd-new-milestone` when ready.
 
 <details>
 <summary>Prior milestone brief: v1.1 UX Polish & Album Selection</summary>

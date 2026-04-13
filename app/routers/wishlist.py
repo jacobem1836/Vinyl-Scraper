@@ -26,7 +26,7 @@ async def _scan_in_background(item_id: int) -> None:
         if item:
             new_listings = await scanner.scan_item(db, item)
             if item.notify_email and new_listings:
-                await notifier._send_deal_email(item, new_listings)
+                await notifier.send_deal_email(item, new_listings)
     finally:
         invalidate_dashboard_cache()
         db.close()
@@ -35,18 +35,6 @@ async def _scan_in_background(item_id: int) -> None:
 async def require_api_key(x_api_key: str = Header(...)):
     if x_api_key != settings.api_key:
         raise HTTPException(status_code=401, detail="Invalid API key")
-
-
-def _effective_threshold(item: WishlistItem) -> float:
-    """D-06: per-item override falls back to global default."""
-    return item.relevance_threshold if item.relevance_threshold is not None else settings.relevance_threshold_default
-
-
-def _passes_relevance(listing: Listing, threshold: float) -> bool:
-    """D-07: listings without a score (legacy rows) pass through — they were scraped before scoring existed."""
-    if listing.relevance_score is None:
-        return True
-    return listing.relevance_score >= threshold
 
 
 def _landed(listing, fx_rates: dict | None = None) -> float:
@@ -62,8 +50,7 @@ def _landed(listing, fx_rates: dict | None = None) -> float:
 
 
 def _enrich_item(item: WishlistItem, fx_rates: dict | None = None) -> dict:
-    thr = _effective_threshold(item)
-    all_listings = [l for l in (item.listings or []) if _passes_relevance(l, thr)]
+    all_listings = list(item.listings or [])
     active_priced = [l for l in all_listings if l.is_active and l.price is not None]
 
     sorted_by_landed = sorted(active_priced, key=lambda l: _landed(l, fx_rates)) if active_priced else []
@@ -180,11 +167,9 @@ async def scan_single_item_web(item_id: int, db: Session = Depends(get_db)):
     new_listings = await scanner.scan_item(db, item)
 
     if item.notify_email and new_listings:
-        _thr = _effective_threshold(item)
-        _filtered = [l for l in (item.listings or []) if _passes_relevance(l, _thr)]
-        notifiable = [l for l in new_listings if _passes_relevance(l, _thr) and notifier.should_notify(item, l, _filtered)]
+        notifiable = [l for l in new_listings if notifier.should_notify(item, l, list(item.listings or []))]
         if notifiable:
-            await notifier._send_deal_email(item, notifiable)
+            await notifier.send_deal_email(item, notifiable)
 
     return RedirectResponse(url=f"/item/{item_id}?toast={len(new_listings)}+new+listings+found", status_code=303)
 
@@ -210,11 +195,9 @@ async def scan_all_items_web(db: Session = Depends(get_db)):
             .all()
         )
 
-        _thr = _effective_threshold(item)
-        _filtered = [l for l in (item.listings or []) if _passes_relevance(l, _thr)]
-        notifiable = [l for l in recent_new if _passes_relevance(l, _thr) and notifier.should_notify(item, l, _filtered)]
+        notifiable = [l for l in recent_new if notifier.should_notify(item, l, list(item.listings or []))]
         if notifiable:
-            await notifier._send_deal_email(item, notifiable)
+            await notifier.send_deal_email(item, notifiable)
 
     return RedirectResponse(url=f"/?toast={summary['new_listings_found']}+new+listings+found", status_code=303)
 
@@ -358,8 +341,6 @@ async def list_item_listings_api(item_id: int, db: Session = Depends(get_db)):
         .order_by(Listing.price.asc().nullslast())
         .all()
     )
-    thr = _effective_threshold(item)
-    listings = [l for l in listings if _passes_relevance(l, thr)]
     return listings
 
 

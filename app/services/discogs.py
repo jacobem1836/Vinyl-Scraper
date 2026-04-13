@@ -14,31 +14,6 @@ def _get_headers() -> dict:
     }
 
 
-async def _fetch_ships_from(client: httpx.AsyncClient, release_id: int) -> str | None:
-    """Fetch the cheapest marketplace listing for a release and return its ships_from.
-
-    Per D-10/D-11: authoritative location source is the marketplace listing.
-    Per D-12: single call, no retries; failures log and return None.
-    """
-    try:
-        resp = await client.get(
-            f"{BASE_URL}/marketplace/search",
-            params={"release_id": release_id, "sort": "price,asc", "per_page": 1},
-            headers=_get_headers(),
-        )
-        if resp.status_code != 200:
-            print(f"[Discogs] marketplace ships_from lookup failed for release {release_id}: HTTP {resp.status_code}")
-            return None
-        listings = resp.json().get("listings", [])
-        if not listings:
-            return None
-        ships_from = listings[0].get("ships_from")
-        return ships_from if isinstance(ships_from, str) and ships_from.strip() else None
-    except Exception as e:
-        print(f"[Discogs] marketplace ships_from error for release {release_id}: {e}")
-        return None
-
-
 def _build_listing(title: str, release_id: int, lowest_price: float) -> dict:
     return {
         "source": "discogs",
@@ -132,8 +107,6 @@ async def _get_release_listings(release_id: int, max_results: int = 5) -> list[d
                 listing = _build_listing(title=title, release_id=release_id, lowest_price=lowest_price)
                 if cover_uri:
                     listing["_cover_image"] = cover_uri
-                await asyncio.sleep(0.5)
-                listing["ships_from"] = await _fetch_ships_from(client, release_id)
                 listings.append(listing)
             return listings
     except Exception as e:
@@ -199,10 +172,7 @@ async def _get_album_listings(query: str, max_results: int) -> list[dict]:
                 lowest_price = detail.get("lowest_price")
 
                 if num_for_sale > 0 and lowest_price is not None:
-                    l = _build_listing(title=title, release_id=release_id, lowest_price=lowest_price)
-                    await asyncio.sleep(0.5)
-                    l["ships_from"] = await _fetch_ships_from(client, release_id)
-                    listings.append(l)
+                    listings.append(_build_listing(title=title, release_id=release_id, lowest_price=lowest_price))
                     if len(listings) >= max_results:
                         break
 
@@ -274,10 +244,7 @@ async def _get_artist_listings(query: str, max_results: int) -> list[dict]:
                 lowest_price = detail.get("lowest_price")
 
                 if num_for_sale > 0 and lowest_price is not None:
-                    l = _build_listing(title=title, release_id=release_id, lowest_price=lowest_price)
-                    await asyncio.sleep(0.5)
-                    l["ships_from"] = await _fetch_ships_from(client, release_id)
-                    listings.append(l)
+                    listings.append(_build_listing(title=title, release_id=release_id, lowest_price=lowest_price))
                     if len(listings) >= max_results:
                         break
 
@@ -349,10 +316,7 @@ async def _get_label_listings(query: str, max_results: int) -> list[dict]:
                 lowest_price = detail.get("lowest_price")
 
                 if num_for_sale > 0 and lowest_price is not None:
-                    l = _build_listing(title=title, release_id=release_id, lowest_price=lowest_price)
-                    await asyncio.sleep(0.5)
-                    l["ships_from"] = await _fetch_ships_from(client, release_id)
-                    listings.append(l)
+                    listings.append(_build_listing(title=title, release_id=release_id, lowest_price=lowest_price))
                     if len(listings) >= max_results:
                         break
 
