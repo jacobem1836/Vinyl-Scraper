@@ -17,6 +17,11 @@
   2. Digital-only listings (MP3, FLAC, "File", Bandcamp digital) never appear in scan results
   3. Discogs listings display the correct seller location string (not "no location")
   4. Baseline listing count per source does not drop by more than the expected filter rate
+**Plans**: 3 plans
+Plans:
+- [x] 13-01-PLAN.md — Foundation: rapidfuzz dep, config default, schema migrations, relevance + digital_filter helper modules
+- [x] 13-02-PLAN.md — Discogs ships_from population via /marketplace/search (FILTER-03)
+- [x] 13-03-PLAN.md — Wire digital drop + relevance scoring into scanner; apply threshold filter in router query path (FILTER-01, FILTER-02)
 
 ### Phase 14: Feedback Primitives (UI hint)
 **Goal**: Every user action produces consistent CRATE-styled feedback
