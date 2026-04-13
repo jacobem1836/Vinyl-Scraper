@@ -26,7 +26,7 @@ async def _scan_in_background(item_id: int) -> None:
         if item:
             new_listings = await scanner.scan_item(db, item)
             if item.notify_email and new_listings:
-                await notifier.send_deal_email(item, new_listings)
+                await notifier._send_deal_email(item, new_listings)
     finally:
         invalidate_dashboard_cache()
         db.close()
@@ -184,7 +184,7 @@ async def scan_single_item_web(item_id: int, db: Session = Depends(get_db)):
         _filtered = [l for l in (item.listings or []) if _passes_relevance(l, _thr)]
         notifiable = [l for l in new_listings if _passes_relevance(l, _thr) and notifier.should_notify(item, l, _filtered)]
         if notifiable:
-            await notifier.send_deal_email(item, notifiable)
+            await notifier._send_deal_email(item, notifiable)
 
     return RedirectResponse(url=f"/item/{item_id}?toast={len(new_listings)}+new+listings+found", status_code=303)
 
@@ -214,7 +214,7 @@ async def scan_all_items_web(db: Session = Depends(get_db)):
         _filtered = [l for l in (item.listings or []) if _passes_relevance(l, _thr)]
         notifiable = [l for l in recent_new if _passes_relevance(l, _thr) and notifier.should_notify(item, l, _filtered)]
         if notifiable:
-            await notifier.send_deal_email(item, notifiable)
+            await notifier._send_deal_email(item, notifiable)
 
     return RedirectResponse(url=f"/?toast={summary['new_listings_found']}+new+listings+found", status_code=303)
 

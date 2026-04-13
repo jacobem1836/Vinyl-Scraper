@@ -23,7 +23,7 @@ def setup_scheduler():
                 if item.notify_email and new_listings:
                     notifiable = [l for l in new_listings if notifier.should_notify(item, l, list(item.listings or []))]
                     if notifiable:
-                        await notifier.send_deal_email(item, notifiable)
+                        await notifier._send_deal_email(item, notifiable)
 
             await asyncio.gather(*[_scan_one(item) for item in items], return_exceptions=True)
             invalidate_dashboard_cache()

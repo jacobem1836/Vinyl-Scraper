@@ -1,6 +1,7 @@
 import asyncio
 import re
 import smtplib
+from datetime import datetime, timedelta
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 
@@ -87,7 +88,7 @@ def _send_smtp(
         server.sendmail(from_addr, to_addr, msg.as_string())
 
 
-async def send_deal_email(item: WishlistItem, new_listings: list[Listing]) -> bool:
+async def _send_deal_email(item: WishlistItem, new_listings: list[Listing]) -> bool:
     if not settings.smtp_user or not settings.smtp_password or not settings.notify_email:
         return False
 
@@ -156,4 +157,83 @@ async def send_deal_email(item: WishlistItem, new_listings: list[Listing]) -> bo
         return True
     except Exception as e:
         print(f"[Notifier] Failed to send email: {e}")
+        return False
+
+
+# ---------------------------------------------------------------------------
+# Phase 15 notification helpers (NOTIF-01, NOTIF-02, NOTIF-03, NOTIF-04)
+# ---------------------------------------------------------------------------
+
+
+def _price_dropped(listing: Listing, item: WishlistItem) -> bool:
+    """Return True if listing price dropped beyond threshold since last scan (D-05)."""
+    if listing.prev_price is None or listing.price is None:
+        return False  # first scan or no price data — skip
+    if listing.prev_price <= listing.price:
+        return False  # price did not drop
+    mode = item.notify_drop_mode or "pct"
+    if mode == "pct":
+        threshold = item.notify_drop_pct if item.notify_drop_pct is not None else settings.notify_drop_pct_default
+        drop_pct = (listing.prev_price - listing.price) / listing.prev_price * 100
+        return drop_pct >= threshold
+    threshold = item.notify_drop_usd if item.notify_drop_usd is not None else settings.notify_drop_usd_default
+    return (listing.prev_price - listing.price) >= threshold
+
+
+def _back_in_stock(listing: Listing) -> bool:
+    """Return True if listing transitioned from out-of-stock to in-stock (D-06).
+
+    prev_is_in_stock must be explicitly False — None means first scan, skip.
+    """
+    return listing.prev_is_in_stock is False and listing.is_in_stock is True
+
+
+def _within_cooldown(last_notified_at: datetime | None) -> bool:
+    """Return True if last_notified_at is within the configured cooldown window (D-08/D-09)."""
+    if last_notified_at is None:
+        return False
+    return (datetime.utcnow() - last_notified_at) < timedelta(hours=settings.notify_cooldown_hours)
+
+
+async def send_digest_email(digest_items: list[tuple[WishlistItem, dict]]) -> bool:
+    """Send a single scan-level digest email covering all qualifying events (D-11, D-14).
+
+    digest_items: list of (WishlistItem, events_dict) where events_dict has keys:
+        "deal_alerts": [Listing]
+        "price_drops": [(Listing, prev_price, new_price)]
+        "back_in_stock": [Listing]
+
+    Returns False if no events exist or SMTP credentials are missing.
+    """
+    if not digest_items:
+        return False
+
+    total_events = sum(
+        len(ev.get("deal_alerts", [])) + len(ev.get("price_drops", [])) + len(ev.get("back_in_stock", []))
+        for _, ev in digest_items
+    )
+    if total_events == 0:
+        return False
+
+    if not settings.smtp_user or not settings.smtp_password or not settings.notify_email:
+        return False
+
+    subject = f"[CRATE] Scan digest: {total_events} events across {len(digest_items)} items"
+    template = _email_env.get_template("digest_alert.html")
+    html_body = template.render(digest_items=digest_items, total_events=total_events)
+    try:
+        await asyncio.to_thread(
+            _send_smtp,
+            subject,
+            html_body,
+            settings.smtp_user,
+            settings.notify_email,
+            settings.smtp_host,
+            settings.smtp_port,
+            settings.smtp_user,
+            settings.smtp_password,
+        )
+        return True
+    except Exception as e:
+        print(f"[Notifier] Failed to send digest email: {e}")
         return False
