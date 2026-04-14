@@ -25,9 +25,9 @@
 
 :root {
   /* Colour — background / surface */
-  --color-bg:           #000000;
-  --color-surface:      #000000;
-  --color-surface-alt:  #000000;
+  --color-bg:           #0d0b0a;
+  --color-surface:      #141210;
+  --color-surface-alt:  #0d0b0a;
 
   /* Colour — borders */
   --color-border:       #222222;
@@ -43,7 +43,7 @@
   --color-accent-hover: #e0e0e0;
   --color-accent-bg:    rgba(255,255,255,0.08);
   --color-accent-cta:   #ffffff;
-  --color-cta-text:     #000000;
+  --color-cta-text:     #0d0b0a;
 
   /* Colour — destructive */
   --color-destructive:        #c46060;
@@ -637,7 +637,7 @@ button, input, select, textarea {
   position: relative;
   aspect-ratio: 1 / 1;
   width: 100%;
-  background: linear-gradient(90deg, #0a0a0a 25%, #141414 50%, #0a0a0a 75%);
+  background: linear-gradient(90deg, #1a1a1a 25%, #2a2a2a 50%, #1a1a1a 75%);
   background-size: 200% 100%;
   animation: skeleton-pulse 1.2s ease-in-out infinite;
 }
@@ -821,24 +821,25 @@ button, input, select, textarea {
 /* ============================================================
    19. Scrollbar — B&W palette (D-17)
    ============================================================ */
-/* Global WebKit scrollbar */
-::-webkit-scrollbar { width: 4px; height: 4px; }
-::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.2); border-radius: 0; }
-::-webkit-scrollbar-thumb:hover { background: rgba(255, 255, 255, 0.4); }
+::-webkit-scrollbar {
+  width: 6px;
+}
 
-/* Scoped — typeahead dropdown */
-.typeahead-dropdown::-webkit-scrollbar,
-.table-container::-webkit-scrollbar { width: 4px; height: 4px; }
-.typeahead-dropdown::-webkit-scrollbar-track,
-.table-container::-webkit-scrollbar-track { background: transparent; }
-.typeahead-dropdown::-webkit-scrollbar-thumb,
-.table-container::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.2); border-radius: 0; }
-.typeahead-dropdown::-webkit-scrollbar-thumb:hover,
-.table-container::-webkit-scrollbar-thumb:hover { background: rgba(255, 255, 255, 0.4); }
+::-webkit-scrollbar-track {
+  background: #1a1a1a;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #444444;
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #666666;
+}
 
 /* Firefox scrollbar */
 html {
   scrollbar-width: thin;
-  scrollbar-color: rgba(255, 255, 255, 0.2) transparent;
+  scrollbar-color: #444444 #1a1a1a;
 }
