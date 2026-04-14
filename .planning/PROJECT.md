@@ -23,9 +23,19 @@ Key outcomes:
 - Consistent `#toast` feedback primitive for all user actions; modal type defaults to "album"
 - 9 unit tests covering all notification scenarios
 
-## Next Milestone
+## Current Milestone: v1.3 Visual Overhaul
 
-*Not yet scoped.* Candidate directions: purchase workflow integration, Clarity Records re-enable, per-item notification thresholds, mobile-first web view, admin/monitoring dashboard. Scope with `/gsd-new-milestone` when ready.
+**Goal:** Cohesive visual refresh — Warner Music–inspired aesthetic on a true black palette, typography hierarchy where item name outranks price, custom scrollbars, and two targeted UI consistency fixes. No backend/data changes.
+
+**Target features:**
+- True black background + Warner Music–inspired palette/spacing
+- Custom-styled scrollbars
+- Font swap to thinner/crispier typeface
+- Type hierarchy: item name > price on cards
+- Fix "scanning in background" message to use standard toast primitive
+- Replace item-detail placeholder image with new empty vinyl asset
+
+Deferred items (auth, streaming integrations, mobile + Spine View, notification expansion, security audit) live in `.planning/FUTURE.md`.
 
 <details>
 <summary>Prior milestone brief: v1.2 Signal Intelligence & Notifications</summary>
@@ -101,7 +111,15 @@ Key outcomes:
 
 ### Active
 
-_None — v1.2 shipped. Next milestone not yet scoped._
+v1.3 Visual Overhaul:
+- [ ] **VIS-01**: True black background
+- [ ] **VIS-02**: Custom-styled scrollbars
+- [ ] **VIS-03**: Warner Music–inspired aesthetic direction
+- [ ] **TYPO-01**: Thinner/crispier typeface
+- [ ] **TYPO-02**: Item name > price hierarchy on cards
+- [ ] **TYPO-03**: Hierarchy applied across dashboard, detail, modals
+- [ ] **FIX-01**: Scan-in-background message uses standard toast primitive
+- [ ] **FIX-02**: Item detail placeholder image updated
 
 ### Out of Scope
 
@@ -154,4 +172,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-04-14 — v1.2 milestone shipped (Phases 13–15)*
+*Last updated: 2026-04-14 — v1.3 milestone started (Phases 16–18)*
