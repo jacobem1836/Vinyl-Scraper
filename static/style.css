@@ -108,8 +108,8 @@
   --text-label:             12px;   /* metadata, badges, secondary labels */
   --text-sm:                14px;   /* kept for backward compat — per D-07 */
   --text-body:              16px;   /* body text, card titles, table cells */
-  --text-title:             18px;   /* card album names — subordinate to artwork */
-  --text-price:             28px;   /* core value signal */
+  --text-title:             23px;   /* card album names — primary visual hero (D-05/D-06) */
+  --text-price:             17px;   /* supporting detail under the name (D-05/D-06) */
   --text-heading:           24px;   /* page-level headings — reverted from 36px */
   --text-subheading:        20px;   /* H2 section headings, stats bar values — reverted */
   --text-heading-secondary: 20px;   /* "All Listings" — matches subheading */
