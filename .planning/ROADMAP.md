@@ -10,7 +10,7 @@ Cohesive visual refresh: Warner Music–inspired aesthetic, true black palette, 
 
 | # | Phase | Goal | Requirements | Success Criteria |
 |---|-------|------|--------------|------------------|
-| 16 | Visual Foundation | True black palette + scrollbar styling + Warner Music direction | VIS-01, VIS-02, VIS-03 | 3 |
+| 16 | Visual Foundation | 1/2 | In Progress|  |
 | 17 | Typography Overhaul | Thinner/crispier font + item-name > price hierarchy | TYPO-01, TYPO-02, TYPO-03 | 3 |
 | 18 | UI Consistency Fixes | Scan toast unification + item-detail placeholder image | FIX-01, FIX-02 | 2 |
 
@@ -21,6 +21,11 @@ Cohesive visual refresh: Warner Music–inspired aesthetic, true black palette, 
 **Goal:** Shift the visual foundation to a true black, Warner Music–inspired aesthetic and style scrollbars to match.
 
 **Requirements:** VIS-01, VIS-02, VIS-03
+
+**Plans:** 1/2 plans executed
+
+- [x] 16-01-PLAN.md — True black palette, skeleton pulse, and scrollbar rework
+- [ ] 16-02-PLAN.md — Visual verification (human sign-off on VIS-01/02/03)
 
 **Success criteria:**
 1. Dashboard, item detail, and modal surfaces render on `#000` — no near-black fallbacks
@@ -34,6 +39,12 @@ Cohesive visual refresh: Warner Music–inspired aesthetic, true black palette, 
 **Goal:** Swap body/card typography to a thinner, crispier typeface and apply a hierarchy where item name is larger and heavier than price.
 
 **Requirements:** TYPO-01, TYPO-02, TYPO-03
+
+**Plans:** 3 plans
+
+- [ ] 17-01-PLAN.md — Self-host Gothic A1 woff2, swap @font-face + --font-sans + preload (TYPO-01)
+- [ ] 17-02-PLAN.md — Invert typography tokens and utility weights for name > price hierarchy (TYPO-02, TYPO-03)
+- [ ] 17-03-PLAN.md — Visual verification (human sign-off on TYPO-01/02/03)
 
 **Success criteria:**
 1. New typeface loaded and applied across cards, dashboard, and item detail
