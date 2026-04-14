@@ -53,19 +53,14 @@ Exceptions: none. Border-radius tokens are also unchanged (`--radius-card: 0px`,
 
 ## Typography
 
-Unchanged this phase (Phase 17 owns the type overhaul). Declared here for checker completeness.
+> **Typography is out of scope for Phase 16.** No type changes are introduced. Phase 17 (Typography Overhaul) owns the type contract. The existing scale is referenced here for orientation only and is not a declaration governed by this phase.
 
-| Role | Token | Size | Weight | Line Height |
-|------|-------|------|--------|-------------|
-| Label / metadata | `--text-label` | 12px | 400 | 1.4 |
-| Small / compat | `--text-sm` | 14px | 400 | 1.5 |
-| Body | `--text-body` | 16px | 400 | 1.5 |
-| Card title | `--text-title` | 18px | 400–600 | 1.3 |
-| Subheading / stats | `--text-subheading` | 20px | 600 | 1.2 |
-| Price / value signal | `--text-price` | 28px | 600 | 1.2 |
-| Page heading | `--text-heading` | 24px | 700 | 1.2 |
+| Role | Token | Size | Weight | Line Height | Status |
+|------|-------|------|--------|-------------|--------|
+| Body | `--text-body` | 16px | 400 | 1.5 | reference only / unchanged |
+| Label / metadata | `--text-label` | 12px | 400 | 1.4 | reference only / unchanged |
 
-Font families: `--font-sans` (Inter), `--font-display` (Bodoni Moda). Body uses `--font-sans`.
+Font families: `--font-sans` (Inter), `--font-display` (Bodoni Moda). Body uses `--font-sans`. Both are unchanged this phase.
 
 Source: `static/style.css` `:root` block (lines 92–103) and `body` rule (line 114).
 
