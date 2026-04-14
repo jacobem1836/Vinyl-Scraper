@@ -637,7 +637,7 @@ button, input, select, textarea {
   position: relative;
   aspect-ratio: 1 / 1;
   width: 100%;
-  background: linear-gradient(90deg, #1a1a1a 25%, #2a2a2a 50%, #1a1a1a 75%);
+  background: linear-gradient(90deg, #0a0a0a 25%, #141414 50%, #0a0a0a 75%);
   background-size: 200% 100%;
   animation: skeleton-pulse 1.2s ease-in-out infinite;
 }
