@@ -117,18 +117,24 @@ async def scan_all_items(db: Session, track: bool = False) -> dict:
 
     async def _scan(item: WishlistItem) -> dict:
         async with semaphore:
-            new_listings = await scan_item(db, item, track=track)
-            count = len(new_listings)
-            return {"id": item.id, "query": item.query, "new_listings": count}
+            try:
+                new_listings = await scan_item(db, item, track=track)
+                count = len(new_listings)
+                return {"id": item.id, "query": item.query, "new_listings": count}
+            except Exception as e:
+                print(f"[Scanner] error scanning '{item.query}': {e}")
+                if track:
+                    scan_status.item_finished(item.id, item.query, 0, item.type)
+                return {"id": item.id, "query": item.query, "new_listings": 0, "error": str(e)}
 
-    results = await asyncio.gather(*[_scan(item) for item in items])
-
-    for r in results:
-        summary_items.append(r)
-        total_new_listings += r["new_listings"]
-
-    if track:
-        scan_status.finish()
+    try:
+        results = await asyncio.gather(*[_scan(item) for item in items], return_exceptions=False)
+        for r in results:
+            summary_items.append(r)
+            total_new_listings += r["new_listings"]
+    finally:
+        if track:
+            scan_status.finish()
 
     return {
         "items_scanned": len(items),
