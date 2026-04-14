@@ -23,7 +23,7 @@ def get_db():
 
 def run_migrations():
     """Safely add new columns to existing databases."""
-    with engine.connect() as conn:
+    with engine.connect().execution_options(isolation_level="AUTOCOMMIT") as conn:
         # Add notify_below_pct if it doesn't exist (replaces price_ceiling)
         try:
             conn.execute(text("ALTER TABLE wishlist_items ADD COLUMN notify_below_pct REAL NOT NULL DEFAULT 20.0"))
