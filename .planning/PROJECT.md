@@ -4,7 +4,7 @@
 
 A personal vinyl record wishlist manager that scrapes multiple stores and marketplaces to track prices and availability for records you want to buy. You add records you're after; it finds them across the web, computes landed costs (including shipping to AU), and alerts you to deals. Accessed via a web dashboard and an iOS Shortcut for quick adds.
 
-The app shipped v1.0 as a polished personal tool and v1.1 sharpened UX: CRATE design system, 7 scraping sources, async scanning, Discogs typeahead, warm B&W palette, and a redesigned email template.
+The app shipped v1.0 as a polished personal tool, v1.1 sharpened UX with CRATE design system and Discogs typeahead, and v1.2 added signal intelligence (relevance filtering, ships_from) and a full notification system (back-in-stock, price-drop digest emails).
 
 ## Core Value
 
@@ -12,19 +12,33 @@ Show me the cheapest way to buy the records I want, right now.
 
 ## Current State
 
-**Latest milestone:** v1.1 UX Polish & Album Selection — shipped 2026-04-11 (Phases 6–12)
+**Latest milestone:** v1.2 Signal Intelligence & Notifications — shipped 2026-04-14 (Phases 13–15)
 
 Key outcomes:
-- Discogs typeahead with pinned-release scanning on add/edit
-- Warm B&W palette, Inter body + Bodoni Moda display, card system with hover-reveal deals
-- Store images prioritized over Discogs fallback; scan-log type labels corrected
-- Deal alert emails redesigned with inline CSS + CRATE aesthetic
-- Self-hosted brand font; no CDN dependency
-- Two rounds of visual fixes (Phases 11, 12) consolidating polish
+- Relevance scoring and digital listing filter suppress noise; results ranked by match quality
+- `ships_from` enriched from Discogs marketplace API on every scan
+- Back-in-stock and price-drop detection with per-listing snapshot columns
+- Cooldown deduplication prevents duplicate digest sends within configurable window
+- Collect-then-dispatch scheduler: one digest email per scan run covering all events
+- Consistent `#toast` feedback primitive for all user actions; modal type defaults to "album"
+- 9 unit tests covering all notification scenarios
 
 ## Next Milestone
 
-*Not yet scoped.* Candidate directions: reliability/monitoring, new scraping sources, purchase workflow, mobile-first web view. Scope with `/gsd-new-milestone` when ready.
+*Not yet scoped.* Candidate directions: purchase workflow integration, Clarity Records re-enable, per-item notification thresholds, mobile-first web view, admin/monitoring dashboard. Scope with `/gsd-new-milestone` when ready.
+
+<details>
+<summary>Prior milestone brief: v1.2 Signal Intelligence & Notifications</summary>
+
+**Goal:** Reduce listing noise with relevance filtering and geographic enrichment, and add a full alert system for back-in-stock and price-drop events delivered as a single digest email per scan run.
+
+**Delivered:**
+- Relevance scoring + digital listing filter (Phase 13)
+- ships_from enrichment from Discogs marketplace API (Phase 13)
+- Toast feedback consistency + modal type default (Phase 14)
+- Back-in-stock, price-drop detection, cooldown, digest email (Phase 15)
+
+</details>
 
 <details>
 <summary>Prior milestone brief: v1.1 UX Polish & Album Selection</summary>
@@ -39,8 +53,6 @@ Key outcomes:
 - CRATE brand font upgrade
 - Email UI redesign
 - UI polish (typography scale, card hierarchy, focus states, button states, responsive grid, color contrast)
-
-**Design tooling constraint:** magic MCP + stitch + ui-ux-pro-max + design-for-ai were invoked during planning and execution of every UI phase.
 
 </details>
 
@@ -79,9 +91,17 @@ Key outcomes:
 - ✓ **EMAIL-01–03**: Redesigned deal alert email (inline CSS, CRATE aesthetic) — v1.1
 - ✓ **UIP-01–10 / D-01–D-18**: UI polish — typography, card system, palette, states, responsive grid — v1.1
 
+- ✓ **NOTIF-01**: Back-in-stock detection (prev_is_in_stock snapshot, _back_in_stock helper) — v1.2
+- ✓ **NOTIF-02**: Price-drop detection (pct + USD modes, prev_price snapshot, _price_dropped helper) — v1.2
+- ✓ **NOTIF-03**: Cooldown deduplication (last_notified_at, _within_cooldown gate) — v1.2
+- ✓ **NOTIF-04**: Digest email aggregation (send_digest_email, collect-then-dispatch scheduler) — v1.2
+- ✓ **SIG-01**: Relevance scoring + digital listing filter — v1.2
+- ✓ **SIG-02**: ships_from enrichment from Discogs marketplace API — v1.2
+- ✓ **UX-01**: Consistent toast feedback primitive + modal type default — v1.2
+
 ### Active
 
-_None — v1.1 shipped. Next milestone not yet scoped._
+_None — v1.2 shipped. Next milestone not yet scoped._
 
 ### Out of Scope
 
@@ -97,7 +117,7 @@ _None — v1.1 shipped. Next milestone not yet scoped._
 - **Design system:** CRATE — CSS custom properties, near-black palette (#0a0a0a), white accent, sharp edges, 44px touch targets, WCAG AA contrast
 - **Database:** `listings` composite unique on `(wishlist_item_id, url)`; SQLite migration rebuilds table if legacy `UNIQUE (url)` inline constraint detected
 - **iOS Shortcut:** Hits `POST /api/wishlist` with `X-API-Key` header; backward compatible
-- **Codebase:** ~3,400 LOC (Python + HTML + CSS)
+- **Codebase:** ~3,800 LOC (Python + HTML + CSS)
 
 ## Constraints
 
@@ -119,6 +139,9 @@ _None — v1.1 shipped. Next milestone not yet scoped._
 | `UNIQUE (wishlist_item_id, url)` on listings | Same URL valid for multiple wishlist items | Fixes IntegrityError on cross-item scans ✓ Good |
 | SQLite table rebuild migration | Inline UNIQUE can't be dropped otherwise | Handles legacy dev DB automatically ✓ Good |
 | Clarity Records disabled | NXDOMAIN on clarityrecords.com.au | Re-enable when site recovers ⚠ Revisit |
+| Relevance threshold global (not per-item) | Simpler config, avoids per-row settings bloat | Works for single user; revisit if items diverge ⚠ Revisit |
+| Collect-then-dispatch for digest | One email per scan run, not per event | Reduces alert fatigue; tested with 9 unit tests ✓ Good |
+| Cooldown is global hours (not per-item) | Solo tool; consistent behaviour simpler | May need per-item control as wishlist grows — Pending |
 
 ## Evolution
 
@@ -131,4 +154,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-04-12 — v1.1 milestone shipped (Phases 6–12)*
+*Last updated: 2026-04-14 — v1.2 milestone shipped (Phases 13–15)*

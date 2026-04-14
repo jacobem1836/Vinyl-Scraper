@@ -44,6 +44,44 @@
 
 ---
 
+## Milestone: v1.2 — Signal Intelligence & Notifications
+
+**Shipped:** 2026-04-14
+**Phases:** 3 (13–15) | **Plans:** 8
+
+### What Was Built
+- **Signal filtering** — relevance scoring, digital listing suppression, ships_from enrichment from Discogs marketplace API; results ranked at query time
+- **Toast feedback system** — `window.showToast()` helper wired to all user-initiated actions; single `#toast` primitive, no secondary dialogs; modal type resets on every open
+- **Notification expansion** — back-in-stock and price-drop detection with snapshot columns; cooldown gate prevents duplicate sends; collect-then-dispatch scheduler sends one digest per scan run; 9 unit tests
+
+### What Worked
+- TDD approach for Phase 15 (write failing tests first, then implement) produced clean notifier functions with full unit coverage
+- Collect-then-dispatch pattern is a strong architectural win — natural deduplication, no per-listing email churn
+- Verification-first approach (VERIFICATION.md before marking complete) caught missing wiring early
+- Quick task gsd-quick pattern worked well for the ad-hoc scanning toast feature
+
+### What Was Inefficient
+- Quick task worktree accidentally deleted Phase 13–15 planning artifacts (PLAN.md, SUMMARY.md files, ROADMAP.md, REQUIREMENTS.md) — required milestone reconstruction from git log and VERIFICATION.md files
+- `app/services/test_relevance.py` landed in the wrong directory (services/ not tests/) — cleanup deferred
+- Phase 13 planning files were never added to the main ROADMAP.md before the worktree deletion
+
+### Patterns Established
+- **Collect-then-dispatch:** Scheduler collects events from all item scans, then dispatches one digest — avoids per-item email noise and naturally deduplicates
+- **Snapshot column pattern:** `prev_price` + `prev_is_in_stock` written just before overwrite on every scan — simple, no separate history table needed
+- **Toast primitive:** Single `#toast` element for all feedback; server-side `?toast=` redirects feed the same element as JS-driven toasts
+
+### Key Lessons
+1. **Quick task worktrees should never touch planning files** — the .planning/ directory should be excluded from worktree scope or treated as orchestrator-only writes
+2. **TDD for async notification logic pays off** — snapshot + detect + cooldown logic has enough edge cases that tests-first prevents regressions
+3. **Verification docs are the safety net when planning docs are lost** — VERIFICATION.md files survived the worktree deletion and contained enough to reconstruct the milestone
+
+### Cost Observations
+- Model mix: ~100% sonnet
+- Sessions: ~3 across 3 phases
+- Notable: Phase 15 worktree deletion incident added ~30 min for manual restore; total cost was low because git log + VERIFICATION.md had everything needed
+
+---
+
 ## Cross-Milestone Trends
 
 ### Process Evolution
@@ -51,14 +89,20 @@
 | Milestone | Phases | Plans | Key Change |
 |-----------|--------|-------|------------|
 | v1.0 | 5 | 17 | First milestone — baseline established |
+| v1.1 | 7 | 16 | UX polish + Discogs typeahead — design tool stack introduced |
+| v1.2 | 3 | 8 | Signal intelligence + notifications — TDD introduced for notifier |
 
 ### Cumulative Quality
 
 | Milestone | Automated Tests | Human UAT Items | Zero-Dep Additions |
 |-----------|----------------|-----------------|-------------------|
 | v1.0 | 0 (no test suite) | 4 (browser checks) | 0 |
+| v1.1 | 0 | 8 (browser checks) | 0 |
+| v1.2 | 9 (test_notifier.py) | 3 (user-confirmed) | 0 |
 
 ### Top Lessons (Verified Across Milestones)
 
 1. Worktree agent base-commit hygiene is the #1 source of friction in parallel execution
 2. CSS-only phases are the fastest and lowest-risk work units — isolate visual changes when possible
+3. Quick task worktrees must not touch planning files — .planning/ should be orchestrator-only
+4. TDD for notification/detection logic pays off — snapshot + detect + cooldown has enough edge cases to justify tests-first

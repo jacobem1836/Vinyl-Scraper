@@ -231,6 +231,8 @@
         activeEl.innerHTML = s.current.map(function(c) {
           return '<div class="text-muted" style="font-size:var(--text-label)">⟳ ' + escHtml(c.query) + ' <span class="text-faint">(' + escHtml(c.type) + ')</span></div>';
         }).join('');
+        var currentName = (s.current && s.current.length > 0) ? s.current[0].query : 'items';
+        window.showToast('Scanning (' + s.done + '/' + s.total + ') \u2014 ' + currentName, 999999);
       } else {
         spinner.classList.add('hidden');
         pillText.textContent = 'Done — ' + s.new_total + ' new listing' + (s.new_total !== 1 ? 's' : '');
