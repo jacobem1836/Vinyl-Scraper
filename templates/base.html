@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>{% block title %}CRATE{% endblock %}</title>
   <link rel="preload" href="/static/fonts/BodoniModa-Bold.woff2" as="font" type="font/woff2" crossorigin>
-  <link rel="preload" href="/static/fonts/GothicA1-Regular.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="/static/fonts/Inter-VariableFont_opsz,wght.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="stylesheet" href="/static/style.css">
 </head>
 <body>
@@ -255,7 +255,7 @@
     document.addEventListener('DOMContentLoaded', function() {
       fetch('/api/scan/status')
         .then(function(r) { return r.json(); })
-        .then(function(s) { if (s.is_running) { showPanel(); startPolling(); } else if (s.started_at) { showPanel(); renderStatus(s); } })
+        .then(function(s) { if (s.is_running) { showPanel(); startPolling(); } })
         .catch(function(){});
     });
 
