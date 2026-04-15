@@ -61,20 +61,17 @@ Source: `static/style.css` `:root` block — pre-existing tokens, no changes.
 
 ## Typography
 
-Unchanged from Phase 17 output. No type scale changes in this phase.
+This phase introduces no type scale changes. All type tokens are inherited from Phase 17 and are not modified here.
+
+The only surface touched in this phase that renders text is the toast (`#toast`), which uses the inherited body token:
 
 | Role | Size | Weight | Line Height |
 |------|------|--------|-------------|
-| Label | 12px (`--text-label`) | 400 (Gothic A1 Regular) | 1.4 |
-| Body | 16px (`--text-body`) | 400 (Gothic A1 Regular) | 1.5 |
-| Title (card album name) | 23px (`--text-title`) | 350 (Gothic A1 Light) | 1.25 |
-| Price (card price) | 17px (`--text-price`) | 350 (Gothic A1 Light) | 1.3 |
-| Subheading | 20px (`--text-subheading`) | 600 | 1.2 |
-| Heading | 24px (`--text-heading`) | 700 | 1.1 |
+| Body (toast text) | 16px (`--text-body`) | 400 (Gothic A1 Regular) | 1.5 |
 
-Toast text uses body size (16px) at weight 400 via inherited `.toast` styling.
+All other type tokens (label, title, price, subheading, heading) are inherited from Phase 17 and not in scope for this phase. The executor will not touch them.
 
-Source: `static/style.css` `:root` typography tokens + `.text-*` utility classes — pre-existing, no changes.
+Source: `static/style.css` `:root` typography tokens — pre-existing, no changes.
 
 ---
 
