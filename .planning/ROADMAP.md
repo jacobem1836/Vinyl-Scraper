@@ -6,6 +6,7 @@
 - ✅ **v1.1 UX Polish & Album Selection** — Phases 6–12 (shipped 2026-04-12)
 - ✅ **v1.2 Signal Intelligence & Notifications** — Phases 13–15 (shipped 2026-04-14)
 - ✅ **v1.3 Visual Overhaul** — Phases 16–19 (shipped 2026-04-18)
+- 🔄 **v1.4 Quality & Gaps** — Phases 20–24 (in progress)
 
 ## Phases
 
@@ -54,9 +55,70 @@ See archive: `.planning/milestones/v1.3-ROADMAP.md`
 
 </details>
 
-### Next Milestone
+### v1.4 Quality & Gaps (Phases 20–24)
 
-Not yet planned. Run `/gsd-new-milestone` to scope v1.4.
+- [ ] **Phase 20: Cleanup & Config** — Remove dead Clarity code, wire eBay keys
+- [ ] **Phase 21: Bug Fixes** — Fix typeahead spinner, image skeleton shimmer
+- [ ] **Phase 22: Resend Email** — Migrate SMTP to Resend API
+- [ ] **Phase 23: Discogs Release Selection** — Manual release pinning on item detail
+- [ ] **Phase 24: Per-Item Notification Thresholds** — Custom % per wishlist item
+
+## Phase Details
+
+### Phase 20: Cleanup & Config
+**Goal**: The codebase is free of dead Clarity code and eBay works in production
+**Depends on**: Nothing (first v1.4 phase)
+**Requirements**: CLEAN-01, CFG-01
+**Success Criteria** (what must be TRUE):
+  1. `clarity.py` and its adapter registry entry are gone from the codebase
+  2. eBay adapter authenticates successfully in production (Railway env vars present and used)
+  3. A scan with eBay enabled returns listings without auth errors
+**Plans**: TBD
+
+### Phase 21: Bug Fixes
+**Goal**: Typeahead spinner clears reliably and image skeletons use the correct dark shimmer style
+**Depends on**: Phase 20
+**Requirements**: BUG-03, UI-07
+**Success Criteria** (what must be TRUE):
+  1. Selecting a typeahead result hides the spinner immediately
+  2. Changing the type dropdown while typeahead is open hides the spinner immediately
+  3. Image skeletons display a diagonal top-left → bottom-right sweep shimmer (not pulse or glow)
+  4. Skeleton shimmer is visibly dark, matching the true-black card surface
+**Plans**: TBD
+**UI hint**: yes
+
+### Phase 22: Resend Email
+**Goal**: Deal alert emails are sent via the Resend API; SMTP configuration is no longer required
+**Depends on**: Phase 20
+**Requirements**: EMAIL-04
+**Success Criteria** (what must be TRUE):
+  1. A triggered deal alert email arrives in the inbox when sent via Resend
+  2. SMTP environment variables are no longer required for email to function
+  3. Resend API key is read from env vars; no credentials are hardcoded
+**Plans**: TBD
+
+### Phase 23: Discogs Release Selection
+**Goal**: Users can search for and pin a specific Discogs release to a wishlist item, fixing wrong artwork and scan mismatches
+**Depends on**: Phase 20
+**Requirements**: DISC-01, DISC-02, DISC-03
+**Success Criteria** (what must be TRUE):
+  1. User can open item detail and search Discogs releases by title/artist inline
+  2. User can select a release from search results and pin it to the item
+  3. Item detail page shows artwork from the pinned release, not the auto-search result
+  4. Scanning an item with a pinned release ID uses that release ID directly instead of running a title/artist search
+**Plans**: TBD
+**UI hint**: yes
+
+### Phase 24: Per-Item Notification Thresholds
+**Goal**: Each wishlist item can have its own notification threshold, overriding the global default
+**Depends on**: Phase 20
+**Requirements**: NOTIF-05, NOTIF-06
+**Success Criteria** (what must be TRUE):
+  1. User can set a custom % threshold on an individual wishlist item via the edit form
+  2. A wishlist item with a custom threshold triggers alerts at that threshold, not the global one
+  3. A wishlist item without a custom threshold continues to use the global default
+  4. The custom threshold value is visible on item detail so the user knows what's set
+**Plans**: TBD
 
 ## Progress
 
@@ -81,5 +143,10 @@ Not yet planned. Run `/gsd-new-milestone` to scope v1.4.
 | 17. Typography Overhaul | v1.3 | 3/3 | Complete | 2026-04-15 |
 | 18. UI Consistency Fixes | v1.3 | 2/2 | Complete | 2026-04-18 |
 | 19. Card Layout Expansion | v1.3 | 1/1 | Complete | 2026-04-18 |
+| 20. Cleanup & Config | v1.4 | 0/? | Not started | - |
+| 21. Bug Fixes | v1.4 | 0/? | Not started | - |
+| 22. Resend Email | v1.4 | 0/? | Not started | - |
+| 23. Discogs Release Selection | v1.4 | 0/? | Not started | - |
+| 24. Per-Item Notification Thresholds | v1.4 | 0/? | Not started | - |
 
-*Roadmap updated: 2026-04-18 — v1.3 shipped*
+*Roadmap updated: 2026-04-18 — v1.4 Quality & Gaps phases added*

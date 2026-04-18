@@ -79,22 +79,22 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| CLEAN-01 | — | Pending |
-| CFG-01 | — | Pending |
-| BUG-03 | — | Pending |
-| UI-07 | — | Pending |
-| EMAIL-04 | — | Pending |
-| DISC-01 | — | Pending |
-| DISC-02 | — | Pending |
-| DISC-03 | — | Pending |
-| NOTIF-05 | — | Pending |
-| NOTIF-06 | — | Pending |
+| CLEAN-01 | Phase 20 | Pending |
+| CFG-01 | Phase 20 | Pending |
+| BUG-03 | Phase 21 | Pending |
+| UI-07 | Phase 21 | Pending |
+| EMAIL-04 | Phase 22 | Pending |
+| DISC-01 | Phase 23 | Pending |
+| DISC-02 | Phase 23 | Pending |
+| DISC-03 | Phase 23 | Pending |
+| NOTIF-05 | Phase 24 | Pending |
+| NOTIF-06 | Phase 24 | Pending |
 
 **Coverage:**
 - v1.4 requirements: 10 total
-- Mapped to phases: 0
-- Unmapped: 10 ⚠️ (roadmap pending)
+- Mapped to phases: 10
+- Unmapped: 0 ✓
 
 ---
 *Requirements defined: 2026-04-18*
-*Last updated: 2026-04-18 after initial definition*
+*Last updated: 2026-04-18 — traceability populated after v1.4 roadmap creation*
