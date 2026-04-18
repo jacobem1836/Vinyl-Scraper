@@ -1,8 +1,6 @@
 import asyncio
 import re
-import smtplib
-from email.mime.multipart import MIMEMultipart
-from email.mime.text import MIMEText
+import resend
 
 from jinja2 import Environment, FileSystemLoader
 
@@ -61,34 +59,24 @@ def _html_to_plaintext(html_body: str) -> str:
     return "\n".join(lines).strip()
 
 
-def _send_smtp(
-    subject: str,
-    html_body: str,
+def _send_resend(
+    api_key: str,
     from_addr: str,
     to_addr: str,
-    smtp_host: str,
-    smtp_port: int,
-    username: str,
-    password: str,
+    subject: str,
+    html_body: str,
 ) -> None:
-    msg = MIMEMultipart("alternative")
-    msg["Subject"] = subject
-    msg["From"] = from_addr
-    msg["To"] = to_addr
-
-    plain_body = _html_to_plaintext(html_body)
-    msg.attach(MIMEText(plain_body, "plain"))
-    msg.attach(MIMEText(html_body, "html"))
-
-    with smtplib.SMTP(smtp_host, smtp_port) as server:
-        server.ehlo()
-        server.starttls()
-        server.login(username, password)
-        server.sendmail(from_addr, to_addr, msg.as_string())
+    resend.api_key = api_key
+    resend.Emails.send({
+        "from": from_addr,
+        "to": [to_addr],
+        "subject": subject,
+        "html": html_body,
+    })
 
 
 async def send_deal_email(item: WishlistItem, new_listings: list[Listing]) -> bool:
-    if not settings.smtp_user or not settings.smtp_password or not settings.notify_email:
+    if not settings.resend_api_key or not settings.resend_from or not settings.notify_email:
         return False
 
     if not new_listings:
@@ -143,15 +131,12 @@ async def send_deal_email(item: WishlistItem, new_listings: list[Listing]) -> bo
 
     try:
         await asyncio.to_thread(
-            _send_smtp,
+            _send_resend,
+            settings.resend_api_key,
+            settings.resend_from,
+            settings.notify_email,
             subject,
             html_body,
-            settings.smtp_user,
-            settings.notify_email,
-            settings.smtp_host,
-            settings.smtp_port,
-            settings.smtp_user,
-            settings.smtp_password,
         )
         return True
     except Exception as e:
