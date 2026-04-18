@@ -57,7 +57,7 @@ See archive: `.planning/milestones/v1.3-ROADMAP.md`
 
 ### v1.4 Quality & Gaps (Phases 20–24)
 
-- [ ] **Phase 20: Cleanup & Config** — Remove dead Clarity code, wire eBay keys
+- [x] **Phase 20: Cleanup & Config** — Remove dead Clarity code, wire eBay keys (completed 2026-04-18)
 - [ ] **Phase 21: Bug Fixes** — Fix typeahead spinner, image skeleton shimmer
 - [ ] **Phase 22: Resend Email** — Migrate SMTP to Resend API
 - [ ] **Phase 23: Discogs Release Selection** — Manual release pinning on item detail
@@ -75,7 +75,7 @@ See archive: `.planning/milestones/v1.3-ROADMAP.md`
   3. A scan with eBay enabled returns listings without auth errors
 **Plans**: 1 plan
 Plans:
-- [ ] 20-01-PLAN.md — Remove dead Clarity adapter and harden eBay config
+- [x] 20-01-PLAN.md — Remove dead Clarity adapter and harden eBay config
 
 ### Phase 21: Bug Fixes
 **Goal**: Typeahead spinner clears reliably and image skeletons use the correct dark shimmer style
@@ -88,7 +88,7 @@ Plans:
   4. Skeleton shimmer is visibly dark, matching the true-black card surface
 **Plans**: 1 plan
 Plans:
-- [ ] 20-01-PLAN.md — Remove dead Clarity adapter and harden eBay config
+- [ ] 21-01-PLAN.md — Fix typeahead spinner clearing and replace skeleton pulse with diagonal dark shimmer
 **UI hint**: yes
 
 ### Phase 22: Resend Email
@@ -101,7 +101,7 @@ Plans:
   3. Resend API key is read from env vars; no credentials are hardcoded
 **Plans**: 1 plan
 Plans:
-- [ ] 20-01-PLAN.md — Remove dead Clarity adapter and harden eBay config
+- [ ] 22-01-PLAN.md — [to be planned]
 
 ### Phase 23: Discogs Release Selection
 **Goal**: Users can search for and pin a specific Discogs release to a wishlist item, fixing wrong artwork and scan mismatches
@@ -114,7 +114,7 @@ Plans:
   4. Scanning an item with a pinned release ID uses that release ID directly instead of running a title/artist search
 **Plans**: 1 plan
 Plans:
-- [ ] 20-01-PLAN.md — Remove dead Clarity adapter and harden eBay config
+- [ ] 23-01-PLAN.md — [to be planned]
 **UI hint**: yes
 
 ### Phase 24: Per-Item Notification Thresholds
@@ -128,7 +128,7 @@ Plans:
   4. The custom threshold value is visible on item detail so the user knows what's set
 **Plans**: 1 plan
 Plans:
-- [ ] 20-01-PLAN.md — Remove dead Clarity adapter and harden eBay config
+- [ ] 24-01-PLAN.md — [to be planned]
 
 ## Progress
 
@@ -153,8 +153,8 @@ Plans:
 | 17. Typography Overhaul | v1.3 | 3/3 | Complete | 2026-04-15 |
 | 18. UI Consistency Fixes | v1.3 | 2/2 | Complete | 2026-04-18 |
 | 19. Card Layout Expansion | v1.3 | 1/1 | Complete | 2026-04-18 |
-| 20. Cleanup & Config | v1.4 | 0/1 | Planned | - |
-| 21. Bug Fixes | v1.4 | 0/? | Not started | - |
+| 20. Cleanup & Config | v1.4 | 1/1 | Complete   | 2026-04-18 |
+| 21. Bug Fixes | v1.4 | 0/1 | Not started | - |
 | 22. Resend Email | v1.4 | 0/? | Not started | - |
 | 23. Discogs Release Selection | v1.4 | 0/? | Not started | - |
 | 24. Per-Item Notification Thresholds | v1.4 | 0/? | Not started | - |
