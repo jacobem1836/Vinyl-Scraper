@@ -10,6 +10,18 @@ The app shipped v1.0 as a polished personal tool, v1.1 sharpened UX with CRATE d
 
 Show me the cheapest way to buy the records I want, right now.
 
+## Current Milestone: v1.4 Quality & Gaps
+
+**Goal:** Clear accumulated technical debt and close real feature gaps before building anything new.
+
+**Target features:**
+- Remove Clarity dead code + wire eBay keys (makes eBay work in production)
+- Fix typeahead spinner bug (outstanding since v1.1)
+- Resend email migration (replaces SMTP)
+- Manual Discogs release selection (fix wrong artwork/match)
+- Image skeleton: diagonal shimmer, much darker
+- Per-item notification thresholds (custom % per item)
+
 ## Current State
 
 **Latest milestone:** v1.3 Visual Overhaul — shipped 2026-04-18 (Phases 16–19)
@@ -123,7 +135,13 @@ Key outcomes:
 
 ### Active
 
-_None — v1.3 shipped. Next milestone not yet scoped._
+- [ ] **BUG-T4**: Fix typeahead spinner not clearing after result select or type-change
+- [ ] **CLEAN-T2**: Remove dead Clarity Records code (clarity.py + registry entry)
+- [ ] **CFG-T1**: Wire eBay developer keys/config so eBay adapter works in production
+- [ ] **EMAIL-T5**: Migrate SMTP email → Resend API
+- [ ] **UI-T6**: Image loading skeleton — diagonal shimmer, much darker
+- [ ] **DISC-T3**: Manual Discogs release selection on item detail page
+- [ ] **NOTIF-F1**: Per-item notification thresholds (custom % below typical per wishlist item)
 
 ### Out of Scope
 
@@ -176,4 +194,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-04-18 — v1.3 milestone shipped (Phases 16–19)*
+*Last updated: 2026-04-18 — v1.4 milestone started (Quality & Gaps)*
