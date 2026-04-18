@@ -1,61 +1,100 @@
-# Requirements: Vinyl Wishlist Manager — v1.3 Visual Overhaul
+# Requirements: Vinyl Wishlist Manager
 
-**Defined:** 2026-04-14
+**Defined:** 2026-04-18
 **Core Value:** Show me the cheapest way to buy the records I want, right now.
 
-## v1.3 Requirements
+## v1.4 Requirements
 
-Visual overhaul milestone. Cohesive aesthetic direction (Warner Music–inspired), typographic hierarchy refresh, and targeted UI consistency fixes. No new features or data model changes.
+Requirements for the Quality & Gaps milestone. Each maps to roadmap phases.
 
-### Visual Foundation
+### Cleanup
 
-- [ ] **VIS-01**: True black background (`#000`) replaces near-black across all surfaces
-- [ ] **VIS-02**: Custom-styled scrollbars matching palette (track, thumb, hover)
-- [ ] **VIS-03**: Warner Music–inspired aesthetic direction applied (palette tweaks, spacing, restraint)
+- [ ] **CLEAN-01**: Remove `clarity.py` and its registry entry — dead code, NXDOMAIN confirmed
+- [ ] **CFG-01**: eBay developer credentials wired via env vars so eBay adapter authenticates in production
 
-### Typography
+### Bug Fixes
 
-- [ ] **TYPO-01**: Font swap to a thinner/crispier typeface for cards and body text
-- [ ] **TYPO-02**: Type scale revision — item name rendered larger than price on cards
-- [ ] **TYPO-03**: Hierarchy applied consistently across dashboard cards, item detail, and modals
+- [ ] **BUG-03**: Typeahead spinner clears after result select and after type dropdown change
+- [ ] **UI-07**: Image loading skeleton uses diagonal shimmer (dark, top-left → bottom-right sweep), not glow/pulse
 
-### UI Consistency Fixes
+### Email
 
-- [ ] **FIX-01**: "Item added, scanning in background" message uses the standard `#toast` primitive (not a separate box)
-- [ ] **FIX-02**: Item detail screen placeholder image replaced with the new empty vinyl image asset
+- [ ] **EMAIL-04**: Deal alert emails sent via Resend API, replacing SMTP
+
+### Discogs Release Selection
+
+- [ ] **DISC-01**: User can search Discogs releases from item detail page
+- [ ] **DISC-02**: User can select a release to pin it to a wishlist item
+- [ ] **DISC-03**: Scans and artwork use pinned Discogs release ID when set, instead of auto-search
+
+### Notifications
+
+- [ ] **NOTIF-05**: User can set a custom notification threshold (% below typical) per wishlist item
+- [ ] **NOTIF-06**: Per-item threshold overrides the global threshold when set
 
 ## Future Requirements
 
-See `.planning/FUTURE.md` for deferred work (auth, streaming integrations, mobile app + Spine View, notifications expansion, security audit).
+Deferred to a future milestone. Tracked but not in current roadmap.
+
+### Sources
+
+- **SRC-NEW**: Replace Clarity Records with a working AU vinyl store (candidates: Wax Museum, Heartland, Vinyl Revival)
+
+### Streaming / Third-Party Integrations
+
+- **AUTH-01**: User sign-in / session management (prerequisite for streaming integrations)
+- **STREAM-01**: Spotify sign-in — auto-populate wishlist from saved albums/artists
+- **STREAM-02**: Discogs sign-in — auto-add from Discogs wantlist/collection
+- **STREAM-03**: Apple Music sign-in — same as Spotify
+
+### Mobile
+
+- **MOB-01**: Native mobile app (iOS/Android)
+- **MOB-02**: Spine View (flip mode) — shelf view collapsing grid into vertical spines
+
+### Notifications Expansion
+
+- **NOTIF-07**: New-listing-from-preferred-store notification type
+- **NOTIF-08**: Rare-pressing detection notification type
+- **NOTIF-09**: Shipping-threshold-met notification type
+
+### Infrastructure
+
+- **SEC-01**: Security audit — API key handling, rate limiting, input validation, dependency scan
 
 ## Out of Scope
 
 | Feature | Reason |
 |---------|--------|
-| User accounts / sign-in | Deferred to dedicated auth milestone (see FUTURE.md) |
-| Spotify/Discogs/Apple Music integrations | Depends on auth foundation |
-| Mobile app + Spine View | Own milestone; deferred to FUTURE.md |
-| New notification types | Dilutes visual theme; defer to v1.4 |
-| Security audit | Standalone pass, not a feature milestone |
-| Data model changes | This milestone is purely visual |
+| User accounts / multi-user | Personal tool, single user — significant architectural shift |
+| Auction bidding or purchasing | Discovery only, not transactional |
+| Mobile app (this milestone) | Large scope — own milestone/project |
+| Auth / streaming integrations | Depends on auth foundation — deferred |
+| Physical media extension (CDs, cassettes) | Vinyl-focused for now |
+| AI web scraping | Not needed — existing adapters work well |
 
 ## Traceability
 
+Which phases cover which requirements. Updated during roadmap creation.
+
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| VIS-01 | Phase 16 | Pending |
-| VIS-02 | Phase 16 | Pending |
-| VIS-03 | Phase 16 | Pending |
-| TYPO-01 | Phase 17 | Pending |
-| TYPO-02 | Phase 17 | Pending |
-| TYPO-03 | Phase 17 | Pending |
-| FIX-01 | Phase 18 | Pending |
-| FIX-02 | Phase 18 | Pending |
+| CLEAN-01 | — | Pending |
+| CFG-01 | — | Pending |
+| BUG-03 | — | Pending |
+| UI-07 | — | Pending |
+| EMAIL-04 | — | Pending |
+| DISC-01 | — | Pending |
+| DISC-02 | — | Pending |
+| DISC-03 | — | Pending |
+| NOTIF-05 | — | Pending |
+| NOTIF-06 | — | Pending |
 
 **Coverage:**
-- v1.3 requirements: 8 total
-- Mapped to phases: 8
-- Unmapped: 0 ✓
+- v1.4 requirements: 10 total
+- Mapped to phases: 0
+- Unmapped: 10 ⚠️ (roadmap pending)
 
 ---
-*Requirements defined: 2026-04-14*
+*Requirements defined: 2026-04-18*
+*Last updated: 2026-04-18 after initial definition*
