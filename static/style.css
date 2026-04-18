@@ -151,7 +151,7 @@ button, input, select, textarea {
 .container {
   max-width: 1280px;
   margin: 0 auto;
-  padding-inline: var(--space-md);
+  padding-inline: 12px;
 }
 
 .stack-sm {
@@ -187,7 +187,7 @@ button, input, select, textarea {
 .nav-inner {
   max-width: 1280px;
   margin: 0 auto;
-  padding-inline: var(--space-md);
+  padding-inline: 12px;
   height: 64px;
   display: flex;
   align-items: center;
@@ -317,7 +317,7 @@ button, input, select, textarea {
 .card-grid {
   display: grid;
   grid-template-columns: repeat(1, 1fr);
-  gap: var(--space-sm);
+  gap: var(--space-md);
 }
 
 @media (min-width: 768px) {
@@ -329,12 +329,6 @@ button, input, select, textarea {
 @media (min-width: 1024px) {
   .card-grid {
     grid-template-columns: repeat(3, 1fr);
-  }
-}
-
-@media (min-width: 1280px) {
-  .card-grid {
-    grid-template-columns: repeat(4, 1fr);
   }
 }
 
