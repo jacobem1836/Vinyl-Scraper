@@ -59,7 +59,7 @@ See archive: `.planning/milestones/v1.3-ROADMAP.md`
 
 - [x] **Phase 20: Cleanup & Config** — Remove dead Clarity code, wire eBay keys (completed 2026-04-18)
 - [ ] **Phase 21: Bug Fixes** — Fix typeahead spinner, image skeleton shimmer
-- [ ] **Phase 22: Resend Email** — Migrate SMTP to Resend API
+- [x] **Phase 22: Resend Email** — Migrate SMTP to Resend API (completed 2026-04-18)
 - [ ] **Phase 23: Discogs Release Selection** — Manual release pinning on item detail
 - [ ] **Phase 24: Per-Item Notification Thresholds** — Custom % per wishlist item
 
@@ -101,7 +101,7 @@ Plans:
   3. Resend API key is read from env vars; no credentials are hardcoded
 **Plans**: 1 plan
 Plans:
-- [ ] 22-01-PLAN.md — [to be planned]
+- [x] 22-01-PLAN.md — [to be planned]
 
 ### Phase 23: Discogs Release Selection
 **Goal**: Users can search for and pin a specific Discogs release to a wishlist item, fixing wrong artwork and scan mismatches
@@ -155,7 +155,7 @@ Plans:
 | 19. Card Layout Expansion | v1.3 | 1/1 | Complete | 2026-04-18 |
 | 20. Cleanup & Config | v1.4 | 1/1 | Complete   | 2026-04-18 |
 | 21. Bug Fixes | v1.4 | 0/1 | Not started | - |
-| 22. Resend Email | v1.4 | 0/? | Not started | - |
+| 22. Resend Email | v1.4 | 1/1 | Complete   | 2026-04-18 |
 | 23. Discogs Release Selection | v1.4 | 0/? | Not started | - |
 | 24. Per-Item Notification Thresholds | v1.4 | 0/? | Not started | - |
 
