@@ -73,7 +73,9 @@ See archive: `.planning/milestones/v1.3-ROADMAP.md`
   1. `clarity.py` and its adapter registry entry are gone from the codebase
   2. eBay adapter authenticates successfully in production (Railway env vars present and used)
   3. A scan with eBay enabled returns listings without auth errors
-**Plans**: TBD
+**Plans**: 1 plan
+Plans:
+- [ ] 20-01-PLAN.md — Remove dead Clarity adapter and harden eBay config
 
 ### Phase 21: Bug Fixes
 **Goal**: Typeahead spinner clears reliably and image skeletons use the correct dark shimmer style
@@ -84,7 +86,9 @@ See archive: `.planning/milestones/v1.3-ROADMAP.md`
   2. Changing the type dropdown while typeahead is open hides the spinner immediately
   3. Image skeletons display a diagonal top-left → bottom-right sweep shimmer (not pulse or glow)
   4. Skeleton shimmer is visibly dark, matching the true-black card surface
-**Plans**: TBD
+**Plans**: 1 plan
+Plans:
+- [ ] 20-01-PLAN.md — Remove dead Clarity adapter and harden eBay config
 **UI hint**: yes
 
 ### Phase 22: Resend Email
@@ -95,7 +99,9 @@ See archive: `.planning/milestones/v1.3-ROADMAP.md`
   1. A triggered deal alert email arrives in the inbox when sent via Resend
   2. SMTP environment variables are no longer required for email to function
   3. Resend API key is read from env vars; no credentials are hardcoded
-**Plans**: TBD
+**Plans**: 1 plan
+Plans:
+- [ ] 20-01-PLAN.md — Remove dead Clarity adapter and harden eBay config
 
 ### Phase 23: Discogs Release Selection
 **Goal**: Users can search for and pin a specific Discogs release to a wishlist item, fixing wrong artwork and scan mismatches
@@ -106,7 +112,9 @@ See archive: `.planning/milestones/v1.3-ROADMAP.md`
   2. User can select a release from search results and pin it to the item
   3. Item detail page shows artwork from the pinned release, not the auto-search result
   4. Scanning an item with a pinned release ID uses that release ID directly instead of running a title/artist search
-**Plans**: TBD
+**Plans**: 1 plan
+Plans:
+- [ ] 20-01-PLAN.md — Remove dead Clarity adapter and harden eBay config
 **UI hint**: yes
 
 ### Phase 24: Per-Item Notification Thresholds
@@ -118,7 +126,9 @@ See archive: `.planning/milestones/v1.3-ROADMAP.md`
   2. A wishlist item with a custom threshold triggers alerts at that threshold, not the global one
   3. A wishlist item without a custom threshold continues to use the global default
   4. The custom threshold value is visible on item detail so the user knows what's set
-**Plans**: TBD
+**Plans**: 1 plan
+Plans:
+- [ ] 20-01-PLAN.md — Remove dead Clarity adapter and harden eBay config
 
 ## Progress
 
@@ -143,7 +153,7 @@ See archive: `.planning/milestones/v1.3-ROADMAP.md`
 | 17. Typography Overhaul | v1.3 | 3/3 | Complete | 2026-04-15 |
 | 18. UI Consistency Fixes | v1.3 | 2/2 | Complete | 2026-04-18 |
 | 19. Card Layout Expansion | v1.3 | 1/1 | Complete | 2026-04-18 |
-| 20. Cleanup & Config | v1.4 | 0/? | Not started | - |
+| 20. Cleanup & Config | v1.4 | 0/1 | Planned | - |
 | 21. Bug Fixes | v1.4 | 0/? | Not started | - |
 | 22. Resend Email | v1.4 | 0/? | Not started | - |
 | 23. Discogs Release Selection | v1.4 | 0/? | Not started | - |
