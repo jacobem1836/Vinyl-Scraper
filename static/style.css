@@ -627,18 +627,18 @@ button, input, select, textarea {
 /* ============================================================
    15. Image loading skeleton (D-16)
    ============================================================ */
-@keyframes skeleton-pulse {
-  0%   { background-position: 200% 0; }
-  100% { background-position: -200% 0; }
+@keyframes skeleton-shimmer {
+  0%   { background-position: 200% 200%; }
+  100% { background-position: -200% -200%; }
 }
 
 .card-artwork-wrapper {
   position: relative;
   aspect-ratio: 1 / 1;
   width: 100%;
-  background: linear-gradient(90deg, #1a1a1a 25%, #2a2a2a 50%, #1a1a1a 75%);
-  background-size: 200% 100%;
-  animation: skeleton-pulse 1.2s ease-in-out infinite;
+  background: linear-gradient(135deg, #0a0a0a 25%, #141414 50%, #0a0a0a 75%);
+  background-size: 400% 400%;
+  animation: skeleton-shimmer 1.4s ease-in-out infinite;
 }
 
 .card-artwork-wrapper img {

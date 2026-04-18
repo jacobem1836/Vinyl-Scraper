@@ -29,12 +29,13 @@
   }
 
   function closeDropdown(prefix) {
-    const { input, listbox } = getEls(prefix);
+    const { input, listbox, spinner } = getEls(prefix);
     if (listbox) listbox.classList.remove("typeahead-dropdown--open");
     if (input) {
       input.setAttribute("aria-expanded", "false");
       input.removeAttribute("aria-activedescendant");
     }
+    if (spinner) spinner.classList.add("hidden");
     if (state[prefix]) state[prefix].activeIndex = -1;
   }
 
@@ -154,6 +155,10 @@
    * No locking — user can still edit the field freely.
    */
   window.selectResult = function (prefix, result) {
+    if (state[prefix] && state[prefix].timer) {
+      clearTimeout(state[prefix].timer);
+      state[prefix].timer = null;
+    }
     const { input, hidden, spinner } = getEls(prefix);
 
     if (input) input.value = result.title;
@@ -272,6 +277,10 @@
     // Close dropdown and clear release_id when type changes
     if (typeSelectEl) {
       typeSelectEl.addEventListener("change", function () {
+        if (state[prefix] && state[prefix].timer) {
+          clearTimeout(state[prefix].timer);
+          state[prefix].timer = null;
+        }
         closeDropdown(prefix);
         // Clear stored release_id — it's type-specific
         const { hidden, spinner } = getEls(prefix);
