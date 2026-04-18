@@ -118,7 +118,7 @@ async def add_wishlist_item_web(
     invalidate_dashboard_cache()
     background_tasks.add_task(_scan_in_background, item.id)
 
-    return RedirectResponse(url="/?toast=Item+added%2C+scanning+in+background", status_code=303)
+    return RedirectResponse(url="/", status_code=303)
 
 
 @web_router.post("/wishlist/{item_id}/edit")

@@ -1,14 +1,13 @@
 ---
 gsd_state_version: 1.0
-milestone: v1.2
-milestone_name: Signal Intelligence & Notifications
-status: shipped
-last_updated: "2026-04-14T00:00:00.000Z"
-last_activity: 2026-04-14
+milestone: v1.3
+milestone_name: milestone
+status: v1.3 milestone complete
+last_updated: "2026-04-18T07:10:01.086Z"
 progress:
-  total_phases: 3
+  total_phases: 4
   completed_phases: 3
-  total_plans: 8
+  total_plans: 6
   completed_plans: 8
   percent: 100
 ---
@@ -17,8 +16,10 @@ progress:
 
 ## Current Position
 
-Milestone v1.2 shipped — 3 phases, 8 plans complete.
-Status: Milestone complete, awaiting next milestone scope.
+Phase: 18 (ui-consistency-fixes) — EXECUTING
+Plan: 1 of 2
+Milestone v1.3 just started — Visual Overhaul (Warner Music–inspired aesthetic, true black palette, typography hierarchy, custom scrollbars, scan-toast consistency, item detail placeholder fix).
+Next action: Plan Phase 16 Visual Foundation.
 
 ```
 v1.2 Progress: [██████████] 100% — 3/3 phases complete
@@ -28,7 +29,7 @@ v1.2 Progress: [██████████] 100% — 3/3 phases complete
 
 See: .planning/PROJECT.md
 **Core value:** Show me the cheapest way to buy the records I want, right now.
-**Current focus:** Post-v1.2 — use `/gsd-new-milestone` to scope v1.3
+**Current focus:** Phase 18 — ui-consistency-fixes
 
 ## Performance Metrics
 
@@ -74,7 +75,7 @@ See: .planning/PROJECT.md
 
 ### Todos
 
-- None yet
+- **Image loading skeleton:** Make it much darker and replace glow/pulse with a diagonal shimmer — highlight sweeps diagonally across the card (like a CSS `linear-gradient` keyframe animation moving from top-left to bottom-right). Current effect is too bright and the glow/darken pulse is wrong.
 
 ### Blockers
 

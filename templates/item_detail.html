@@ -16,12 +16,12 @@
           <img
             src="/api/artwork?url={{ item.artwork_url | urlencode }}"
             alt="{{ item.query }} album cover"
-            onerror="this.src='/static/vinyl-placeholder.svg'"
+            onerror="this.src='/static/empty-vinyl-placeholder.png'"
             style="width: 120px; height: 120px; object-fit: cover; border-radius: 0;"
           >
         {% else %}
           <img
-            src="/static/vinyl-placeholder.svg"
+            src="/static/empty-vinyl-placeholder.png"
             alt="{{ item.query }} — no artwork available"
             style="width: 120px; height: 120px; object-fit: cover; border-radius: 0;"
           >

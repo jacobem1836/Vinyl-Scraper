@@ -151,7 +151,7 @@ button, input, select, textarea {
 .container {
   max-width: 1280px;
   margin: 0 auto;
-  padding-inline: var(--space-md);
+  padding-inline: 12px;
 }
 
 .stack-sm {
@@ -187,7 +187,7 @@ button, input, select, textarea {
 .nav-inner {
   max-width: 1280px;
   margin: 0 auto;
-  padding-inline: var(--space-md);
+  padding-inline: 12px;
   height: 64px;
   display: flex;
   align-items: center;
@@ -309,6 +309,11 @@ button, input, select, textarea {
   box-shadow: 0 4px 16px rgba(0,0,0,0.4);
 }
 
+.card:hover .text-title {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
 .card-grid {
   display: grid;
   grid-template-columns: repeat(1, 1fr);
@@ -324,12 +329,6 @@ button, input, select, textarea {
 @media (min-width: 1024px) {
   .card-grid {
     grid-template-columns: repeat(3, 1fr);
-  }
-}
-
-@media (min-width: 1280px) {
-  .card-grid {
-    grid-template-columns: repeat(4, 1fr);
   }
 }
 
@@ -535,7 +534,7 @@ button, input, select, textarea {
 .text-label      { font-size: var(--text-label); }
 .text-sm         { font-size: var(--text-sm); }
 .text-body       { font-size: var(--text-body); }
-.text-title      { font-size: var(--text-title); font-weight: 400; line-height: 1.3; }
+.text-title      { font-size: var(--text-title); font-weight: 350; line-height: 1.25; }
 .text-subheading { font-size: var(--text-subheading); font-weight: 600; line-height: 1.2; }
 .text-heading    { font-size: var(--text-heading); font-weight: 700; line-height: 1.1; }
 .text-price      { font-size: var(--text-price); font-weight: 600; line-height: 1.2; }

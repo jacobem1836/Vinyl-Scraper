@@ -1,5 +1,23 @@
 # Milestones
 
+## v1.3 Visual Overhaul (Shipped: 2026-04-18)
+
+**Phases completed:** 4 phases (16–19), 6 plans
+**Timeline:** 2026-04-14 → 2026-04-18 (4 days)
+
+**Key accomplishments:**
+
+- True black (#000) palette across all surfaces — dashboard, cards, detail, modals (Phase 16)
+- Custom 4px translucent-white scrollbars with hover brightening (Phase 16)
+- Warner Music–inspired aesthetic: stark white-on-black, editorial restraint (Phase 16)
+- Gothic A1 self-hosted font (Light/Regular/Medium woff2) replaces Inter; loaded via @font-face preload (Phase 17)
+- Item name visibly larger and heavier than price across cards, detail, and modals (Phase 17)
+- Post-add toast unified with scan toast via `window.showToast()` — no more separate scan panel (Phase 18)
+- Item detail placeholder swapped to empty vinyl PNG asset (Phase 18)
+- Card grid expanded to 3-col max with wider gap and tighter container margins (Phase 19)
+
+---
+
 ## v1.2 Signal Intelligence & Notifications (Shipped: 2026-04-14)
 
 **Phases completed:** 3 phases (13–15), 8 plans

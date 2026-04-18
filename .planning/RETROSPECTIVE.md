@@ -82,6 +82,44 @@
 
 ---
 
+## Milestone: v1.3 — Visual Overhaul
+
+**Shipped:** 2026-04-18
+**Phases:** 4 (16–19) | **Plans:** 6 | **Timeline:** 4 days
+
+### What Was Built
+- **True black palette** — #000 across all surfaces; custom 4px translucent-white scrollbars; Warner Music–inspired editorial restraint (Phase 16)
+- **Gothic A1 typography** — self-hosted woff2 (Light/Regular/Medium) replaces Inter; @font-face preload; item name larger and heavier than price on all surfaces (Phase 17)
+- **Toast unification** — `window.showToast()` is now the single path for all post-add and scan feedback; scan panel gated to `is_running` state only; em-dash in copy (Phase 18)
+- **Card expansion** — 3-col max (removed 4-col breakpoint), wider gap (space-md), tighter 12px container/nav padding (Phase 19)
+
+### What Worked
+- CSS-only phases (16, 17, 19) were fast, low-risk, and had clear success criteria — visual UAT is simple
+- Toast interrupt-and-restore pattern (Phase 18) was a clean solution to competing toast messages — brief replacement then restore
+- Phases 18 and 19 had no formal PLAN.md files but executed cleanly through direct SUMMARY-based execution — lighter-weight approach suits small-scope fixes
+- Human UAT sign-off per phase kept visual quality bar high without needing automated tests
+
+### What Was Inefficient
+- Phase 17 plan count in ROADMAP.md showed 2/3 at time of archival (stale) — roadmap status not updated in sync with execution
+- Phase 18 UAT recorded 1 issue before it was fixed; the UAT file wasn't updated after the fix commits landed — requires manual reconciliation at milestone completion
+- Worktree merge conflict in Phase 18 deleted planning files again — same recurring issue as v1.2; worktrees and .planning/ don't mix
+
+### Patterns Established
+- **Toast interrupt-and-restore:** Short toasts temporarily replace active long-running toast, then restore it — prevents UI confusion when a new event fires mid-scan
+- **Visual-only phases are low-overhead:** CSS-only phases need no backend review, no migration, no API contract concern — treat them as fast iteration cycles
+
+### Key Lessons
+1. **Update ROADMAP.md status immediately when phases complete** — stale status causes friction at milestone completion
+2. **Update UAT file after post-UAT fixes** — mark issues resolved or retest; don't leave failed tests with no resolution note
+3. **Worktrees must not touch planning files** — this is now the third milestone where worktree state deleted .planning/ artifacts
+
+### Cost Observations
+- Model mix: ~100% sonnet
+- Sessions: ~3 across 4 phases
+- Notable: Pure CSS/HTML milestone — fastest milestone by work-per-phase; visual phases are the highest-leverage work for perceived quality
+
+---
+
 ## Cross-Milestone Trends
 
 ### Process Evolution
@@ -91,6 +129,7 @@
 | v1.0 | 5 | 17 | First milestone — baseline established |
 | v1.1 | 7 | 16 | UX polish + Discogs typeahead — design tool stack introduced |
 | v1.2 | 3 | 8 | Signal intelligence + notifications — TDD introduced for notifier |
+| v1.3 | 4 | 6 | Visual overhaul — CSS-only phases, lightest milestone by weight |
 
 ### Cumulative Quality
 
@@ -99,10 +138,12 @@
 | v1.0 | 0 (no test suite) | 4 (browser checks) | 0 |
 | v1.1 | 0 | 8 (browser checks) | 0 |
 | v1.2 | 9 (test_notifier.py) | 3 (user-confirmed) | 0 |
+| v1.3 | 0 (visual-only) | 12 (4 UAT passes) | 0 |
 
 ### Top Lessons (Verified Across Milestones)
 
 1. Worktree agent base-commit hygiene is the #1 source of friction in parallel execution
 2. CSS-only phases are the fastest and lowest-risk work units — isolate visual changes when possible
-3. Quick task worktrees must not touch planning files — .planning/ should be orchestrator-only
+3. Quick task worktrees (and all worktrees) must not touch planning files — .planning/ should be orchestrator-only (recurring every milestone)
 4. TDD for notification/detection logic pays off — snapshot + detect + cooldown has enough edge cases to justify tests-first
+5. Keep ROADMAP.md and UAT files updated in real-time during execution — stale status creates reconciliation work at milestone close
