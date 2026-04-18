@@ -107,16 +107,46 @@
   <script>
     (function () {
       var _toastTimer = null;
+      // {message, isPersistent} — tracks what's currently showing so interrupts can restore it
+      var _active = null;
 
       window.showToast = function (message, duration) {
         var toast = document.getElementById('toast');
         var msg = document.getElementById('toastMessage');
         if (!toast || !msg) return;
+
+        var isPersistent = !duration || duration >= 10000;
+        var isVisible = !toast.classList.contains('hidden');
+
         clearTimeout(_toastTimer);
+
+        if (isVisible && !isPersistent && _active) {
+          // Short toast interrupting an existing one: show briefly, then restore previous
+          var previous = _active;
+          msg.textContent = message;
+          var interruptMs = Math.min(duration, 1500);
+          _toastTimer = setTimeout(function () {
+            msg.textContent = previous.message;
+            if (!previous.isPersistent) {
+              // Previous was also short — just hide
+              toast.classList.add('hidden');
+              _active = null;
+            }
+            // If previous was persistent it stays visible
+          }, interruptMs);
+          return;
+        }
+
+        // Normal: show the toast
         msg.textContent = message;
         toast.classList.remove('hidden');
-        if (duration && duration < 600000) {
-          _toastTimer = setTimeout(function () { toast.classList.add('hidden'); }, duration);
+        _active = { message: message, isPersistent: isPersistent };
+
+        if (!isPersistent) {
+          _toastTimer = setTimeout(function () {
+            toast.classList.add('hidden');
+            _active = null;
+          }, duration);
         }
       };
 
@@ -124,6 +154,7 @@
         clearTimeout(_toastTimer);
         var toast = document.getElementById('toast');
         if (toast) toast.classList.add('hidden');
+        _active = null;
       };
 
       document.addEventListener('DOMContentLoaded', function () {
