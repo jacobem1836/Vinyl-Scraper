@@ -1,87 +1,62 @@
-# Roadmap: v1.3 Visual Overhaul
+# Roadmap: Vinyl Wishlist Manager
 
-**Milestone:** v1.3 — Visual Overhaul
-**Defined:** 2026-04-14
-**Phases:** 4 (continuing from v1.2's Phase 15)
+## Milestones
 
-## Overview
+- ✅ **v1.0 MVP** — Phases 1–5 (shipped 2026-04-05)
+- ✅ **v1.1 UX Polish & Album Selection** — Phases 6–12 (shipped 2026-04-12)
+- ✅ **v1.2 Signal Intelligence & Notifications** — Phases 13–15 (shipped 2026-04-14)
+- ✅ **v1.3 Visual Overhaul** — Phases 16–19 (shipped 2026-04-18)
 
-Cohesive visual refresh: Warner Music–inspired aesthetic, true black palette, typography hierarchy with item name > price, custom scrollbars, and targeted consistency fixes. No backend/data changes.
+## Phases
 
-| # | Phase | Goal | Requirements | Status |
-|---|-------|------|--------------|--------|
-| 16 | Visual Foundation | True black palette, skeleton pulse, scrollbars | VIS-01, VIS-02, VIS-03 | Complete |
-| 17 | Typography Overhaul | Thinner/crispier font + item-name > price hierarchy | TYPO-01, TYPO-02, TYPO-03 | In Progress |
-| 18 | UI Consistency Fixes | Scan toast unification + item-detail placeholder image | FIX-01, FIX-02 | Planned |
-| 19 | Card Layout Expansion | Wider cards filling more screen width, larger card size | CARD-01 | Planned |
+<details>
+<summary>✅ v1.0 MVP (Phases 1–5) — SHIPPED 2026-04-05</summary>
 
----
+- [x] Phase 1: Infrastructure (3/3 plans) — completed 2026-04-02
+- [x] Phase 2: New Sources (4/4 plans) — completed 2026-04-03
+- [x] Phase 3: UI Redesign (4/4 plans) — completed 2026-04-03
+- [x] Phase 4: UI Polish (3/3 plans) — completed 2026-04-05
+- [x] Phase 5: Improve UI/UX (3/3 plans) — completed 2026-04-05
 
-## Phase 16: Visual Foundation
+</details>
 
-**Goal:** Shift the visual foundation to a true black, Warner Music–inspired aesthetic and style scrollbars to match.
+<details>
+<summary>✅ v1.1 UX Polish & Album Selection (Phases 6–12) — SHIPPED 2026-04-12</summary>
 
-**Requirements:** VIS-01, VIS-02, VIS-03
+- [x] Phase 6: Discogs Typeahead (3/3 plans) — completed 2026-04-09
+- [x] Phase 7: Image Priority + Scan Fix (2/2 plans) — completed 2026-04-09
+- [x] Phase 8: Brand Font Upgrade (1/1 plan) — completed 2026-04-09
+- [x] Phase 9: Email Redesign (2/2 plans) — completed 2026-04-09
+- [x] Phase 10: UI Polish (3/3 plans) — completed 2026-04-11
+- [x] Phase 11: UI Fixes (5/5 plans) — completed 2026-04-11
+- [x] Phase 12: UI Fixes Round 2 (2/2 plans) — completed 2026-04-11
 
-**Plans:** 2/2 plans complete
+</details>
 
-- [x] 16-01-PLAN.md — True black palette, skeleton pulse, and scrollbar rework
-- [x] 16-02-PLAN.md — Visual verification (human sign-off on VIS-01/02/03)
+<details>
+<summary>✅ v1.2 Signal Intelligence & Notifications (Phases 13–15) — SHIPPED 2026-04-14</summary>
 
-**Success criteria:**
-1. Dashboard, item detail, and modal surfaces render on `#000` — no near-black fallbacks
-2. Scrollbars in app surfaces use custom track/thumb styling (not browser default)
-3. Overall palette, spacing, and restraint read as "Warner Music–inspired" on visual inspection
+- [x] Phase 13: Signal Filters (3/3 plans) — completed 2026-04-13
+- [x] Phase 14: Feedback Primitives UI Hint (1/1 plan) — completed 2026-04-13
+- [x] Phase 15: Notification Expansion (4/4 plans) — completed 2026-04-13
 
----
+</details>
 
-## Phase 17: Typography Overhaul
+<details>
+<summary>✅ v1.3 Visual Overhaul (Phases 16–19) — SHIPPED 2026-04-18</summary>
 
-**Goal:** Swap body/card typography to a thinner, crispier typeface and apply a hierarchy where item name is larger and heavier than price.
+- [x] Phase 16: Visual Foundation (2/2 plans) — completed 2026-04-15
+- [x] Phase 17: Typography Overhaul (3/3 plans) — completed 2026-04-15
+- [x] Phase 18: UI Consistency Fixes (2 plans, no PLAN.md) — completed 2026-04-18
+- [x] Phase 19: Card Layout Expansion (1/1 plan) — completed 2026-04-18
 
-**Requirements:** TYPO-01, TYPO-02, TYPO-03
+See archive: `.planning/milestones/v1.3-ROADMAP.md`
 
-**Plans:** 2/3 plans complete (pending visual sign-off)
+</details>
 
-- [x] 17-01-PLAN.md — Self-host Gothic A1 woff2, swap @font-face + --font-sans + preload (TYPO-01)
-- [x] 17-02-PLAN.md — Invert typography tokens and utility weights for name > price hierarchy (TYPO-02, TYPO-03)
-- [ ] 17-03-PLAN.md — Visual verification (human sign-off on TYPO-01/02/03)
+### Next Milestone
 
-**Success criteria:**
-1. New typeface loaded and applied across cards, dashboard, and item detail
-2. On each card, item name is visually larger than its price
-3. Hierarchy holds in modals and item detail (not just dashboard)
-
----
-
-## Phase 18: UI Consistency Fixes
-
-**Goal:** Fix two outstanding inconsistencies: the post-add scanning message and the item detail placeholder image.
-
-**Requirements:** FIX-01, FIX-02
-
-**Plans:** 0 plans (not yet planned)
-
-**Success criteria:**
-1. "Item added, scanning in background" renders via the standard `#toast` primitive (same styling as other toasts) — no separate boxed UI
-2. Item detail screen uses the new empty vinyl image asset as placeholder (not the old one)
-
----
-
-## Phase 19: Card Layout Expansion
-
-**Goal:** Make wishlist cards fill more of the screen width and feel larger/more spacious — more visual impact per card.
-
-**Requirements:** CARD-01
-
-**Plans:** 0 plans (not yet planned)
-
-**Success criteria:**
-1. Cards occupy a meaningfully larger portion of the viewport width at each breakpoint
-2. Card content (artwork, title, price) benefits from the extra space — no awkward stretching
-3. Layout still works on mobile (320px+) and large screens (1440px+)
-
----
+Not yet planned. Run `/gsd-new-milestone` to scope v1.4.
 
 ## Progress
 
@@ -103,8 +78,8 @@ Cohesive visual refresh: Warner Music–inspired aesthetic, true black palette, 
 | 14. Feedback Primitives UI Hint | v1.2 | 1/1 | Complete | 2026-04-13 |
 | 15. Notification Expansion | v1.2 | 4/4 | Complete | 2026-04-13 |
 | 16. Visual Foundation | v1.3 | 2/2 | Complete | 2026-04-15 |
-| 17. Typography Overhaul | v1.3 | 2/3 | In Progress | — |
-| 18. UI Consistency Fixes | v1.3 | 0/? | Planned | — |
-| 19. Card Layout Expansion | v1.3 | 0/? | Planned | — |
+| 17. Typography Overhaul | v1.3 | 3/3 | Complete | 2026-04-15 |
+| 18. UI Consistency Fixes | v1.3 | 2/2 | Complete | 2026-04-18 |
+| 19. Card Layout Expansion | v1.3 | 1/1 | Complete | 2026-04-18 |
 
-*Roadmap updated: 2026-04-15*
+*Roadmap updated: 2026-04-18 — v1.3 shipped*

@@ -4,7 +4,7 @@
 
 A personal vinyl record wishlist manager that scrapes multiple stores and marketplaces to track prices and availability for records you want to buy. You add records you're after; it finds them across the web, computes landed costs (including shipping to AU), and alerts you to deals. Accessed via a web dashboard and an iOS Shortcut for quick adds.
 
-The app shipped v1.0 as a polished personal tool, v1.1 sharpened UX with CRATE design system and Discogs typeahead, and v1.2 added signal intelligence (relevance filtering, ships_from) and a full notification system (back-in-stock, price-drop digest emails).
+The app shipped v1.0 as a polished personal tool, v1.1 sharpened UX with CRATE design system and Discogs typeahead, v1.2 added signal intelligence (relevance filtering, ships_from) and a full notification system, and v1.3 completed a full visual overhaul (true black, Gothic A1 typography, toast unification, wider cards).
 
 ## Core Value
 
@@ -12,20 +12,33 @@ Show me the cheapest way to buy the records I want, right now.
 
 ## Current State
 
-**Latest milestone:** v1.2 Signal Intelligence & Notifications — shipped 2026-04-14 (Phases 13–15)
+**Latest milestone:** v1.3 Visual Overhaul — shipped 2026-04-18 (Phases 16–19)
 
 Key outcomes:
-- Relevance scoring and digital listing filter suppress noise; results ranked by match quality
-- `ships_from` enriched from Discogs marketplace API on every scan
-- Back-in-stock and price-drop detection with per-listing snapshot columns
-- Cooldown deduplication prevents duplicate digest sends within configurable window
-- Collect-then-dispatch scheduler: one digest email per scan run covering all events
-- Consistent `#toast` feedback primitive for all user actions; modal type defaults to "album"
-- 9 unit tests covering all notification scenarios
+- True black (#000) palette across all surfaces — dashboard, cards, detail, modals
+- Custom 4px translucent-white scrollbars with hover brightening
+- Gothic A1 self-hosted font (Light/Regular/Medium) replaces Inter; preloaded
+- Item name visibly larger and heavier than price on cards, detail, and modals
+- Post-add toast unified with scan toast via `window.showToast()` — no scan panel
+- Item detail placeholder swapped to empty vinyl PNG
+- Card grid: 3-col max, wider gap, tighter 12px margins
 
 ## Next Milestone
 
 *Not yet scoped.* Candidate directions: purchase workflow integration, Clarity Records re-enable, per-item notification thresholds, mobile-first web view, admin/monitoring dashboard. Scope with `/gsd-new-milestone` when ready.
+
+<details>
+<summary>Prior milestone brief: v1.3 Visual Overhaul</summary>
+
+**Goal:** Cohesive visual refresh: Warner Music–inspired aesthetic, true black palette, typography hierarchy with item name > price, custom scrollbars, and targeted consistency fixes.
+
+**Delivered:**
+- True black palette + custom scrollbars + Warner Music aesthetic (Phase 16)
+- Gothic A1 font swap + name > price hierarchy (Phase 17)
+- Toast unification + empty vinyl placeholder (Phase 18)
+- Card layout expansion — 3-col max, wider gap (Phase 19)
+
+</details>
 
 <details>
 <summary>Prior milestone brief: v1.2 Signal Intelligence & Notifications</summary>
@@ -99,9 +112,18 @@ Key outcomes:
 - ✓ **SIG-02**: ships_from enrichment from Discogs marketplace API — v1.2
 - ✓ **UX-01**: Consistent toast feedback primitive + modal type default — v1.2
 
+- ✓ **VIS-01**: True black background (#000) across all surfaces — v1.3
+- ✓ **VIS-02**: Custom-styled scrollbars matching palette — v1.3
+- ✓ **VIS-03**: Warner Music–inspired aesthetic direction — v1.3
+- ✓ **TYPO-01**: Gothic A1 self-hosted font swap for cards and body text — v1.3
+- ✓ **TYPO-02**: Item name larger than price on cards — v1.3
+- ✓ **TYPO-03**: Type hierarchy across dashboard, item detail, and modals — v1.3
+- ✓ **FIX-01**: Post-add toast unified with standard #toast primitive — v1.3
+- ✓ **FIX-02**: Item detail placeholder swapped to empty vinyl PNG — v1.3
+
 ### Active
 
-_None — v1.2 shipped. Next milestone not yet scoped._
+_None — v1.3 shipped. Next milestone not yet scoped._
 
 ### Out of Scope
 
@@ -114,10 +136,10 @@ _None — v1.2 shipped. Next milestone not yet scoped._
 
 - **Stack:** Python 3.14, FastAPI, SQLAlchemy 2, Jinja2, pg8000/PostgreSQL (Railway), aiosqlite (dev), APScheduler, httpx
 - **Adapters:** discogs, shopify, ebay, discrepancy, juno, bandcamp (6 active; clarity disabled NXDOMAIN)
-- **Design system:** CRATE — CSS custom properties, near-black palette (#0a0a0a), white accent, sharp edges, 44px touch targets, WCAG AA contrast
+- **Design system:** CRATE — CSS custom properties, true black palette (#000), white accent, Gothic A1 font, 44px touch targets, WCAG AA contrast
 - **Database:** `listings` composite unique on `(wishlist_item_id, url)`; SQLite migration rebuilds table if legacy `UNIQUE (url)` inline constraint detected
 - **iOS Shortcut:** Hits `POST /api/wishlist` with `X-API-Key` header; backward compatible
-- **Codebase:** ~3,800 LOC (Python + HTML + CSS)
+- **Codebase:** ~5,530 LOC (Python + HTML + CSS)
 
 ## Constraints
 
@@ -154,4 +176,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-04-14 — v1.2 milestone shipped (Phases 13–15)*
+*Last updated: 2026-04-18 — v1.3 milestone shipped (Phases 16–19)*
