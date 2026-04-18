@@ -45,6 +45,7 @@ async def _get_token() -> str:
 
 async def search_and_get_listings(query: str, item_type: str) -> list[dict]:
     if not settings.ebay_app_id or not settings.ebay_cert_id:
+        print("[eBay] Skipping — credentials not configured (set EBAY_APP_ID and EBAY_CERT_ID env vars)")
         return []
 
     async with _semaphore:
