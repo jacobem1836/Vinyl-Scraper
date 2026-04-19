@@ -114,7 +114,7 @@ Plans:
   4. Scanning an item with a pinned release ID uses that release ID directly instead of running a title/artist search
 **Plans**: 1 plan
 Plans:
-- [ ] 23-01-PLAN.md — [to be planned]
+- [ ] 23-01-PLAN.md — Release search endpoint, pin/unpin endpoint, and pin modal UI
 **UI hint**: yes
 
 ### Phase 24: Per-Item Notification Thresholds
