@@ -627,18 +627,17 @@ button, input, select, textarea {
 /* ============================================================
    15. Image loading skeleton (D-16)
    ============================================================ */
-@keyframes skeleton-shimmer {
-  0%   { background-position: 200% 200%; }
-  100% { background-position: -200% -200%; }
+@keyframes artwork-placeholder-pulse {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.5; }
 }
 
 .card-artwork-wrapper {
   position: relative;
   aspect-ratio: 1 / 1;
   width: 100%;
-  background: linear-gradient(135deg, #0a0a0a 25%, #141414 50%, #0a0a0a 75%);
-  background-size: 400% 400%;
-  animation: skeleton-shimmer 1.4s ease-in-out infinite;
+  background: #0a0a0a url('/static/vinyl-placeholder.svg') center / 65% no-repeat;
+  animation: artwork-placeholder-pulse 2s ease-in-out infinite;
 }
 
 .card-artwork-wrapper img {
@@ -803,12 +802,14 @@ button, input, select, textarea {
   transform: translateY(-50%);
   width: 14px;
   height: 14px;
+  border: 2px solid rgba(255, 255, 255, 0.2);
+  border-top-color: var(--color-accent);
+  border-radius: 50%;
   animation: spin-positioned 0.8s linear infinite;
 }
 
 .typeahead-spinner.hidden {
   display: none;
-  animation: none;
 }
 
 /* Empty / error state row */
