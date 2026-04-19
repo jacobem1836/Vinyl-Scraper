@@ -1,9 +1,9 @@
 ---
-status: complete
+status: diagnosed
 phase: 21-bug-fixes
 source: 21-01-SUMMARY.md
 started: 2026-04-19T00:30:00Z
-updated: 2026-04-19T00:35:00Z
+updated: 2026-04-19T00:40:00Z
 ---
 
 ## Current Test
@@ -46,8 +46,10 @@ blocked: 0
   reason: "User reported: its still there"
   severity: major
   test: 1
-  root_cause: ""
-  artifacts: []
+  root_cause: ".typeahead-spinner.hidden only set animation:none, not display:none. .spinner{display:inline-block} at line 594 has same specificity as .hidden{display:none} at line 144, and wins via cascade (later in file). Fix: added display:none to .typeahead-spinner.hidden. Committed 75f0fd8."
+  artifacts:
+    - path: "static/style.css"
+      issue: ".typeahead-spinner.hidden missing display:none — fixed in 75f0fd8"
   missing: []
   debug_session: ""
 
@@ -56,8 +58,10 @@ blocked: 0
   reason: "User reported: no, it never hides"
   severity: major
   test: 2
-  root_cause: ""
-  artifacts: []
+  root_cause: "Same CSS specificity issue as test 1 — fixed by same commit 75f0fd8."
+  artifacts:
+    - path: "static/style.css"
+      issue: ".typeahead-spinner.hidden missing display:none — fixed in 75f0fd8"
   missing: []
   debug_session: ""
 
@@ -66,7 +70,7 @@ blocked: 0
   reason: "User reported: its still the light grey shimmer"
   severity: major
   test: 3
-  root_cause: ""
+  root_cause: "CSS in static/style.css is correctly updated (confirmed). User is seeing browser-cached old CSS. Fix: hard-refresh (Cmd+Shift+R / Ctrl+Shift+R). No code change needed."
   artifacts: []
   missing: []
   debug_session: ""
