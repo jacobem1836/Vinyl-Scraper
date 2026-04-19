@@ -110,6 +110,8 @@ Reuse existing patterns without modification. Do not introduce new CSS classes u
 
 ## Interaction Contract
 
+**Focal point:** The release search results list is the primary visual anchor of the pin modal — the largest interactive surface. It dominates the modal's vertical space and drives the user's attention from search to selection to confirm.
+
 ### Pin Modal Open/Close
 
 - Trigger: "Pin Release" button (`btn-secondary`) in item header action row
@@ -133,12 +135,12 @@ Reuse existing patterns without modification. Do not introduce new CSS classes u
 - After selecting a row, a "Pin Release" confirm button appears in the modal footer (or activates if already rendered disabled)
 - Confirm submits `POST /wishlist/{item_id}/pin-release` with `release_id` + `artwork_url`
 - On success: modal closes, page reloads (or redirects with toast) showing updated artwork and pin status label
-- Cancel button (`btn-secondary`): closes modal without saving
+- "Keep searching" button (`btn-secondary`): closes modal without saving
 
 ### Clear Pin
 
 - "Clear pin" link/button (`btn-destructive` style) inside modal — visible only when item already has a pinned release
-- No secondary confirmation dialog — single click clears and submits immediately (the "Cancel" path in the modal serves as the implicit undo)
+- No secondary confirmation dialog — single click clears and submits immediately (the "Keep searching" path in the modal serves as the implicit undo)
 - Submits `POST /wishlist/{item_id}/pin-release` with `release_id: null`
 
 ### Pin Status Display
@@ -162,7 +164,7 @@ Reuse existing patterns without modification. Do not introduce new CSS classes u
 | Search error state | `Could not reach Discogs. Try again.` |
 | Confirm CTA (in modal) | `Pin Release` |
 | Clear pin action | `Clear pin` |
-| Cancel button | `Cancel` |
+| Cancel button | `Keep searching` |
 | Pin status label | `Pinned: [Title] ([Year])` |
 | Loading state (spinner aria-label) | `Searching Discogs releases...` |
 
