@@ -807,6 +807,7 @@ button, input, select, textarea {
 }
 
 .typeahead-spinner.hidden {
+  display: none;
   animation: none;
 }
 
