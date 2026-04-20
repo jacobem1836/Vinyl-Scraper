@@ -227,6 +227,39 @@ async def discogs_typeahead_search(q: str = "", type: str = "album"):
     return results
 
 
+@web_router.get("/api/discogs/releases/search")
+async def discogs_release_search(q: str = "", type: str = "album"):
+    if len(q.strip()) < 2:
+        return []
+    from app.services.discogs import typeahead_search
+    results = await typeahead_search(q.strip(), item_type=type, max_results=10)
+    return results
+
+
+@web_router.post("/wishlist/{item_id}/pin-release")
+async def pin_release_web(
+    item_id: int,
+    release_id: str = Form(""),
+    artwork_url: str = Form(""),
+    db: Session = Depends(get_db),
+):
+    item = db.query(WishlistItem).filter_by(id=item_id, is_active=True).first()
+    if not item:
+        raise HTTPException(status_code=404, detail="Item not found")
+    if release_id:
+        item.discogs_release_id = int(release_id)
+        if artwork_url:
+            item.artwork_url = artwork_url
+        db.commit()
+        invalidate_dashboard_cache()
+        return RedirectResponse(url=f"/item/{item_id}?toast=Release+pinned", status_code=303)
+    else:
+        item.discogs_release_id = None
+        db.commit()
+        invalidate_dashboard_cache()
+        return RedirectResponse(url=f"/item/{item_id}?toast=Pin+cleared", status_code=303)
+
+
 @web_router.get("/api/artwork")
 async def proxy_artwork(url: str = ""):
     if not url:
