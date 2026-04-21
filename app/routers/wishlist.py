@@ -49,6 +49,22 @@ def _landed(listing, fx_rates: dict | None = None) -> float:
     return base_total
 
 
+def _parse_notify_pct(raw: str) -> float | None:
+    """Parse notify_below_pct from a raw form string. Returns float in [1, 90] or None for blank."""
+    if not raw or not raw.strip():
+        return None
+    try:
+        val = float(raw.strip())
+    except ValueError:
+        return None
+    # Clamp to valid range (T-24-01)
+    if val < 1:
+        val = 1.0
+    elif val > 90:
+        val = 90.0
+    return val
+
+
 def _enrich_item(item: WishlistItem, fx_rates: dict | None = None) -> dict:
     all_listings = list(item.listings or [])
     active_priced = [l for l in all_listings if l.is_active and l.price is not None]
@@ -62,6 +78,8 @@ def _enrich_item(item: WishlistItem, fx_rates: dict | None = None) -> dict:
         "query": item.query,
         "notes": item.notes,
         "notify_below_pct": item.notify_below_pct,
+        "effective_notify_pct": item.notify_below_pct if item.notify_below_pct is not None else settings.notify_below_pct_default,
+        "is_default_threshold": item.notify_below_pct is None,
         "notify_email": item.notify_email,
         "created_at": item.created_at,
         "last_scanned_at": item.last_scanned_at,
@@ -95,11 +113,12 @@ async def add_wishlist_item_web(
     type: str = Form(...),
     query: str = Form(...),
     notes: str | None = Form(None),
-    notify_below_pct: float = Form(20.0),
+    notify_below_pct_raw: str = Form(""),
     notify_email: str = Form(""),
     discogs_release_id: str = Form(""),
     db: Session = Depends(get_db),
 ):
+    notify_below_pct = _parse_notify_pct(notify_below_pct_raw)
     release_id = int(discogs_release_id) if discogs_release_id else None
     notify_email_bool = notify_email.lower() in ("on", "true", "1", "yes")
     item = WishlistItem(
@@ -127,11 +146,12 @@ async def edit_wishlist_item_web(
     type: str = Form(...),
     query: str = Form(...),
     notes: str | None = Form(None),
-    notify_below_pct: float = Form(20.0),
+    notify_below_pct_raw: str = Form(""),
     notify_email: str = Form(""),
     discogs_release_id: str = Form(""),
     db: Session = Depends(get_db),
 ):
+    notify_below_pct = _parse_notify_pct(notify_below_pct_raw)
     release_id = int(discogs_release_id) if discogs_release_id else None
     notify_email_bool = notify_email.lower() in ("on", "true", "1", "yes")
     item = db.query(WishlistItem).filter_by(id=item_id, is_active=True).first()

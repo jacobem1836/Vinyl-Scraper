@@ -44,7 +44,7 @@
         {% endif %}
 
         <div class="text-sm text-muted" style="display: flex; flex-direction: column; gap: var(--space-xs);">
-          <p>Notify when ≥ <span class="text-accent">{{ item.notify_below_pct|int }}%</span> below typical price{% if item.typical_price is not none %} (~${{ '%.2f'|format(item.typical_price) }}){% endif %}</p>
+          <p>Notify when &ge; <span class="text-accent">{{ item.effective_notify_pct|int }}%</span> below typical price{% if item.typical_price is not none %} (~${{ '%.2f'|format(item.typical_price) }}){% endif %}{% if item.is_default_threshold %} <span class="text-faint">(default)</span>{% endif %}</p>
           <p>Last scanned: {% if item.last_scanned_at %}<span data-timestamp="{{ item.last_scanned_at.isoformat() }}">{{ item.last_scanned_at }}</span>{% else %}never{% endif %}</p>
         </div>
       </div>
@@ -58,7 +58,7 @@
                 data-query="{{ item.query }}"
                 data-type="{{ item.type }}"
                 data-notes="{{ item.notes or '' }}"
-                data-notify-below-pct="{{ item.notify_below_pct }}"
+                data-notify-below-pct="{{ item.notify_below_pct if item.notify_below_pct is not none else '' }}"
                 data-notify-email="{{ 'true' if item.notify_email else 'false' }}"
                 data-discogs-release-id="{{ item.discogs_release_id or '' }}"
                 data-discogs-release-title="{{ item.query }}">
@@ -244,8 +244,8 @@
             <input id="editNotes" name="notes" class="form-input" />
           </div>
           <div>
-            <label class="form-label">Notify when price is this % below typical</label>
-            <input id="editNotifyPct" name="notify_below_pct" type="number" step="1" min="1" max="90" class="form-input" />
+            <label class="form-label">Notify threshold (% below typical) <span class="text-faint">-- leave blank for default</span></label>
+            <input id="editNotifyPct" name="notify_below_pct" type="number" step="1" max="90" class="form-input" />
           </div>
           <label class="flex items-center gap-sm text-sm text-muted">
             <input type="hidden" name="notify_email" value="" />
