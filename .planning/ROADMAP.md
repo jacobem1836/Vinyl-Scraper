@@ -61,7 +61,7 @@ See archive: `.planning/milestones/v1.3-ROADMAP.md`
 - [ ] **Phase 21: Bug Fixes** — Fix typeahead spinner, image skeleton shimmer
 - [x] **Phase 22: Resend Email** — Migrate SMTP to Resend API (completed 2026-04-18)
 - [x] **Phase 23: Discogs Release Selection** — Manual release pinning on item detail (completed 2026-04-20)
-- [ ] **Phase 24: Per-Item Notification Thresholds** — Custom % per wishlist item
+- [x] **Phase 24: Per-Item Notification Thresholds** — Custom % per wishlist item (completed 2026-04-21)
 
 ## Phase Details
 
@@ -128,7 +128,7 @@ Plans:
   4. The custom threshold value is visible on item detail so the user knows what's set
 **Plans**: 1 plan
 Plans:
-- [ ] 24-01-PLAN.md — Nullable threshold column, global default config, notifier fallback, edit form and item detail UI
+- [x] 24-01-PLAN.md — Nullable threshold column, global default config, notifier fallback, edit form and item detail UI
 
 ## Progress
 
@@ -157,6 +157,6 @@ Plans:
 | 21. Bug Fixes | v1.4 | 0/1 | Not started | - |
 | 22. Resend Email | v1.4 | 1/1 | Complete   | 2026-04-18 |
 | 23. Discogs Release Selection | v1.4 | 1/1 | Complete   | 2026-04-20 |
-| 24. Per-Item Notification Thresholds | v1.4 | 0/? | Not started | - |
+| 24. Per-Item Notification Thresholds | v1.4 | 1/1 | Complete    | 2026-04-21 |
 
 *Roadmap updated: 2026-04-18 — v1.4 Quality & Gaps phases added*
