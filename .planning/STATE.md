@@ -19,8 +19,8 @@ progress:
 
 Phase: 25 — eBay Credentials
 Plan: Not started
-Status: Roadmap defined — ready to plan Phase 25
-Last activity: 2026-04-21 — v1.5 roadmap created
+Status: Context gathered — ready to plan Phase 25
+Last activity: 2026-04-21 — Phase 25 context captured (assumptions mode)
 
 ```
 [                              ] 0%   0/3 phases complete
