@@ -4,7 +4,7 @@
 
 A personal vinyl record wishlist manager that scrapes multiple stores and marketplaces to track prices and availability for records you want to buy. You add records you're after; it finds them across the web, computes landed costs (including shipping to AU), and alerts you to deals. Accessed via a web dashboard and an iOS Shortcut for quick adds.
 
-The app shipped v1.0 as a polished personal tool, v1.1 sharpened UX with CRATE design system and Discogs typeahead, v1.2 added signal intelligence (relevance filtering, ships_from) and a full notification system, v1.3 completed a full visual overhaul (true black, Gothic A1 typography, toast unification, wider cards), and v1.4 closed quality gaps: dead code removal, Resend email, Discogs release pinning, and per-item notification thresholds.
+The app shipped v1.0 as a polished personal tool, v1.1 sharpened UX with CRATE design system and Discogs typeahead, v1.2 added signal intelligence (relevance filtering, ships_from) and a full notification system, v1.3 completed a full visual overhaul (true black, Gothic A1 typography, toast unification, wider cards), v1.4 closed quality gaps: dead code removal, Resend email, Discogs release pinning, and per-item notification thresholds, and v1.5 expands source coverage with new AU vinyl store scrapers and working eBay credentials.
 
 ## Core Value
 
@@ -22,9 +22,13 @@ Key outcomes:
 - Discogs release pin modal — search, select, and pin a specific release per item
 - Per-item notification threshold — nullable `notify_below_pct` with global default fallback
 
-## Next Milestone
+## Current Milestone: v1.5 Coverage & Sources
 
-*Not yet scoped.* Candidate directions: new AU vinyl store source (Wax Museum, Heartland, Vinyl Revival), Spotify/Discogs wantlist integration, purchase workflow, mobile-first improvements. Scope with `/gsd-new-milestone` when ready.
+**Goal:** Expand scraper coverage with new AU vinyl stores and get the eBay adapter working with real credentials.
+
+**Target features:**
+- eBay developer credentials wired up and adapter verified in production
+- New AU vinyl store scrapers (stores TBD via research — targeting 3–4 stores with public listings)
 
 <details>
 <summary>Prior milestone brief: v1.4 Quality & Gaps</summary>
@@ -144,7 +148,8 @@ Key outcomes:
 
 ### Active
 
-*(No active requirements — next milestone not yet scoped)*
+- [ ] eBay adapter verified working with production credentials
+- [ ] New AU vinyl store scrapers (3–4 stores, TBD via research)
 
 ### Out of Scope
 
@@ -203,4 +208,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-04-21 — v1.4 Quality & Gaps shipped (Phases 20–24 complete)*
+*Last updated: 2026-04-21 — v1.5 Coverage & Sources started*
