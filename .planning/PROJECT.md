@@ -141,7 +141,7 @@ Key outcomes:
 - [ ] **EMAIL-T5**: Migrate SMTP email → Resend API
 - [ ] **UI-T6**: Image loading skeleton — diagonal shimmer, much darker
 - [ ] **DISC-T3**: Manual Discogs release selection on item detail page
-- [ ] **NOTIF-F1**: Per-item notification thresholds (custom % below typical per wishlist item)
+- [x] **NOTIF-F1**: Per-item notification thresholds (custom % below typical per wishlist item) — Validated Phase 24
 
 ### Out of Scope
 
@@ -194,4 +194,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-04-18 — v1.4 milestone started (Quality & Gaps)*
+*Last updated: 2026-04-21 — Phase 24 complete (per-item notification thresholds, NOTIF-05/06)*
