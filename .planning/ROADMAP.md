@@ -60,7 +60,7 @@ See archive: `.planning/milestones/v1.3-ROADMAP.md`
 - [x] **Phase 20: Cleanup & Config** — Remove dead Clarity code, wire eBay keys (completed 2026-04-18)
 - [ ] **Phase 21: Bug Fixes** — Fix typeahead spinner, image skeleton shimmer
 - [x] **Phase 22: Resend Email** — Migrate SMTP to Resend API (completed 2026-04-18)
-- [ ] **Phase 23: Discogs Release Selection** — Manual release pinning on item detail
+- [x] **Phase 23: Discogs Release Selection** — Manual release pinning on item detail (completed 2026-04-20)
 - [ ] **Phase 24: Per-Item Notification Thresholds** — Custom % per wishlist item
 
 ## Phase Details
@@ -114,7 +114,7 @@ Plans:
   4. Scanning an item with a pinned release ID uses that release ID directly instead of running a title/artist search
 **Plans**: 1 plan
 Plans:
-- [ ] 23-01-PLAN.md — Release search endpoint, pin/unpin endpoint, and pin modal UI
+- [x] 23-01-PLAN.md — Release search endpoint, pin/unpin endpoint, and pin modal UI
 **UI hint**: yes
 
 ### Phase 24: Per-Item Notification Thresholds
@@ -128,7 +128,7 @@ Plans:
   4. The custom threshold value is visible on item detail so the user knows what's set
 **Plans**: 1 plan
 Plans:
-- [ ] 24-01-PLAN.md — [to be planned]
+- [ ] 24-01-PLAN.md — Nullable threshold column, global default config, notifier fallback, edit form and item detail UI
 
 ## Progress
 
@@ -156,7 +156,7 @@ Plans:
 | 20. Cleanup & Config | v1.4 | 1/1 | Complete   | 2026-04-18 |
 | 21. Bug Fixes | v1.4 | 0/1 | Not started | - |
 | 22. Resend Email | v1.4 | 1/1 | Complete   | 2026-04-18 |
-| 23. Discogs Release Selection | v1.4 | 0/? | Not started | - |
+| 23. Discogs Release Selection | v1.4 | 1/1 | Complete   | 2026-04-20 |
 | 24. Per-Item Notification Thresholds | v1.4 | 0/? | Not started | - |
 
 *Roadmap updated: 2026-04-18 — v1.4 Quality & Gaps phases added*
