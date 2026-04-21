@@ -48,21 +48,21 @@ See `.planning/FUTURE.md` for deferred work (auth, streaming integrations, mobil
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| EBAY-01 | — | Pending |
-| EBAY-02 | — | Pending |
-| SRC-07 | — | Pending |
-| SRC-08 | — | Pending |
-| SRC-09 | — | Pending |
-| SRC-10 | — | Pending |
-| SRC-11 | — | Pending |
-| SRC-12 | — | Pending |
-| SRC-13 | — | Pending |
+| EBAY-01 | Phase 25 | Pending |
+| EBAY-02 | Phase 25 | Pending |
+| SRC-07 | Phase 26 | Pending |
+| SRC-08 | Phase 26 | Pending |
+| SRC-09 | Phase 26 | Pending |
+| SRC-10 | Phase 26 | Pending |
+| SRC-11 | Phase 26 | Pending |
+| SRC-12 | Phase 26 | Pending |
+| SRC-13 | Phase 27 | Pending |
 
 **Coverage:**
 - v1.5 requirements: 9 total
-- Mapped to phases: 0 (pending roadmap)
-- Unmapped: 9 ⚠️
+- Mapped to phases: 9 ✓
+- Unmapped: 0 ✓
 
 ---
 *Requirements defined: 2026-04-21*
-*Last updated: 2026-04-21 after initial definition*
+*Last updated: 2026-04-21 — traceability filled after roadmap creation*
