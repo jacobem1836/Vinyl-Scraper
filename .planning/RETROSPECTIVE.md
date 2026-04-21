@@ -120,6 +120,46 @@
 
 ---
 
+## Milestone: v1.4 — Quality & Gaps
+
+**Shipped:** 2026-04-21
+**Phases:** 5 (20–24) | **Plans:** 5 | **Timeline:** 4 days
+
+### What Was Built
+- **Dead code removal** — `clarity.py` and its registry entry deleted; eBay credential warning surfaced when env vars absent (Phase 20)
+- **Bug fixes** — typeahead spinner cleared on all close paths (debounce cancellation race fixed); artwork skeleton replaced with diagonal dark shimmer matching true-black surface (Phase 21)
+- **Resend email migration** — smtplib removed; `resend==2.29.0` wired in; `RESEND_API_KEY` from env only; `extra=ignore` on pydantic config tolerates old SMTP env vars (Phase 22)
+- **Discogs release pinning** — inline search modal on item detail, pin/unpin endpoints, scan and artwork resolve via pinned release ID when set; textContent throughout for XSS safety (Phase 23)
+- **Per-item notification thresholds** — nullable `notify_below_pct` column on WishlistItem; global default fallback in config; notifier reads per-item value or falls back; form field, migration, item detail display (Phase 24)
+
+### What Worked
+- Phases 22–24 each had clear, narrow scopes that executed cleanly without edge-case surprises
+- `extra=ignore` on pydantic model_config is a smart forward-compatibility technique — tolerates env var additions/removals without startup crashes
+- textContent-only approach for Discogs results (Phase 23) was the right call — simple, safe, no sanitizer dependency
+- The per-item nullable + global fallback pattern (Phase 24) was clean to implement — no existing item needed migration data
+
+### What Was Inefficient
+- ROADMAP.md Phase 21 checkbox wasn't updated after execution (showed `[ ]` at milestone completion) — required manual fix at archive time
+- STATE.md wasn't updated between phases — showed Phase 24 "Not started" after Phase 23 was complete
+- `gsd-tools milestone complete` only extracted 2 of 6 accomplishments from SUMMARY.md files — one-liner field not consistently populated in Phase 20, 21, 23, 24 summaries
+
+### Patterns Established
+- **Nullable column + global config fallback:** Add a nullable Float column; config provides the global default; service reads `item.field or config.default` — clean per-item override with zero migration burden
+- **textContent for all dynamic foreign-data rendering:** Any data from an external API (Discogs, etc.) should be set via `element.textContent`, never `innerHTML`, regardless of apparent safety
+- **`extra=ignore` for env var tolerance:** Pydantic settings models should use `extra=ignore` when the env var set may include stale or future vars — avoids startup crashes on config changes
+
+### Key Lessons
+1. **Update ROADMAP.md phase checkboxes immediately when a phase completes** — stale checkboxes cause friction at milestone archive (now the 4th milestone this has happened)
+2. **Populate the `One-liner` field in SUMMARY.md frontmatter** — gsd-tools uses it for milestone accomplishment extraction; absent fields degrade archive quality
+3. **`extra=ignore` on pydantic Settings is a forward-compatibility best practice** — add it proactively when migrating config keys
+
+### Cost Observations
+- Model mix: ~100% sonnet (no complex planning phases required opus)
+- Sessions: ~4 across 5 phases
+- Notable: Shortest time-to-ship of any milestone — 4 days, all focused bug/feature work, no architecture changes needed
+
+---
+
 ## Cross-Milestone Trends
 
 ### Process Evolution
@@ -130,6 +170,7 @@
 | v1.1 | 7 | 16 | UX polish + Discogs typeahead — design tool stack introduced |
 | v1.2 | 3 | 8 | Signal intelligence + notifications — TDD introduced for notifier |
 | v1.3 | 4 | 6 | Visual overhaul — CSS-only phases, lightest milestone by weight |
+| v1.4 | 5 | 5 | Quality & Gaps — dead code, bug fixes, email migration, new features |
 
 ### Cumulative Quality
 
@@ -139,6 +180,7 @@
 | v1.1 | 0 | 8 (browser checks) | 0 |
 | v1.2 | 9 (test_notifier.py) | 3 (user-confirmed) | 0 |
 | v1.3 | 0 (visual-only) | 12 (4 UAT passes) | 0 |
+| v1.4 | 0 | 5 (1 per phase) | resend 2.29.0 |
 
 ### Top Lessons (Verified Across Milestones)
 
