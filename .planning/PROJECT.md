@@ -4,40 +4,41 @@
 
 A personal vinyl record wishlist manager that scrapes multiple stores and marketplaces to track prices and availability for records you want to buy. You add records you're after; it finds them across the web, computes landed costs (including shipping to AU), and alerts you to deals. Accessed via a web dashboard and an iOS Shortcut for quick adds.
 
-The app shipped v1.0 as a polished personal tool, v1.1 sharpened UX with CRATE design system and Discogs typeahead, v1.2 added signal intelligence (relevance filtering, ships_from) and a full notification system, and v1.3 completed a full visual overhaul (true black, Gothic A1 typography, toast unification, wider cards).
+The app shipped v1.0 as a polished personal tool, v1.1 sharpened UX with CRATE design system and Discogs typeahead, v1.2 added signal intelligence (relevance filtering, ships_from) and a full notification system, v1.3 completed a full visual overhaul (true black, Gothic A1 typography, toast unification, wider cards), and v1.4 closed quality gaps: dead code removal, Resend email, Discogs release pinning, and per-item notification thresholds.
 
 ## Core Value
 
 Show me the cheapest way to buy the records I want, right now.
 
-## Current Milestone: v1.4 Quality & Gaps
-
-**Goal:** Clear accumulated technical debt and close real feature gaps before building anything new.
-
-**Target features:**
-- Remove Clarity dead code + wire eBay keys (makes eBay work in production)
-- Fix typeahead spinner bug (outstanding since v1.1)
-- Resend email migration (replaces SMTP)
-- Manual Discogs release selection (fix wrong artwork/match)
-- Image skeleton: diagonal shimmer, much darker
-- Per-item notification thresholds (custom % per item)
-
 ## Current State
 
-**Latest milestone:** v1.3 Visual Overhaul — shipped 2026-04-18 (Phases 16–19)
+**Latest milestone:** v1.4 Quality & Gaps — shipped 2026-04-21 (Phases 20–24)
 
 Key outcomes:
-- True black (#000) palette across all surfaces — dashboard, cards, detail, modals
-- Custom 4px translucent-white scrollbars with hover brightening
-- Gothic A1 self-hosted font (Light/Regular/Medium) replaces Inter; preloaded
-- Item name visibly larger and heavier than price on cards, detail, and modals
-- Post-add toast unified with scan toast via `window.showToast()` — no scan panel
-- Item detail placeholder swapped to empty vinyl PNG
-- Card grid: 3-col max, wider gap, tighter 12px margins
+- Dead Clarity adapter removed; eBay credential warning surfaced for operator
+- Typeahead spinner fixed on all close paths (debounce race + Escape/Tab/select/type-change)
+- Artwork loading skeleton replaced with diagonal dark shimmer matching true-black surface
+- Deal alerts migrated from SMTP to Resend API — no SMTP config needed
+- Discogs release pin modal — search, select, and pin a specific release per item
+- Per-item notification threshold — nullable `notify_below_pct` with global default fallback
 
 ## Next Milestone
 
-*Not yet scoped.* Candidate directions: purchase workflow integration, Clarity Records re-enable, per-item notification thresholds, mobile-first web view, admin/monitoring dashboard. Scope with `/gsd-new-milestone` when ready.
+*Not yet scoped.* Candidate directions: new AU vinyl store source (Wax Museum, Heartland, Vinyl Revival), Spotify/Discogs wantlist integration, purchase workflow, mobile-first improvements. Scope with `/gsd-new-milestone` when ready.
+
+<details>
+<summary>Prior milestone brief: v1.4 Quality & Gaps</summary>
+
+**Goal:** Clear accumulated technical debt and close real feature gaps before building anything new.
+
+**Delivered:**
+- Remove Clarity dead code + eBay credential warning (Phase 20)
+- Typeahead spinner fix + diagonal dark skeleton shimmer (Phase 21)
+- Resend email migration (Phase 22)
+- Discogs release pinning modal (Phase 23)
+- Per-item notification thresholds (Phase 24)
+
+</details>
 
 <details>
 <summary>Prior milestone brief: v1.3 Visual Overhaul</summary>
@@ -68,16 +69,13 @@ Key outcomes:
 <details>
 <summary>Prior milestone brief: v1.1 UX Polish & Album Selection</summary>
 
-**Goal:** Sharpen the UI with targeted fixes, add Discogs typeahead for precise album identification, and redesign email notifications — all designed using the full design tool stack.
+**Goal:** Sharpen the UI with targeted fixes, add Discogs typeahead for precise album identification, and redesign email notifications.
 
 **Target features:**
 - Album name autofill on add/edit (Discogs typeahead to pin a specific release)
-- Fix overlapping buttons (bottom right)
-- Fix scan log message ("no artist results" → correct type label)
+- Fix overlapping buttons and scan log label
 - Prioritize scraped store images over Discogs fallback
-- CRATE brand font upgrade
-- Email UI redesign
-- UI polish (typography scale, card hierarchy, focus states, button states, responsive grid, color contrast)
+- CRATE brand font upgrade, email UI redesign, UI polish
 
 </details>
 
@@ -133,15 +131,20 @@ Key outcomes:
 - ✓ **FIX-01**: Post-add toast unified with standard #toast primitive — v1.3
 - ✓ **FIX-02**: Item detail placeholder swapped to empty vinyl PNG — v1.3
 
+- ✓ **CLEAN-01**: Clarity Records `clarity.py` and registry entry removed — v1.4
+- ✓ **CFG-01**: eBay credential warning surfaced when env vars absent — v1.4
+- ✓ **BUG-03**: Typeahead spinner clears on all close paths — v1.4
+- ✓ **UI-07**: Image skeleton uses diagonal dark shimmer (135°) — v1.4
+- ✓ **EMAIL-04**: Deal alert emails sent via Resend API; SMTP no longer required — v1.4
+- ✓ **DISC-01**: Discogs release search from item detail page — v1.4
+- ✓ **DISC-02**: Pin a selected Discogs release to a wishlist item — v1.4
+- ✓ **DISC-03**: Scans and artwork use pinned release ID when set — v1.4
+- ✓ **NOTIF-05**: Per-item notification threshold (`notify_below_pct`) — v1.4
+- ✓ **NOTIF-06**: Per-item threshold overrides global default when set — v1.4
+
 ### Active
 
-- [ ] **BUG-T4**: Fix typeahead spinner not clearing after result select or type-change
-- [ ] **CLEAN-T2**: Remove dead Clarity Records code (clarity.py + registry entry)
-- [ ] **CFG-T1**: Wire eBay developer keys/config so eBay adapter works in production
-- [ ] **EMAIL-T5**: Migrate SMTP email → Resend API
-- [ ] **UI-T6**: Image loading skeleton — diagonal shimmer, much darker
-- [ ] **DISC-T3**: Manual Discogs release selection on item detail page
-- [x] **NOTIF-F1**: Per-item notification thresholds (custom % below typical per wishlist item) — Validated Phase 24
+*(No active requirements — next milestone not yet scoped)*
 
 ### Out of Scope
 
@@ -149,15 +152,17 @@ Key outcomes:
 - Mobile app — iOS Shortcut handles mobile add; web is desktop-first
 - Auction bidding or purchasing — discovery only, not transactional
 - Clarity Records (clarityrecords.com.au) — NXDOMAIN; re-enable when site recovers
+- Auth / streaming integrations (Spotify, Discogs wantlist, Apple Music) — depends on auth foundation
 
 ## Context
 
-- **Stack:** Python 3.14, FastAPI, SQLAlchemy 2, Jinja2, pg8000/PostgreSQL (Railway), aiosqlite (dev), APScheduler, httpx
-- **Adapters:** discogs, shopify, ebay, discrepancy, juno, bandcamp (6 active; clarity disabled NXDOMAIN)
+- **Stack:** Python 3.11+, FastAPI, SQLAlchemy 2, Jinja2, pg8000/PostgreSQL (Railway), aiosqlite (dev), APScheduler, httpx, resend 2.29.0
+- **Adapters:** discogs, shopify, ebay, discrepancy, juno, bandcamp (6 active; clarity removed)
 - **Design system:** CRATE — CSS custom properties, true black palette (#000), white accent, Gothic A1 font, 44px touch targets, WCAG AA contrast
-- **Database:** `listings` composite unique on `(wishlist_item_id, url)`; SQLite migration rebuilds table if legacy `UNIQUE (url)` inline constraint detected
+- **Database:** `listings` composite unique on `(wishlist_item_id, url)`; SQLite migration rebuilds table if legacy `UNIQUE (url)` inline constraint detected; `notify_below_pct` nullable Float on WishlistItem (default None = use global)
 - **iOS Shortcut:** Hits `POST /api/wishlist` with `X-API-Key` header; backward compatible
-- **Codebase:** ~5,530 LOC (Python + HTML + CSS)
+- **Email:** Resend API (`resend==2.29.0`); `RESEND_API_KEY` env var required; SMTP env vars no longer needed
+- **Codebase:** ~5,500 LOC (Python + HTML + CSS)
 
 ## Constraints
 
@@ -178,10 +183,14 @@ Key outcomes:
 | Discogs release endpoint for artwork | Higher res than search thumb | Full-res cover art on all items ✓ Good |
 | `UNIQUE (wishlist_item_id, url)` on listings | Same URL valid for multiple wishlist items | Fixes IntegrityError on cross-item scans ✓ Good |
 | SQLite table rebuild migration | Inline UNIQUE can't be dropped otherwise | Handles legacy dev DB automatically ✓ Good |
-| Clarity Records disabled | NXDOMAIN on clarityrecords.com.au | Re-enable when site recovers ⚠ Revisit |
+| Clarity Records disabled → removed | NXDOMAIN on clarityrecords.com.au | Removed in v1.4; re-enable if site recovers ⚠ Revisit |
 | Relevance threshold global (not per-item) | Simpler config, avoids per-row settings bloat | Works for single user; revisit if items diverge ⚠ Revisit |
 | Collect-then-dispatch for digest | One email per scan run, not per event | Reduces alert fatigue; tested with 9 unit tests ✓ Good |
 | Cooldown is global hours (not per-item) | Solo tool; consistent behaviour simpler | May need per-item control as wishlist grows — Pending |
+| Resend API replaces SMTP | Simpler config, no SMTP relay needed | SMTP env vars removed; `RESEND_API_KEY` only ✓ Good |
+| textContent (not innerHTML) for Discogs results | XSS mitigation on dynamic content | All Discogs search data rendered via textContent ✓ Good |
+| Clear pin does not clear artwork_url | User keeps artwork they had | Avoids unexpected blank artwork on unpin ✓ Good |
+| notify_below_pct nullable with global fallback | Per-item override without breaking existing items | Null = use global; set value = use per-item ✓ Good |
 
 ## Evolution
 
@@ -194,4 +203,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-04-21 — Phase 24 complete (per-item notification thresholds, NOTIF-05/06)*
+*Last updated: 2026-04-21 — v1.4 Quality & Gaps shipped (Phases 20–24 complete)*
