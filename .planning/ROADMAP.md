@@ -85,7 +85,8 @@ See archive: `.planning/milestones/v1.4-ROADMAP.md`
   1. A scan against an active wishlist item returns eBay AU listings alongside Discogs and Shopify results
   2. The `.env.example` file documents EBAY_APP_ID, EBAY_CERT_ID, and EBAY_DEV_ID with descriptions
   3. Starting the app without eBay credentials logs a visible warning, but the app still starts
-**Plans**: TBD
+**Plans**: 1 plan
+- [ ] 25-01-PLAN.md — Document eBay credentials in .env.example and wire startup warning; verify live scan returns AU listings
 
 ### Phase 26: Shopify Store Expansion
 **Goal**: Five additional AU Shopify stores and Heartland Records are queryable through the existing scanner
