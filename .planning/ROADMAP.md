@@ -71,7 +71,7 @@ See archive: `.planning/milestones/v1.4-ROADMAP.md`
 
 ### v1.5 Coverage & Sources (Phases 25–27)
 
-- [ ] **Phase 25: eBay Credentials** — Wire eBay credentials to config and verify adapter returns results
+- [x] **Phase 25: eBay Credentials** — Wire eBay credentials to config and verify adapter returns results (completed 2026-04-25)
 - [ ] **Phase 26: Shopify Store Expansion** — Add 5 Shopify stores to STORES list plus Heartland fallback logic
 - [ ] **Phase 27: Clarity Records Adapter** — New BigCommerce HTML scraper for clarityrecords.com.au
 
@@ -86,7 +86,7 @@ See archive: `.planning/milestones/v1.4-ROADMAP.md`
   2. The `.env.example` file documents EBAY_APP_ID, EBAY_CERT_ID, and EBAY_DEV_ID with descriptions
   3. Starting the app without eBay credentials logs a visible warning, but the app still starts
 **Plans**: 1 plan
-- [ ] 25-01-PLAN.md — Document eBay credentials in .env.example and wire startup warning; verify live scan returns AU listings
+- [x] 25-01-PLAN.md — Document eBay credentials in .env.example and wire startup warning; verify live scan returns AU listings
 
 ### Phase 26: Shopify Store Expansion
 **Goal**: Five additional AU Shopify stores and Heartland Records are queryable through the existing scanner
@@ -136,7 +136,7 @@ See archive: `.planning/milestones/v1.4-ROADMAP.md`
 | 22. Resend Email | v1.4 | 1/1 | Complete | 2026-04-18 |
 | 23. Discogs Release Selection | v1.4 | 1/1 | Complete | 2026-04-20 |
 | 24. Per-Item Notification Thresholds | v1.4 | 1/1 | Complete | 2026-04-21 |
-| 25. eBay Credentials | v1.5 | 0/1 | Not started | - |
+| 25. eBay Credentials | v1.5 | 1/1 | Complete    | 2026-04-25 |
 | 26. Shopify Store Expansion | v1.5 | 0/1 | Not started | - |
 | 27. Clarity Records Adapter | v1.5 | 0/1 | Not started | - |
 
