@@ -21,7 +21,7 @@ decisions:
 metrics:
   duration: "<5 min"
   completed_date: "2026-04-25"
-  tasks_completed: 1
+  tasks_completed: 2
   tasks_total: 2
   files_changed: 2
 ---
@@ -32,19 +32,14 @@ metrics:
 
 ## Status
 
-Task 1 complete (committed `354f342`). Task 2 is a human-verify checkpoint — pending live scan verification.
+Complete. Both tasks finished and verified.
 
 ## Tasks Completed
 
 | # | Name | Commit | Files |
 |---|------|--------|-------|
 | 1 | Document eBay credentials in .env.example and add startup warning | 354f342 | `.env.example`, `app/main.py` |
-
-## Tasks Pending
-
-| # | Name | Status |
-|---|------|--------|
-| 2 | Verify live scan returns eBay AU listings | Awaiting human verification (checkpoint) |
+| 2 | Verify live scan returns eBay AU listings | checkpoint approved | — (no code changes) |
 
 ## What Was Built
 
