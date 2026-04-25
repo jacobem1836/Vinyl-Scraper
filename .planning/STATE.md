@@ -3,24 +3,24 @@ gsd_state_version: 1.0
 milestone: v1.5
 milestone_name: Coverage & Sources
 status: executing
-last_updated: "2026-04-22T04:53:14.690Z"
-last_activity: 2026-04-22 -- Phase 25 planning complete
+last_updated: "2026-04-25T05:48:13.017Z"
+last_activity: 2026-04-25
 progress:
   total_phases: 3
-  completed_phases: 0
+  completed_phases: 1
   total_plans: 1
-  completed_plans: 0
-  percent: 0
+  completed_plans: 1
+  percent: 100
 ---
 
 # Project State
 
 ## Current Position
 
-Phase: 25 — eBay Credentials
+Phase: 26
 Plan: Not started
-Status: Ready to execute
-Last activity: 2026-04-22 -- Phase 25 planning complete
+Status: Executing Phase 25
+Last activity: 2026-04-25
 
 ```
 [                              ] 0%   0/3 phases complete
@@ -30,7 +30,7 @@ Last activity: 2026-04-22 -- Phase 25 planning complete
 
 See: .planning/PROJECT.md (updated 2026-04-21)
 **Core value:** Show me the cheapest way to buy the records I want, right now.
-**Current focus:** v1.5 Coverage & Sources — 3 phases, 9 requirements
+**Current focus:** Phase 25 — eBay Credentials
 
 ## Phase Overview
 
@@ -50,7 +50,7 @@ See: .planning/PROJECT.md (updated 2026-04-21)
 
 ### Todos
 
-- None active
+- **[backlog]** eBay adapter returns cassette listings alongside vinyl — add optional "additional formats" filter/exclusion (e.g. only show vinyl/LP/7"/12") in a future phase
 
 ### Blockers
 
