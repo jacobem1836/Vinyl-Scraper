@@ -40,6 +40,8 @@ async def startup():
 
         print("[startup] DB init failed after retries; app will continue and retry on demand")
 
+    if not settings.ebay_app_id or not settings.ebay_cert_id:
+        print("[startup] WARNING: eBay credentials missing (EBAY_APP_ID and/or EBAY_CERT_ID); eBay adapter will return no results until configured")
     asyncio.create_task(_init_db_with_retries())
     setup_scheduler()
     scheduler.start()
