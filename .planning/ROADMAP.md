@@ -96,7 +96,9 @@ See archive: `.planning/milestones/v1.4-ROADMAP.md`
   1. Scanning a well-known album returns results from Wax Museum, Red Eye, Rockaway, Happy Valley, and Rare Records when those stores carry it
   2. Scanning an album carried by Heartland Records returns Heartland listings (via products.json fallback path)
   3. No new adapter file is introduced — all five standard stores are entries in the STORES list; Heartland uses a store-level fallback flag
-**Plans**: TBD
+**Plans**: 2 plans
+- [ ] 26-01-PLAN.md — Add 5 standard Shopify stores to STORES list (SRC-07 through SRC-11)
+- [ ] 26-02-PLAN.md — Add Heartland Records via products.json fallback path (SRC-12)
 
 ### Phase 27: Clarity Records Adapter
 **Goal**: Clarity Records (Adelaide) is a queryable source and returns vinyl listings via HTML category page scraping
