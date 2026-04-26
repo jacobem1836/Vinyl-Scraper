@@ -161,7 +161,7 @@ Plans:
 | 24. Per-Item Notification Thresholds | v1.4 | 1/1 | Complete   | 2026-04-26 |
 | 25. eBay Credentials | v1.5 | 1/1 | Complete   | 2026-04-26 |
 | 26. Shopify Store Expansion | v1.5 | 2/2 | Complete   | 2026-04-26 |
-| 27. Clarity Records Adapter | v1.5 | 0/? | Not started | - |
+| 27. Clarity Records Adapter | v1.5 | 1/1 | Complete    | 2026-04-26 |
 
 ### v1.5 Coverage & Sources (Phases 25–27)
 
@@ -189,17 +189,19 @@ Plans:
 - [x] 26-02-PLAN.md — Add Heartland Records via products.json path
 
 #### Phase 27: Clarity Records Adapter
-**Goal**: Add Clarity Records as a new scraping source using BigCommerce HTML pagination
+**Goal**: Add Clarity Records as a new scraping source using BigCommerce HTML scraping
 **Depends on**: Phase 26
 **Requirements**: SRC-13
 **Success Criteria**:
-  1. A new `clarity.py` adapter scrapes Clarity Records via HTML pagination
+  1. A new `clarity.py` adapter scrapes Clarity Records via BigCommerce search endpoint
   2. Adapter registered in the scanner and returns vinyl listings
-  3. Adapter handles pagination to retrieve full catalogue
+  3. Adapter fetches page 1 only — sufficient for targeted artist/album queries (D-02)
   4. Listings include title, price, URL, and image where available
-**Plans**: 1–2 plans
+**Plans**: 1 plan
+Plans:
+- [x] 27-01-PLAN.md — Add Clarity Records BigCommerce HTML adapter and register in ADAPTER_REGISTRY
 Canonical refs:
-- `app/services/shopify.py` — existing Shopify adapter pattern to follow
-- `app/services/discogs.py` — existing scraper pattern reference
+- `app/services/juno.py` — primary BeautifulSoup HTML scraping pattern
+- `app/services/shopify.py` — ListingDict / ships_from / currency reference
 
 *Roadmap updated: 2026-04-26 — v1.5 Coverage & Sources phases added*
