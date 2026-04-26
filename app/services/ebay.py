@@ -57,6 +57,7 @@ async def search_and_get_listings(query: str, item_type: str) -> list[dict]:
                     SEARCH_URL,
                     params={
                         "q": query,
+                        "category_ids": "176985",  # eBay: Music > Records/Vinyl
                         "filter": "buyingOptions:{FIXED_PRICE}",
                         "limit": "10",
                     },
