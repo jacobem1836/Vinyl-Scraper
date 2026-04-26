@@ -58,10 +58,10 @@ See archive: `.planning/milestones/v1.3-ROADMAP.md`
 ### v1.4 Quality & Gaps (Phases 20–24)
 
 - [x] **Phase 20: Cleanup & Config** — Remove dead Clarity code, wire eBay keys (completed 2026-04-18)
-- [ ] **Phase 21: Bug Fixes** — Fix typeahead spinner, image skeleton shimmer
+- [x] **Phase 21: Bug Fixes** — Fix typeahead spinner, image skeleton shimmer (completed 2026-04-26)
 - [x] **Phase 22: Resend Email** — Migrate SMTP to Resend API (completed 2026-04-18)
-- [ ] **Phase 23: Discogs Release Selection** — Manual release pinning on item detail
-- [ ] **Phase 24: Per-Item Notification Thresholds** — Custom % per wishlist item
+- [x] **Phase 23: Discogs Release Selection** — Manual release pinning on item detail (completed 2026-04-26)
+- [x] **Phase 24: Per-Item Notification Thresholds** — Custom % per wishlist item (completed 2026-04-26)
 
 ## Phase Details
 
@@ -88,7 +88,7 @@ Plans:
   4. Skeleton shimmer is visibly dark, matching the true-black card surface
 **Plans**: 1 plan
 Plans:
-- [ ] 21-01-PLAN.md — Fix typeahead spinner clearing and replace skeleton pulse with diagonal dark shimmer
+- [x] 21-01-PLAN.md — Fix typeahead spinner clearing and replace skeleton pulse with diagonal dark shimmer
 **UI hint**: yes
 
 ### Phase 22: Resend Email
@@ -114,7 +114,7 @@ Plans:
   4. Scanning an item with a pinned release ID uses that release ID directly instead of running a title/artist search
 **Plans**: 1 plan
 Plans:
-- [ ] 23-01-PLAN.md — [to be planned]
+- [x] 23-01-PLAN.md — [to be planned]
 **UI hint**: yes
 
 ### Phase 24: Per-Item Notification Thresholds
@@ -128,7 +128,7 @@ Plans:
   4. The custom threshold value is visible on item detail so the user knows what's set
 **Plans**: 1 plan
 Plans:
-- [ ] 24-01-PLAN.md — [to be planned]
+- [x] 24-01-PLAN.md — [to be planned]
 
 ## Progress
 
