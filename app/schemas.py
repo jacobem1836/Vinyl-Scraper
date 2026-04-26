@@ -7,7 +7,7 @@ class WishlistItemCreate(BaseModel):
     type: str           # "album", "artist", or "label"
     query: str
     notes: Optional[str] = None
-    notify_below_pct: Optional[float] = None
+    notify_below_pct: float = 20.0
     notify_email: bool = True
     discogs_release_id: Optional[int] = None  # pinned Discogs release ID; Optional to preserve iOS Shortcut compat
 
@@ -47,7 +47,7 @@ class WishlistItemResponse(BaseModel):
     type: str
     query: str
     notes: Optional[str]
-    notify_below_pct: Optional[float] = None
+    notify_below_pct: float
     notify_email: bool
     created_at: datetime
     last_scanned_at: Optional[datetime]

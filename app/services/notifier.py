@@ -39,8 +39,7 @@ def should_notify(item: WishlistItem, listing: Listing, all_listings: list[Listi
     typical = compute_typical_price(all_listings)
     if typical is None:
         return True  # can't compute median — notify
-    effective_pct = item.notify_below_pct if item.notify_below_pct is not None else settings.notify_below_pct_default
-    threshold = typical * (1 - effective_pct / 100)
+    threshold = typical * (1 - item.notify_below_pct / 100)
     return _landed(listing) <= threshold
 
 
@@ -87,9 +86,6 @@ async def send_deal_email(item: WishlistItem, new_listings: list[Listing]) -> bo
     if not notify_listings:
         return False
 
-    # Resolve effective notification threshold (per-item or global default)
-    effective_pct = item.notify_below_pct if item.notify_below_pct is not None else settings.notify_below_pct_default
-
     # Compute best landed price
     landed_prices = [_landed(l) for l in notify_listings if l.price is not None]
     best_landed = min(landed_prices) if landed_prices else None
@@ -128,7 +124,7 @@ async def send_deal_email(item: WishlistItem, new_listings: list[Listing]) -> bo
         has_typical_price=has_typical,
         listings=template_listings,
         item_url=f"/item/{item.id}",
-        notify_below_pct=f"{effective_pct:.0f}%",
+        notify_below_pct=f"{item.notify_below_pct:.0f}%",
     )
 
     subject = f"[CRATE] Deal alert: {item.query}"

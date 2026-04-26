@@ -26,9 +26,6 @@
             style="width: 120px; height: 120px; object-fit: cover; border-radius: 0;"
           >
         {% endif %}
-        {% if item.discogs_release_id %}
-          <p class="text-sm text-muted" style="margin-top: var(--space-xs); max-width: 120px;">Pinned: {{ item.query }}</p>
-        {% endif %}
       </div>
 
       <div style="flex: 1; min-width: 200px;">
@@ -44,13 +41,12 @@
         {% endif %}
 
         <div class="text-sm text-muted" style="display: flex; flex-direction: column; gap: var(--space-xs);">
-          <p>Notify when &ge; <span class="text-accent">{{ item.effective_notify_pct|int }}%</span> below typical price{% if item.typical_price is not none %} (~${{ '%.2f'|format(item.typical_price) }}){% endif %}{% if item.is_default_threshold %} <span class="text-faint">(default)</span>{% endif %}</p>
+          <p>Notify when ≥ <span class="text-accent">{{ item.notify_below_pct|int }}%</span> below typical price{% if item.typical_price is not none %} (~${{ '%.2f'|format(item.typical_price) }}){% endif %}</p>
           <p>Last scanned: {% if item.last_scanned_at %}<span data-timestamp="{{ item.last_scanned_at.isoformat() }}">{{ item.last_scanned_at }}</span>{% else %}never{% endif %}</p>
         </div>
       </div>
 
       <div class="flex items-center" style="gap: var(--space-sm);">
-        <button type="button" class="btn-secondary" id="openPinModalBtn">Pin Release</button>
         <button type="button"
                 class="btn-secondary"
                 data-edit-item
@@ -58,7 +54,7 @@
                 data-query="{{ item.query }}"
                 data-type="{{ item.type }}"
                 data-notes="{{ item.notes or '' }}"
-                data-notify-below-pct="{{ item.notify_below_pct if item.notify_below_pct is not none else '' }}"
+                data-notify-below-pct="{{ item.notify_below_pct }}"
                 data-notify-email="{{ 'true' if item.notify_email else 'false' }}"
                 data-discogs-release-id="{{ item.discogs_release_id or '' }}"
                 data-discogs-release-title="{{ item.query }}">
@@ -184,34 +180,6 @@
     {% endif %}
   </section>
 
-  <!-- Pin Release Modal -->
-  <div id="pinReleaseModal" class="hidden modal-overlay" role="dialog" aria-modal="true" aria-labelledby="pinReleaseModalTitle">
-    <div data-pin-backdrop class="modal-backdrop opacity-0"></div>
-    <div class="modal-center">
-      <div data-pin-panel class="modal-panel opacity-0 translate-y-4">
-        <h2 id="pinReleaseModalTitle" style="font-size: var(--text-heading); font-weight: 600; margin-bottom: var(--space-md);">Pin a Discogs Release</h2>
-
-        <!-- Search input -->
-        <div style="margin-bottom: var(--space-md); position: relative;">
-          <input id="pinSearchInput" type="text" placeholder="Search Discogs releases..." class="form-input" autocomplete="off" />
-          <div id="pinSearchSpinner" class="typeahead-spinner spinner hidden" aria-label="Searching Discogs releases..."></div>
-        </div>
-
-        <!-- Results list (scrollable) -->
-        <div id="pinResultsList" style="max-height: 400px; overflow-y: auto; margin-bottom: var(--space-md);"></div>
-
-        <!-- Footer buttons -->
-        <div class="flex justify-end gap-sm" style="padding-top: var(--space-sm); border-top: 1px solid var(--color-border);">
-          {% if item.discogs_release_id %}
-            <button type="button" id="clearPinBtn" class="btn-destructive" style="margin-right: auto;">Clear pin</button>
-          {% endif %}
-          <button type="button" id="cancelPinBtn" class="btn-secondary">Keep searching</button>
-          <button type="button" id="confirmPinBtn" class="btn-cta" disabled>Pin Release</button>
-        </div>
-      </div>
-    </div>
-  </div>
-
   <!-- Edit Item Modal -->
   <div id="editItemModal" class="hidden modal-overlay" role="dialog" aria-modal="true" aria-labelledby="editItemModalTitle">
     <div data-edit-backdrop class="modal-backdrop opacity-0"></div>
@@ -244,8 +212,8 @@
             <input id="editNotes" name="notes" class="form-input" />
           </div>
           <div>
-            <label class="form-label">Notify threshold (% below typical) <span class="text-faint">-- leave blank for default</span></label>
-            <input id="editNotifyPct" name="notify_below_pct" type="number" step="1" max="90" class="form-input" />
+            <label class="form-label">Notify when price is this % below typical</label>
+            <input id="editNotifyPct" name="notify_below_pct" type="number" step="1" min="1" max="90" class="form-input" />
           </div>
           <label class="flex items-center gap-sm text-sm text-muted">
             <input type="hidden" name="notify_email" value="" />
@@ -316,193 +284,6 @@
     // Initialize typeahead for edit modal
     const editTypeSelect = document.getElementById('editType');
     if (editTypeSelect) initTypeahead('edit', editTypeSelect);
-
-    // ---- Pin Release Modal ----
-    const pinModal = document.getElementById('pinReleaseModal');
-    const openPinBtn = document.getElementById('openPinModalBtn');
-    const cancelPinBtn = document.getElementById('cancelPinBtn');
-    const confirmPinBtn = document.getElementById('confirmPinBtn');
-    const clearPinBtn = document.getElementById('clearPinBtn');
-    const pinSearchInput = document.getElementById('pinSearchInput');
-    const pinSearchSpinner = document.getElementById('pinSearchSpinner');
-    const pinResultsList = document.getElementById('pinResultsList');
-
-    let selectedReleaseId = null;
-    let selectedArtworkUrl = null;
-    let pinSearchTimer = null;
-    let pinTriggerBtn = null;
-
-    const openPin = () => {
-      pinTriggerBtn = openPinBtn;
-      selectedReleaseId = null;
-      selectedArtworkUrl = null;
-      if (confirmPinBtn) confirmPinBtn.disabled = true;
-      pinModal.classList.remove('hidden');
-      requestAnimationFrame(() => {
-        const backdrop = pinModal.querySelector('[data-pin-backdrop]');
-        const panel = pinModal.querySelector('[data-pin-panel]');
-        if (backdrop) backdrop.classList.remove('opacity-0');
-        if (panel) panel.classList.remove('opacity-0', 'translate-y-4');
-        if (pinSearchInput) {
-          pinSearchInput.value = '{{ item.query | e }}';
-          pinSearchInput.focus();
-          triggerPinSearch(pinSearchInput.value);
-        }
-      });
-    };
-
-    const closePin = () => {
-      const backdrop = pinModal.querySelector('[data-pin-backdrop]');
-      const panel = pinModal.querySelector('[data-pin-panel]');
-      if (backdrop) backdrop.classList.add('opacity-0');
-      if (panel) panel.classList.add('opacity-0', 'translate-y-4');
-      setTimeout(() => pinModal.classList.add('hidden'), 200);
-      if (pinTriggerBtn) pinTriggerBtn.focus();
-    };
-
-    const triggerPinSearch = (query) => {
-      clearTimeout(pinSearchTimer);
-      pinSearchTimer = setTimeout(() => {
-        if (!query || query.trim().length < 2) {
-          pinResultsList.innerHTML = '';
-          return;
-        }
-        if (pinSearchSpinner) pinSearchSpinner.classList.remove('hidden');
-        fetch('/api/discogs/releases/search?q=' + encodeURIComponent(query.trim()))
-          .then(r => r.json())
-          .then(results => {
-            renderPinResults(results);
-          })
-          .catch(() => {
-            pinResultsList.innerHTML = '<p class="text-sm text-muted" style="padding: var(--space-sm);">Could not reach Discogs. Try again.</p>';
-          })
-          .finally(() => {
-            if (pinSearchSpinner) pinSearchSpinner.classList.add('hidden');
-          });
-      }, 300);
-    };
-
-    const renderPinResults = (results) => {
-      pinResultsList.innerHTML = '';
-      if (!results || results.length === 0) {
-        const empty = document.createElement('div');
-        empty.style.padding = 'var(--space-md)';
-        const heading = document.createElement('p');
-        heading.className = 'text-sm';
-        heading.style.color = 'var(--color-text)';
-        heading.textContent = 'No releases found';
-        const body = document.createElement('p');
-        body.className = 'text-sm text-muted';
-        body.textContent = 'Try a different search term.';
-        empty.appendChild(heading);
-        empty.appendChild(body);
-        pinResultsList.appendChild(empty);
-        return;
-      }
-      results.forEach(release => {
-        const btn = document.createElement('button');
-        btn.type = 'button';
-        btn.dataset.releaseId = release.release_id || '';
-        btn.dataset.artworkUrl = release.thumb || '';
-        btn.style.cssText = 'display: flex; align-items: center; gap: var(--space-sm); width: 100%; padding: var(--space-sm); background: none; border: none; border-bottom: 1px solid var(--color-border); cursor: pointer; text-align: left;';
-
-        const thumb = document.createElement('img');
-        thumb.style.cssText = 'width: 40px; height: 40px; object-fit: cover; flex-shrink: 0;';
-        thumb.alt = '';
-        if (release.thumb) {
-          thumb.src = '/api/artwork?url=' + encodeURIComponent(release.thumb);
-          thumb.onerror = () => { thumb.src = '/static/empty-vinyl-placeholder.png'; };
-        } else {
-          thumb.src = '/static/empty-vinyl-placeholder.png';
-        }
-
-        const textBlock = document.createElement('div');
-        const titleSpan = document.createElement('span');
-        titleSpan.style.cssText = 'font-size: var(--text-body); color: var(--color-text); display: block;';
-        const artistText = release.artist ? (release.artist + ' \u2014 ') : '';
-        titleSpan.textContent = artistText + (release.title || '');
-
-        const yearSpan = document.createElement('span');
-        yearSpan.style.cssText = 'font-size: var(--text-sm); color: var(--color-text-muted); display: block;';
-        yearSpan.textContent = release.year || '';
-
-        textBlock.appendChild(titleSpan);
-        textBlock.appendChild(yearSpan);
-        btn.appendChild(thumb);
-        btn.appendChild(textBlock);
-
-        btn.addEventListener('mouseenter', () => {
-          if (!btn.dataset.selected) btn.style.background = 'var(--color-surface)';
-        });
-        btn.addEventListener('mouseleave', () => {
-          if (!btn.dataset.selected) btn.style.background = 'none';
-        });
-
-        btn.addEventListener('click', () => {
-          pinResultsList.querySelectorAll('button').forEach(b => {
-            b.style.outline = 'none';
-            b.style.background = 'none';
-            delete b.dataset.selected;
-          });
-          btn.style.outline = '1px solid var(--color-accent)';
-          btn.style.background = 'var(--color-surface)';
-          btn.dataset.selected = 'true';
-          selectedReleaseId = btn.dataset.releaseId;
-          selectedArtworkUrl = btn.dataset.artworkUrl;
-          if (confirmPinBtn) confirmPinBtn.disabled = false;
-        });
-
-        pinResultsList.appendChild(btn);
-      });
-    };
-
-    const submitPinForm = (releaseId, artworkUrl) => {
-      const form = document.createElement('form');
-      form.method = 'post';
-      form.action = '/wishlist/{{ item.id }}/pin-release';
-      const ridInput = document.createElement('input');
-      ridInput.type = 'hidden';
-      ridInput.name = 'release_id';
-      ridInput.value = releaseId || '';
-      const artInput = document.createElement('input');
-      artInput.type = 'hidden';
-      artInput.name = 'artwork_url';
-      artInput.value = artworkUrl || '';
-      form.appendChild(ridInput);
-      form.appendChild(artInput);
-      document.body.appendChild(form);
-      form.submit();
-    };
-
-    if (openPinBtn) openPinBtn.addEventListener('click', openPin);
-    if (cancelPinBtn) cancelPinBtn.addEventListener('click', closePin);
-
-    if (pinModal) {
-      pinModal.addEventListener('click', (e) => {
-        if (e.target.matches('[data-pin-backdrop]')) closePin();
-      });
-      pinModal.addEventListener('keydown', (e) => {
-        if (e.key === 'Escape') closePin();
-      });
-    }
-
-    if (pinSearchInput) {
-      pinSearchInput.addEventListener('input', (e) => {
-        triggerPinSearch(e.target.value);
-      });
-    }
-
-    if (confirmPinBtn) {
-      confirmPinBtn.addEventListener('click', () => {
-        if (selectedReleaseId) submitPinForm(selectedReleaseId, selectedArtworkUrl);
-      });
-    }
-
-    if (clearPinBtn) {
-      clearPinBtn.addEventListener('click', () => {
-        submitPinForm('', '');
-      });
-    }
   });
 </script>
 {% endblock %}
