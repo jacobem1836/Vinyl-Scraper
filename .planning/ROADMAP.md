@@ -6,7 +6,8 @@
 - ✅ **v1.1 UX Polish & Album Selection** — Phases 6–12 (shipped 2026-04-12)
 - ✅ **v1.2 Signal Intelligence & Notifications** — Phases 13–15 (shipped 2026-04-14)
 - ✅ **v1.3 Visual Overhaul** — Phases 16–19 (shipped 2026-04-18)
-- 🔄 **v1.4 Quality & Gaps** — Phases 20–24 (in progress)
+- ✅ **v1.4 Quality & Gaps** — Phases 20–24 (shipped 2026-04-26)
+- 🔄 **v1.5 Coverage & Sources** — Phases 25–27 (in progress)
 
 ## Phases
 
@@ -157,6 +158,48 @@ Plans:
 | 21. Bug Fixes | v1.4 | 0/1 | Not started | - |
 | 22. Resend Email | v1.4 | 1/1 | Complete   | 2026-04-18 |
 | 23. Discogs Release Selection | v1.4 | 0/? | Not started | - |
-| 24. Per-Item Notification Thresholds | v1.4 | 0/? | Not started | - |
+| 24. Per-Item Notification Thresholds | v1.4 | 1/1 | Complete   | 2026-04-26 |
+| 25. eBay Credentials | v1.5 | 1/1 | Complete   | 2026-04-26 |
+| 26. Shopify Store Expansion | v1.5 | 2/2 | Complete   | 2026-04-26 |
+| 27. Clarity Records Adapter | v1.5 | 0/? | Not started | - |
 
-*Roadmap updated: 2026-04-18 — v1.4 Quality & Gaps phases added*
+### v1.5 Coverage & Sources (Phases 25–27)
+
+#### Phase 25: eBay Credentials
+**Goal**: Wire eBay credentials and verify adapter returns results
+**Depends on**: Phase 20
+**Requirements**: SRC-06
+**Success Criteria**:
+  1. eBay adapter authenticates with Railway env vars
+  2. A scan returns vinyl listings from eBay
+**Plans**: 1 plan
+Plans:
+- [x] 25-01-PLAN.md — Wire eBay OAuth credentials and verify listings return
+
+#### Phase 26: Shopify Store Expansion
+**Goal**: Add 5 new Shopify stores plus Heartland Records fallback scraping path
+**Depends on**: Phase 25
+**Requirements**: SRC-07, SRC-08, SRC-09, SRC-10, SRC-11, SRC-12
+**Success Criteria**:
+  1. Five new Shopify stores registered in the adapter and returning listings
+  2. Heartland Records scraped via products.json fallback path
+**Plans**: 2 plans
+Plans:
+- [x] 26-01-PLAN.md — Add five Shopify stores to the adapter registry
+- [x] 26-02-PLAN.md — Add Heartland Records via products.json path
+
+#### Phase 27: Clarity Records Adapter
+**Goal**: Add Clarity Records as a new scraping source using BigCommerce HTML pagination
+**Depends on**: Phase 26
+**Requirements**: SRC-13
+**Success Criteria**:
+  1. A new `clarity.py` adapter scrapes Clarity Records via HTML pagination
+  2. Adapter registered in the scanner and returns vinyl listings
+  3. Adapter handles pagination to retrieve full catalogue
+  4. Listings include title, price, URL, and image where available
+**Plans**: 1–2 plans
+Canonical refs:
+- `app/services/shopify.py` — existing Shopify adapter pattern to follow
+- `app/services/discogs.py` — existing scraper pattern reference
+
+*Roadmap updated: 2026-04-26 — v1.5 Coverage & Sources phases added*
