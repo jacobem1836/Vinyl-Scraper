@@ -86,7 +86,7 @@
               <p class="text-sm text-faint">${{ '%.2f'|format(l.price) }} + shipping from {{ l.ships_from or 'Unknown' }}</p>
             </div>
             <span class="badge {% if l.source == 'discogs' %}badge-source-discogs{% else %}badge-source-other{% endif %}" style="align-self: flex-start;">
-              {{ l.source|title }}
+              {{ l.source|replace('_', ' ')|title }}
             </span>
             <p class="text-sm truncate" style="color: var(--color-text-muted);">{{ l.title }}</p>
             <a href="{{ l.url }}" target="_blank" rel="noopener noreferrer" class="text-sm text-accent">View Listing →</a>
@@ -141,7 +141,7 @@
                 <td class="text-muted">{{ listing.condition or '—' }}</td>
                 <td>
                   <span class="badge {% if listing.source == 'discogs' %}badge-source-discogs{% else %}badge-source-other{% endif %}">
-                    {{ listing.source|title }}
+                    {{ listing.source|replace('_', ' ')|title }}
                   </span>
                   {% if not listing.is_in_stock %}
                   <span class="text-sm text-destructive" style="display: block; margin-top: var(--space-xs);">Out of stock</span>
@@ -161,7 +161,7 @@
                 <td class="text-muted">{{ listing.condition or '—' }}</td>
                 <td>
                   <span class="badge {% if listing.source == 'discogs' %}badge-source-discogs{% else %}badge-source-other{% endif %}">
-                    {{ listing.source|title }}
+                    {{ listing.source|replace('_', ' ')|title }}
                   </span>
                 </td>
                 <td class="title-cell">{{ listing.title }}</td>
