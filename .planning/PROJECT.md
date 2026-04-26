@@ -24,20 +24,17 @@ Show me the cheapest way to buy the records I want, right now.
 
 ## Current State
 
-**Latest milestone:** v1.3 Visual Overhaul — shipped 2026-04-18 (Phases 16–19)
+**Latest milestone:** v1.5 Coverage & Sources — Phase 27 complete 2026-04-26 (Phases 25–27)
 
-Key outcomes:
-- True black (#000) palette across all surfaces — dashboard, cards, detail, modals
-- Custom 4px translucent-white scrollbars with hover brightening
-- Gothic A1 self-hosted font (Light/Regular/Medium) replaces Inter; preloaded
-- Item name visibly larger and heavier than price on cards, detail, and modals
-- Post-add toast unified with scan toast via `window.showToast()` — no scan panel
-- Item detail placeholder swapped to empty vinyl PNG
-- Card grid: 3-col max, wider gap, tighter 12px margins
+Key outcomes (v1.5):
+- eBay credentials wired and adapter verified returning results (Phase 25)
+- 5 Shopify stores added + Heartland fallback logic (Phase 26)
+- Clarity Records BigCommerce HTML adapter re-implemented from scratch (`clarity.py`, 131 lines) — returns AUD-priced listings with stock detection (Phase 27)
+- 7 total adapters now active: discogs, shopify, ebay, discrepancy, juno, bandcamp, clarity
 
 ## Next Milestone
 
-*Not yet scoped.* Candidate directions: purchase workflow integration, Clarity Records re-enable, per-item notification thresholds, mobile-first web view, admin/monitoring dashboard. Scope with `/gsd-new-milestone` when ready.
+*Not yet scoped.* Scope with `/gsd-new-milestone` when ready.
 
 <details>
 <summary>Prior milestone brief: v1.3 Visual Overhaul</summary>
@@ -194,4 +191,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-04-18 — v1.4 milestone started (Quality & Gaps)*
+*Last updated: 2026-04-26 — Phase 27 complete (Clarity Records adapter); v1.5 Coverage & Sources all phases done*
