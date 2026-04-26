@@ -49,22 +49,6 @@ def _landed(listing, fx_rates: dict | None = None) -> float:
     return base_total
 
 
-def _parse_notify_pct(raw: str) -> float | None:
-    """Parse notify_below_pct from a raw form string. Returns float in [1, 90] or None for blank."""
-    if not raw or not raw.strip():
-        return None
-    try:
-        val = float(raw.strip())
-    except ValueError:
-        return None
-    # Clamp to valid range (T-24-01)
-    if val < 1:
-        val = 1.0
-    elif val > 90:
-        val = 90.0
-    return val
-
-
 def _enrich_item(item: WishlistItem, fx_rates: dict | None = None) -> dict:
     all_listings = list(item.listings or [])
     active_priced = [l for l in all_listings if l.is_active and l.price is not None]
@@ -78,8 +62,6 @@ def _enrich_item(item: WishlistItem, fx_rates: dict | None = None) -> dict:
         "query": item.query,
         "notes": item.notes,
         "notify_below_pct": item.notify_below_pct,
-        "effective_notify_pct": item.notify_below_pct if item.notify_below_pct is not None else settings.notify_below_pct_default,
-        "is_default_threshold": item.notify_below_pct is None,
         "notify_email": item.notify_email,
         "created_at": item.created_at,
         "last_scanned_at": item.last_scanned_at,
@@ -113,12 +95,11 @@ async def add_wishlist_item_web(
     type: str = Form(...),
     query: str = Form(...),
     notes: str | None = Form(None),
-    notify_below_pct_raw: str = Form("", alias="notify_below_pct"),
+    notify_below_pct: float = Form(20.0),
     notify_email: str = Form(""),
     discogs_release_id: str = Form(""),
     db: Session = Depends(get_db),
 ):
-    notify_below_pct = _parse_notify_pct(notify_below_pct_raw)
     release_id = int(discogs_release_id) if discogs_release_id else None
     notify_email_bool = notify_email.lower() in ("on", "true", "1", "yes")
     item = WishlistItem(
@@ -146,12 +127,11 @@ async def edit_wishlist_item_web(
     type: str = Form(...),
     query: str = Form(...),
     notes: str | None = Form(None),
-    notify_below_pct_raw: str = Form("", alias="notify_below_pct"),
+    notify_below_pct: float = Form(20.0),
     notify_email: str = Form(""),
     discogs_release_id: str = Form(""),
     db: Session = Depends(get_db),
 ):
-    notify_below_pct = _parse_notify_pct(notify_below_pct_raw)
     release_id = int(discogs_release_id) if discogs_release_id else None
     notify_email_bool = notify_email.lower() in ("on", "true", "1", "yes")
     item = db.query(WishlistItem).filter_by(id=item_id, is_active=True).first()
@@ -245,39 +225,6 @@ async def discogs_typeahead_search(q: str = "", type: str = "album"):
     from app.services.discogs import typeahead_search
     results = await typeahead_search(q.strip(), item_type=type, max_results=5)
     return results
-
-
-@web_router.get("/api/discogs/releases/search")
-async def discogs_release_search(q: str = "", type: str = "album"):
-    if len(q.strip()) < 2:
-        return []
-    from app.services.discogs import typeahead_search
-    results = await typeahead_search(q.strip(), item_type=type, max_results=10)
-    return results
-
-
-@web_router.post("/wishlist/{item_id}/pin-release")
-async def pin_release_web(
-    item_id: int,
-    release_id: str = Form(""),
-    artwork_url: str = Form(""),
-    db: Session = Depends(get_db),
-):
-    item = db.query(WishlistItem).filter_by(id=item_id, is_active=True).first()
-    if not item:
-        raise HTTPException(status_code=404, detail="Item not found")
-    if release_id:
-        item.discogs_release_id = int(release_id)
-        if artwork_url:
-            item.artwork_url = artwork_url
-        db.commit()
-        invalidate_dashboard_cache()
-        return RedirectResponse(url=f"/item/{item_id}?toast=Release+pinned", status_code=303)
-    else:
-        item.discogs_release_id = None
-        db.commit()
-        invalidate_dashboard_cache()
-        return RedirectResponse(url=f"/item/{item_id}?toast=Pin+cleared", status_code=303)
 
 
 @web_router.get("/api/artwork")

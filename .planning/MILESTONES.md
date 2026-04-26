@@ -1,21 +1,5 @@
 # Milestones
 
-## v1.4 Quality & Gaps (Shipped: 2026-04-21)
-
-**Phases completed:** 5 phases (20–24), 5 plans
-**Timeline:** 2026-04-18 → 2026-04-21 (4 days)
-
-**Key accomplishments:**
-
-- Deleted `clarity.py` and its adapter registry entry; added eBay credential warning when env vars absent (Phase 20)
-- Fixed typeahead spinner clearing on all close paths — Escape, Tab, select, type-change — including debounce race condition (Phase 21)
-- Replaced artwork loading skeleton pulse with diagonal dark shimmer (135°) matching true-black card surface (Phase 21)
-- Migrated deal alert emails from smtplib/SMTP to Resend API; no SMTP config required in production (Phase 22)
-- Added Discogs release pin modal — search releases inline, select to pin, artwork and scan use pinned release ID (Phase 23)
-- Added per-item notification threshold — nullable `notify_below_pct` column with global default fallback; visible in item detail (Phase 24)
-
----
-
 ## v1.3 Visual Overhaul (Shipped: 2026-04-18)
 
 **Phases completed:** 4 phases (16–19), 6 plans

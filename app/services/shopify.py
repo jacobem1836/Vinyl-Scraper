@@ -36,6 +36,31 @@ STORES: list[dict[str, str]] = [
         "name": "uMusic Shop AU",
         "base_url": "https://shop.umusic.com.au",
     },
+    {
+        "key": "wax_museum",
+        "name": "Wax Museum Records",
+        "base_url": "https://waxmuseumrecords.com.au",
+    },
+    {
+        "key": "red_eye",
+        "name": "Red Eye Records",
+        "base_url": "https://www.redeye.com.au",
+    },
+    {
+        "key": "rockaway",
+        "name": "Rockaway Records",
+        "base_url": "https://rockaway.com.au",
+    },
+    {
+        "key": "happy_valley",
+        "name": "Happy Valley Shop",
+        "base_url": "https://happyvalleyshop.com",
+    },
+    {
+        "key": "rare_records",
+        "name": "Rare Records",
+        "base_url": "https://www.rarerecords.com.au",
+    },
 ]
 
 _HEADERS = {
