@@ -1,7 +1,7 @@
 from collections.abc import Awaitable, Callable
 from typing import TypedDict
 
-from app.services import bandcamp, discogs, discrepancy, ebay, juno, shopify
+from app.services import bandcamp, clarity, discogs, discrepancy, ebay, juno, shopify
 
 
 class ListingDict(TypedDict, total=False):
@@ -23,8 +23,9 @@ ADAPTER_REGISTRY: list[dict] = [
     {"name": "shopify", "fn": shopify.search_and_get_listings, "enabled": True},
     {"name": "ebay", "fn": ebay.search_and_get_listings, "enabled": True},
     {"name": "discrepancy", "fn": discrepancy.search_and_get_listings, "enabled": True},
-{"name": "juno", "fn": juno.search_and_get_listings, "enabled": True},
+    {"name": "juno", "fn": juno.search_and_get_listings, "enabled": True},
     {"name": "bandcamp", "fn": bandcamp.search_and_get_listings, "enabled": True},
+    {"name": "clarity", "fn": clarity.search_and_get_listings, "enabled": True},
 ]
 
 
