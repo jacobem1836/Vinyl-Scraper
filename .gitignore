@@ -42,3 +42,8 @@ package-lock.json
 .mcp.json
 .claude-flow/
 .swarm/
+
+# Migration artifacts (contain data / sensitive info)
+.planning/phases/28-infrastructure-migration/railway-dump.sql
+.planning/phases/28-infrastructure-migration/railway-rowcounts.txt
+.planning/phases/28-infrastructure-migration/neon-rowcounts.txt
