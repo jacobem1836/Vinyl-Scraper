@@ -20,9 +20,15 @@ Key outcomes (v1.5):
 - Clarity Records BigCommerce HTML scraper (`clarity.py`, 131 lines) re-implemented and registered as 7th adapter (Phase 27)
 - 7 total adapters active: discogs, shopify (12 stores), ebay, discrepancy, juno, bandcamp, clarity
 
-## Next Milestone
+## Current Milestone: v1.6 Public Release
 
-*Not yet scoped.* Scope with `/gsd-new-milestone` when ready.
+**Goal:** Move off Railway, add user authentication, and open the app to other users with their own wishlists.
+
+**Target features:**
+- Infrastructure migration (Railway → free/cheap alternative)
+- User sign-up / sign-in / session management
+- Per-user wishlists (data isolation by user)
+- Security hardening for new auth surfaces
 
 <details>
 <summary>Prior milestone brief: v1.4 Quality & Gaps</summary>
@@ -145,7 +151,11 @@ Key outcomes (v1.5):
 
 ### Active
 
-*(No active requirements — next milestone not yet scoped. Run `/gsd-new-milestone` to define.)*
+- [ ] Infrastructure migrated off Railway to a free/cheap host
+- [ ] User sign-up and sign-in with email/password
+- [ ] Session management (persists across browser refresh)
+- [ ] Per-user wishlist data isolation
+- [ ] Security hardening for auth surfaces
 
 ### Out of Scope
 
@@ -198,4 +208,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-04-27 after v1.5 Coverage & Sources milestone*
+*Last updated: 2026-04-27 after v1.6 milestone started*
