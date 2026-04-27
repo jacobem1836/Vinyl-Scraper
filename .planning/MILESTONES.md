@@ -1,5 +1,19 @@
 # Milestones
 
+## v1.5 Coverage & Sources (Shipped: 2026-04-27)
+
+**Phases completed:** 3 phases (25–27), 4 plans
+**Timeline:** 2026-04-25 → 2026-04-27 (2 days)
+
+**Key accomplishments:**
+
+- eBay credentials documented in .env.example with startup warning when creds are absent (Phase 25)
+- 5 AU Shopify stores added (Wax Museum, Red Eye, Rockaway, Happy Valley, Rare Records) — expanded from 6 to 11 stores (Phase 26)
+- Heartland Records added as 12th store via products.json fallback path (first non-suggest.json Shopify store) (Phase 26)
+- Clarity Records BigCommerce HTML scraper re-implemented (`clarity.py`, 131 lines) and registered as 7th adapter with AUD pricing and stock detection (Phase 27)
+
+---
+
 ## v1.3 Visual Overhaul (Shipped: 2026-04-18)
 
 **Phases completed:** 4 phases (16–19), 6 plans

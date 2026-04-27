@@ -7,7 +7,7 @@
 - ✅ **v1.2 Signal Intelligence & Notifications** — Phases 13–15 (shipped 2026-04-14)
 - ✅ **v1.3 Visual Overhaul** — Phases 16–19 (shipped 2026-04-18)
 - ✅ **v1.4 Quality & Gaps** — Phases 20–24 (shipped 2026-04-26)
-- 🔄 **v1.5 Coverage & Sources** — Phases 25–27 (in progress)
+- ✅ **v1.5 Coverage & Sources** — Phases 25–27 (shipped 2026-04-27)
 
 ## Phases
 
@@ -56,80 +56,29 @@ See archive: `.planning/milestones/v1.3-ROADMAP.md`
 
 </details>
 
-### v1.4 Quality & Gaps (Phases 20–24)
+<details>
+<summary>✅ v1.4 Quality & Gaps (Phases 20–24) — SHIPPED 2026-04-26</summary>
 
-- [x] **Phase 20: Cleanup & Config** — Remove dead Clarity code, wire eBay keys (completed 2026-04-18)
-- [x] **Phase 21: Bug Fixes** — Fix typeahead spinner, image skeleton shimmer (completed 2026-04-26)
-- [x] **Phase 22: Resend Email** — Migrate SMTP to Resend API (completed 2026-04-18)
-- [x] **Phase 23: Discogs Release Selection** — Manual release pinning on item detail (completed 2026-04-26)
-- [x] **Phase 24: Per-Item Notification Thresholds** — Custom % per wishlist item (completed 2026-04-26)
+- [x] Phase 20: Cleanup & Config (1/1 plan) — completed 2026-04-18
+- [x] Phase 21: Bug Fixes (1/1 plan) — completed 2026-04-26
+- [x] Phase 22: Resend Email (1/1 plan) — completed 2026-04-18
+- [x] Phase 23: Discogs Release Selection (1/1 plan) — completed 2026-04-26
+- [x] Phase 24: Per-Item Notification Thresholds (1/1 plan) — completed 2026-04-26
 
-## Phase Details
+See archive: `.planning/milestones/v1.4-ROADMAP.md`
 
-### Phase 20: Cleanup & Config
-**Goal**: The codebase is free of dead Clarity code and eBay works in production
-**Depends on**: Nothing (first v1.4 phase)
-**Requirements**: CLEAN-01, CFG-01
-**Success Criteria** (what must be TRUE):
-  1. `clarity.py` and its adapter registry entry are gone from the codebase
-  2. eBay adapter authenticates successfully in production (Railway env vars present and used)
-  3. A scan with eBay enabled returns listings without auth errors
-**Plans**: 1 plan
-Plans:
-- [x] 20-01-PLAN.md — Remove dead Clarity adapter and harden eBay config
+</details>
 
-### Phase 21: Bug Fixes
-**Goal**: Typeahead spinner clears reliably and image skeletons use the correct dark shimmer style
-**Depends on**: Phase 20
-**Requirements**: BUG-03, UI-07
-**Success Criteria** (what must be TRUE):
-  1. Selecting a typeahead result hides the spinner immediately
-  2. Changing the type dropdown while typeahead is open hides the spinner immediately
-  3. Image skeletons display a diagonal top-left → bottom-right sweep shimmer (not pulse or glow)
-  4. Skeleton shimmer is visibly dark, matching the true-black card surface
-**Plans**: 1 plan
-Plans:
-- [x] 21-01-PLAN.md — Fix typeahead spinner clearing and replace skeleton pulse with diagonal dark shimmer
-**UI hint**: yes
+<details>
+<summary>✅ v1.5 Coverage & Sources (Phases 25–27) — SHIPPED 2026-04-27</summary>
 
-### Phase 22: Resend Email
-**Goal**: Deal alert emails are sent via the Resend API; SMTP configuration is no longer required
-**Depends on**: Phase 20
-**Requirements**: EMAIL-04
-**Success Criteria** (what must be TRUE):
-  1. A triggered deal alert email arrives in the inbox when sent via Resend
-  2. SMTP environment variables are no longer required for email to function
-  3. Resend API key is read from env vars; no credentials are hardcoded
-**Plans**: 1 plan
-Plans:
-- [x] 22-01-PLAN.md — [to be planned]
+- [x] Phase 25: eBay Credentials (1/1 plan) — completed 2026-04-26
+- [x] Phase 26: Shopify Store Expansion (2/2 plans) — completed 2026-04-26
+- [x] Phase 27: Clarity Records Adapter (1/1 plan) — completed 2026-04-26
 
-### Phase 23: Discogs Release Selection
-**Goal**: Users can search for and pin a specific Discogs release to a wishlist item, fixing wrong artwork and scan mismatches
-**Depends on**: Phase 20
-**Requirements**: DISC-01, DISC-02, DISC-03
-**Success Criteria** (what must be TRUE):
-  1. User can open item detail and search Discogs releases by title/artist inline
-  2. User can select a release from search results and pin it to the item
-  3. Item detail page shows artwork from the pinned release, not the auto-search result
-  4. Scanning an item with a pinned release ID uses that release ID directly instead of running a title/artist search
-**Plans**: 1 plan
-Plans:
-- [x] 23-01-PLAN.md — [to be planned]
-**UI hint**: yes
+See archive: `.planning/milestones/v1.5-ROADMAP.md`
 
-### Phase 24: Per-Item Notification Thresholds
-**Goal**: Each wishlist item can have its own notification threshold, overriding the global default
-**Depends on**: Phase 20
-**Requirements**: NOTIF-05, NOTIF-06
-**Success Criteria** (what must be TRUE):
-  1. User can set a custom % threshold on an individual wishlist item via the edit form
-  2. A wishlist item with a custom threshold triggers alerts at that threshold, not the global one
-  3. A wishlist item without a custom threshold continues to use the global default
-  4. The custom threshold value is visible on item detail so the user knows what's set
-**Plans**: 1 plan
-Plans:
-- [x] 24-01-PLAN.md — [to be planned]
+</details>
 
 ## Progress
 
@@ -154,54 +103,11 @@ Plans:
 | 17. Typography Overhaul | v1.3 | 3/3 | Complete | 2026-04-15 |
 | 18. UI Consistency Fixes | v1.3 | 2/2 | Complete | 2026-04-18 |
 | 19. Card Layout Expansion | v1.3 | 1/1 | Complete | 2026-04-18 |
-| 20. Cleanup & Config | v1.4 | 1/1 | Complete   | 2026-04-18 |
-| 21. Bug Fixes | v1.4 | 0/1 | Not started | - |
-| 22. Resend Email | v1.4 | 1/1 | Complete   | 2026-04-18 |
-| 23. Discogs Release Selection | v1.4 | 0/? | Not started | - |
-| 24. Per-Item Notification Thresholds | v1.4 | 1/1 | Complete   | 2026-04-26 |
-| 25. eBay Credentials | v1.5 | 1/1 | Complete   | 2026-04-26 |
-| 26. Shopify Store Expansion | v1.5 | 2/2 | Complete   | 2026-04-26 |
-| 27. Clarity Records Adapter | v1.5 | 1/1 | Complete    | 2026-04-26 |
-
-### v1.5 Coverage & Sources (Phases 25–27)
-
-#### Phase 25: eBay Credentials
-**Goal**: Wire eBay credentials and verify adapter returns results
-**Depends on**: Phase 20
-**Requirements**: SRC-06
-**Success Criteria**:
-  1. eBay adapter authenticates with Railway env vars
-  2. A scan returns vinyl listings from eBay
-**Plans**: 1 plan
-Plans:
-- [x] 25-01-PLAN.md — Wire eBay OAuth credentials and verify listings return
-
-#### Phase 26: Shopify Store Expansion
-**Goal**: Add 5 new Shopify stores plus Heartland Records fallback scraping path
-**Depends on**: Phase 25
-**Requirements**: SRC-07, SRC-08, SRC-09, SRC-10, SRC-11, SRC-12
-**Success Criteria**:
-  1. Five new Shopify stores registered in the adapter and returning listings
-  2. Heartland Records scraped via products.json fallback path
-**Plans**: 2 plans
-Plans:
-- [x] 26-01-PLAN.md — Add five Shopify stores to the adapter registry
-- [x] 26-02-PLAN.md — Add Heartland Records via products.json path
-
-#### Phase 27: Clarity Records Adapter
-**Goal**: Add Clarity Records as a new scraping source using BigCommerce HTML scraping
-**Depends on**: Phase 26
-**Requirements**: SRC-13
-**Success Criteria**:
-  1. A new `clarity.py` adapter scrapes Clarity Records via BigCommerce search endpoint
-  2. Adapter registered in the scanner and returns vinyl listings
-  3. Adapter fetches page 1 only — sufficient for targeted artist/album queries (D-02)
-  4. Listings include title, price, URL, and image where available
-**Plans**: 1 plan
-Plans:
-- [x] 27-01-PLAN.md — Add Clarity Records BigCommerce HTML adapter and register in ADAPTER_REGISTRY
-Canonical refs:
-- `app/services/juno.py` — primary BeautifulSoup HTML scraping pattern
-- `app/services/shopify.py` — ListingDict / ships_from / currency reference
-
-*Roadmap updated: 2026-04-26 — v1.5 Coverage & Sources phases added*
+| 20. Cleanup & Config | v1.4 | 1/1 | Complete | 2026-04-18 |
+| 21. Bug Fixes | v1.4 | 1/1 | Complete | 2026-04-26 |
+| 22. Resend Email | v1.4 | 1/1 | Complete | 2026-04-18 |
+| 23. Discogs Release Selection | v1.4 | 1/1 | Complete | 2026-04-26 |
+| 24. Per-Item Notification Thresholds | v1.4 | 1/1 | Complete | 2026-04-26 |
+| 25. eBay Credentials | v1.5 | 1/1 | Complete | 2026-04-26 |
+| 26. Shopify Store Expansion | v1.5 | 2/2 | Complete | 2026-04-26 |
+| 27. Clarity Records Adapter | v1.5 | 1/1 | Complete | 2026-04-26 |
