@@ -130,7 +130,7 @@ Each task was committed atomically:
 
 | Property | Value |
 |----------|-------|
-| Project | vinyl-scraper |
+| Project | crate |
 | Region | ap-southeast-2 (Asia Pacific Sydney) |
 | Database | neondb |
 | Postgres version | 16.12 |

@@ -1,9 +1,9 @@
-# fly.toml app configuration file generated for vinyl-scraper on 2026-04-27T22:30:00+10:00
+# fly.toml app configuration file generated for crate on 2026-04-27T22:30:00+10:00
 #
 # See https://fly.io/docs/reference/configuration/ for information about how to use this file.
 #
 
-app = 'vinyl-scraper'
+app = 'crate'
 primary_region = 'syd'
 
 [build]

@@ -74,7 +74,7 @@ completed: 2026-04-27
 
 - `Dockerfile` - Container build: python:3.11-slim, gcc+libpq-dev, requirements.txt install, app copy, uvicorn CMD on port 8080
 - `.dockerignore` - Excludes venv/, vinyl.db, .planning/, .git/, .env, tests/, railway.toml, Procfile, and more
-- `fly.toml` - Fly.io config: app=vinyl-scraper, region=syd, internal_port=8080, /api/health check, auto_stop=false, 256MB VM
+- `fly.toml` - Fly.io config: app=crate, region=syd, internal_port=8080, /api/health check, auto_stop=false, 256MB VM
 
 ## Decisions Made
 
@@ -99,7 +99,7 @@ None - no external service configuration required for this plan. Fly.io account 
 
 - Dockerfile, fly.toml, .dockerignore are in place — Plan 02 (GitHub Actions deploy workflow) can reference fly.toml
 - Plan 03 (flyctl launch + deploy) will use these artifacts to create the Fly.io app
-- `app = "vinyl-scraper"` in fly.toml is a placeholder — flyctl launch in Plan 03 may rewrite if name conflicts
+- `app = "crate"` in fly.toml is a placeholder — flyctl launch in Plan 03 may rewrite if name conflicts
 
 ---
 *Phase: 28-infrastructure-migration*

@@ -5,7 +5,7 @@
 ## Directory Layout
 
 ```
-vinyl-scraper/
+crate/
 ├── app/                    # Main application package
 │   ├── __init__.py
 │   ├── main.py             # FastAPI app factory, route setup, startup/shutdown

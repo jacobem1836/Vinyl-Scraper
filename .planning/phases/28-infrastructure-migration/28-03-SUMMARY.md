@@ -11,10 +11,10 @@ requires:
     provides: Neon DATABASE_URL (pooled PostgreSQL endpoint)
 
 provides:
-  - Fly.io app vinyl-scraper deployed and running in Sydney (syd)
+  - Fly.io app crate deployed and running in Sydney (syd)
   - All 8 required secrets set and deployed
   - Health check endpoint confirmed 200 OK
-  - App live at https://vinyl-scraper.fly.dev/
+  - App live at https://crate.fly.dev/
 
 affects:
   - 28-04 (Railway decommission — Fly.io must be verified working first)
@@ -26,7 +26,7 @@ tech-stack:
 
 key-files:
   modified:
-    - fly.toml (finalized app = "vinyl-scraper", region = syd)
+    - fly.toml (finalized app = "crate", region = syd)
 
 key-decisions:
   - "Used flyctl launch --no-deploy --copy-config to preserve existing fly.toml settings rather than regenerating"
@@ -41,7 +41,7 @@ completed: 2026-04-27
 
 # Phase 28 Plan 03: Fly.io App Launch and Deployment Summary
 
-**vinyl-scraper Fly.io app deployed to Sydney with Neon database, all 8 secrets configured, health check passing at https://vinyl-scraper.fly.dev/**
+**crate Fly.io app deployed to Sydney with Neon database, all 8 secrets configured, health check passing at https://crate.fly.dev/**
 
 ## Performance
 
@@ -53,7 +53,7 @@ completed: 2026-04-27
 
 ## Accomplishments
 
-- Fly app `vinyl-scraper` created in syd region
+- Fly app `crate` created in syd region
 - All 8 secrets set in one atomic `flyctl secrets set` call and confirmed Deployed
 - `flyctl deploy` succeeded — build completed, 2 machines started, health checks passing
 - `/api/health` returns `{"status":"ok"}` (HTTP 200) — confirmed via curl
@@ -71,8 +71,8 @@ completed: 2026-04-27
 
 | Property | Value |
 |----------|-------|
-| App name | vinyl-scraper |
-| Hostname | vinyl-scraper.fly.dev |
+| App name | crate |
+| Hostname | crate.fly.dev |
 | Region | syd (Sydney, Australia) |
 | Machines | 2 (shared-cpu-1x, 256MB each) |
 | Image size | 136 MB |
@@ -95,7 +95,7 @@ completed: 2026-04-27
 ## Health Check Verification
 
 ```
-curl -si https://vinyl-scraper.fly.dev/api/health
+curl -si https://crate.fly.dev/api/health
 HTTP/2 200
 content-type: application/json
 {"status":"ok"}
@@ -138,7 +138,7 @@ None — this is a deployment plan. No UI or application code was modified.
 ## Self-Check
 
 - [x] fly.toml modified and committed: `28b0341`
-- [x] App at https://vinyl-scraper.fly.dev/ confirmed reachable
+- [x] App at https://crate.fly.dev/ confirmed reachable
 - [x] `flyctl status` shows 2 machines, state=started
 - [x] `flyctl secrets list` shows 8 secrets, all Deployed
 - [x] `/api/health` returns HTTP 200 `{"status":"ok"}`

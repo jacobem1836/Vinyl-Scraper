@@ -57,8 +57,8 @@ The spinner was shown during fetch (`spinner.classList.remove("hidden")` line 20
 
 ## RUFLO Tracking
 
-- Gap closure start stored: `vinyl-06-03-gap-closure-start` (namespace: vinyl-scraper)
-- Gap closure result stored: `vinyl-06-03-gap-closure-result` (namespace: vinyl-scraper)
+- Gap closure start stored: `vinyl-06-03-gap-closure-start` (namespace: crate)
+- Gap closure result stored: `vinyl-06-03-gap-closure-result` (namespace: crate)
 - Pattern stored: `pattern-loading-indicator-exit-paths` (namespace: patterns)
 
 ## Deviations from Plan

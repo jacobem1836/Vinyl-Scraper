@@ -31,7 +31,7 @@ A personal vinyl record price tracker. Add albums, artists, or labels to a wishl
 
 ```bash
 git clone <repo>
-cd vinyl-scraper
+cd crate
 python -m venv venv && source venv/bin/activate
 pip install -r requirements.txt
 cp .env.example .env
