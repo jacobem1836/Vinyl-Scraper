@@ -65,28 +65,28 @@ Requirements for the Public Release milestone. Each maps to roadmap phases.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| INFRA-01 | TBD | Pending |
-| INFRA-02 | TBD | Pending |
-| INFRA-03 | TBD | Pending |
-| INFRA-04 | TBD | Pending |
-| AUTH-01 | TBD | Pending |
-| AUTH-02 | TBD | Pending |
-| AUTH-03 | TBD | Pending |
-| AUTH-04 | TBD | Pending |
-| AUTH-05 | TBD | Pending |
-| DATA-01 | TBD | Pending |
-| DATA-02 | TBD | Pending |
-| DATA-03 | TBD | Pending |
-| DATA-04 | TBD | Pending |
-| SEC-01 | TBD | Pending |
-| SEC-02 | TBD | Pending |
-| SEC-03 | TBD | Pending |
+| INFRA-01 | Phase 28 | Pending |
+| INFRA-02 | Phase 28 | Pending |
+| INFRA-03 | Phase 28 | Pending |
+| INFRA-04 | Phase 28 | Pending |
+| AUTH-01 | Phase 29 | Pending |
+| AUTH-02 | Phase 29 | Pending |
+| AUTH-03 | Phase 29 | Pending |
+| SEC-01 | Phase 29 | Pending |
+| SEC-03 | Phase 29 | Pending |
+| DATA-01 | Phase 30 | Pending |
+| DATA-02 | Phase 30 | Pending |
+| AUTH-04 | Phase 31 | Pending |
+| AUTH-05 | Phase 31 | Pending |
+| SEC-02 | Phase 31 | Pending |
+| DATA-03 | Phase 32 | Pending |
+| DATA-04 | Phase 32 | Pending |
 
 **Coverage:**
 - v1.6 requirements: 16 total
-- Mapped to phases: 0 (roadmap pending)
-- Unmapped: 16 ⚠️
+- Mapped to phases: 16
+- Unmapped: 0 ✓
 
 ---
 *Requirements defined: 2026-04-27*
-*Last updated: 2026-04-27 after initial definition*
+*Last updated: 2026-04-27 — traceability mapped after roadmap creation*

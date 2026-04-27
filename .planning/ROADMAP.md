@@ -8,6 +8,7 @@
 - ✅ **v1.3 Visual Overhaul** — Phases 16–19 (shipped 2026-04-18)
 - ✅ **v1.4 Quality & Gaps** — Phases 20–24 (shipped 2026-04-26)
 - ✅ **v1.5 Coverage & Sources** — Phases 25–27 (shipped 2026-04-27)
+- 🚧 **v1.6 Public Release** — Phases 28–32 (in progress)
 
 ## Phases
 
@@ -80,6 +81,66 @@ See archive: `.planning/milestones/v1.5-ROADMAP.md`
 
 </details>
 
+### 🚧 v1.6 Public Release (In Progress)
+
+**Milestone Goal:** Move off Railway, add user authentication, scope data per-user, open the app to others.
+
+#### Phase 28: Infrastructure Migration
+**Goal**: App runs reliably on a non-Railway host with auto-deploy from git
+**Depends on**: Phase 27
+**Requirements**: INFRA-01, INFRA-02, INFRA-03, INFRA-04
+**Success Criteria** (what must be TRUE):
+  1. App is reachable on the new host — all pages load, scanner runs
+  2. PostgreSQL database is accessible from the new host and data is intact
+  3. A git push to main triggers an automatic redeploy within minutes
+  4. All env vars (RESEND_API_KEY, eBay creds, DB_URL, API_KEY) are set and the app starts cleanly
+**Plans**: TBD
+
+#### Phase 29: Auth Foundation
+**Goal**: Users can sign up, sign in, and stay signed in; all wishlist routes require authentication
+**Depends on**: Phase 28
+**Requirements**: AUTH-01, AUTH-02, AUTH-03, SEC-01, SEC-03
+**Success Criteria** (what must be TRUE):
+  1. A new user can create an account with email and password
+  2. A returning user can sign in and reach the dashboard
+  3. Refreshing the browser keeps the user signed in (session persists)
+  4. Visiting any wishlist route while signed out redirects to the login page
+  5. Passwords are stored as bcrypt hashes — plaintext never appears in the database
+**Plans**: TBD
+**UI hint**: yes
+
+#### Phase 30: Data Isolation
+**Goal**: Every wishlist item and listing belongs to exactly one user — no data bleeds between accounts
+**Depends on**: Phase 29
+**Requirements**: DATA-01, DATA-02
+**Success Criteria** (what must be TRUE):
+  1. User A cannot see or access User B's wishlist items via any route or API endpoint
+  2. Listings are scoped to the owning user's wishlist items and are not shared across accounts
+  3. The existing single-user dataset is migrated to the owner account without data loss
+**Plans**: TBD
+
+#### Phase 31: Auth Expansion
+**Goal**: Users can recover access via password reset email and sign in with Google; auth endpoints are rate-limited
+**Depends on**: Phase 29
+**Requirements**: AUTH-04, AUTH-05, SEC-02
+**Success Criteria** (what must be TRUE):
+  1. A user who forgot their password receives a reset link via email and can set a new password
+  2. A user can sign in via Google OAuth without creating a separate password
+  3. Repeated failed sign-in or sign-up attempts are rejected with a rate-limit error
+**Plans**: TBD
+**UI hint**: yes
+
+#### Phase 32: User Features
+**Goal**: Each user has a personal API key for the iOS Shortcut and can share a read-only public link to their wishlist
+**Depends on**: Phase 30
+**Requirements**: DATA-03, DATA-04
+**Success Criteria** (what must be TRUE):
+  1. The iOS Shortcut `POST /api/wishlist` call works using the user's personal API key (X-API-Key header)
+  2. A user can generate or view their personal API key from the dashboard
+  3. A user can enable a public shareable link; opening that link shows a read-only view without requiring sign-in
+**Plans**: TBD
+**UI hint**: yes
+
 ## Progress
 
 | Phase | Milestone | Plans Complete | Status | Completed |
@@ -111,3 +172,8 @@ See archive: `.planning/milestones/v1.5-ROADMAP.md`
 | 25. eBay Credentials | v1.5 | 1/1 | Complete | 2026-04-26 |
 | 26. Shopify Store Expansion | v1.5 | 2/2 | Complete | 2026-04-26 |
 | 27. Clarity Records Adapter | v1.5 | 1/1 | Complete | 2026-04-26 |
+| 28. Infrastructure Migration | v1.6 | 0/? | Not started | - |
+| 29. Auth Foundation | v1.6 | 0/? | Not started | - |
+| 30. Data Isolation | v1.6 | 0/? | Not started | - |
+| 31. Auth Expansion | v1.6 | 0/? | Not started | - |
+| 32. User Features | v1.6 | 0/? | Not started | - |
