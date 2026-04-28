@@ -22,7 +22,7 @@ affects:
 
 tech-stack:
   added: [fly.io, flyctl]
-  patterns: [secrets-first deployment, two-machine HA on Fly.io]
+  patterns: [secrets-first deployment, two-machine HA on Fly.io, memory scaling after OOM]
 
 key-files:
   modified:
@@ -32,6 +32,8 @@ key-decisions:
   - "Used flyctl launch --no-deploy --copy-config to preserve existing fly.toml settings rather than regenerating"
   - "Set RESEND_API_KEY and RESEND_FROM as empty strings — notifier gracefully skips email if unset (line 79 notifier.py)"
   - "Two machines created automatically by Fly for HA — min_machines_running = 1 in fly.toml keeps one always on"
+  - "Scaled machines from 256MB to 512MB after OOM crash on first boot — app stable at 512MB with Neon connection pool"
+  - "App renamed from vinyl-scraper to crate — old app destroyed, fly.toml updated accordingly"
 
 requirements-completed: [INFRA-01, INFRA-04]
 
@@ -53,19 +55,21 @@ completed: 2026-04-27
 
 ## Accomplishments
 
-- Fly app `crate` created in syd region
+- Fly app `crate` created in syd region (original vinyl-scraper app destroyed; name changed to crate)
 - All 8 secrets set in one atomic `flyctl secrets set` call and confirmed Deployed
 - `flyctl deploy` succeeded — build completed, 2 machines started, health checks passing
 - `/api/health` returns `{"status":"ok"}` (HTTP 200) — confirmed via curl
 - FastAPI startup logs clean: no tracebacks, no missing env var errors
 - APScheduler starts silently on `startup` hook in main.py (scheduler.start() confirmed running via startup complete log)
+- OOM crash on first boot — machines scaled from 256MB to 512MB; both machines stable and healthy post-scale
+- Dashboard confirmed loading with existing wishlist items from Neon — human verified ("Yep its there")
 
 ## Task Commits
 
 | Task | Name | Commit | Files |
 |------|------|--------|-------|
 | 2 | Launch Fly app and set all secrets | 28b0341 | fly.toml |
-| 3 | Human verify checkpoint | (pending human verification) | — |
+| 3 | Human verify checkpoint | confirmed by user | — |
 
 ## Fly App Details
 
@@ -74,7 +78,7 @@ completed: 2026-04-27
 | App name | crate |
 | Hostname | crate.fly.dev |
 | Region | syd (Sydney, Australia) |
-| Machines | 2 (shared-cpu-1x, 256MB each) |
+| Machines | 2 (shared-cpu-1x, 512MB each) |
 | Image size | 136 MB |
 | Health check | /api/health — 1 passing per machine |
 | Status | started (both machines) |
@@ -105,7 +109,13 @@ content-type: application/json
 
 ### Auto-fixed Issues
 
-**1. [Rule 2 - Missing] RESEND_API_KEY and RESEND_FROM not in .env**
+**1. [Rule 3 - Blocking] OOM crash on first boot — memory scaled to 512MB**
+- **Found during:** Task 3 (post-deployment)
+- **Issue:** Both machines OOM-crashed immediately after first deploy at 256MB. Python + SQLAlchemy + Neon connection pool exceeded the default memory allocation.
+- **Fix:** `flyctl machine update` to scale both machines to 512MB shared-cpu-1x. App came up stable with no further crashes.
+- **Files modified:** None (Fly platform config only — fly.toml machine preset was not changed)
+
+**2. [Rule 2 - Missing] RESEND_API_KEY and RESEND_FROM not in .env**
 - **Found during:** Task 2 (reading .env for secret values)
 - **Issue:** The app switched from SMTP to Resend in Phase 22. The .env file has old SMTP vars but no RESEND_API_KEY or RESEND_FROM. The plan expected 8 secrets from .env.
 - **Fix:** Set RESEND_API_KEY and RESEND_FROM as empty strings. Notifier at line 79 of notifier.py performs `if not settings.resend_api_key or not settings.resend_from` and returns early — email alerts are silently disabled, app runs normally. No crash.
@@ -129,8 +139,8 @@ None — this is a deployment plan. No UI or application code was modified.
 
 ## Next Phase Readiness
 
-- Fly app running and healthy
-- Plan 28-04 (Railway decommission) can proceed once human verification (Task 3) confirms dashboard loads with Neon data
+- Fly app running and healthy at 512MB — stable
+- Plan 28-04 (Railway decommission) can proceed — human verification passed, dashboard confirmed showing Neon data
 - RESEND keys should be configured separately (`flyctl secrets set RESEND_API_KEY=... RESEND_FROM=...`) once Resend account is set up
 
 ---
@@ -142,6 +152,9 @@ None — this is a deployment plan. No UI or application code was modified.
 - [x] `flyctl status` shows 2 machines, state=started
 - [x] `flyctl secrets list` shows 8 secrets, all Deployed
 - [x] `/api/health` returns HTTP 200 `{"status":"ok"}`
+- [x] Dashboard loads with existing wishlist items from Neon — human verified
+- [x] Machines scaled to 512MB — stable, no further OOM crashes
+- [x] All must_haves from plan frontmatter satisfied
 
 ## Self-Check: PASSED
 
