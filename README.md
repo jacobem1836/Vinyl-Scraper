@@ -109,3 +109,4 @@ All API routes require the header `X-API-Key: <your API_KEY>`.
 4. Deploy — the app runs migrations on startup, no manual steps needed
 
 The `railway.toml` and `Procfile` are already configured.
+
