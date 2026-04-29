@@ -94,7 +94,11 @@ See archive: `.planning/milestones/v1.5-ROADMAP.md`
   2. PostgreSQL database is accessible from the new host and data is intact
   3. A git push to main triggers an automatic redeploy within minutes
   4. All env vars (RESEND_API_KEY, eBay creds, DB_URL, API_KEY) are set and the app starts cleanly
-**Plans**: TBD
+**Plans**: 4 plans
+  - [x] 28-01-PLAN.md — Container + Fly.io config artifacts (Dockerfile, fly.toml, .dockerignore)
+  - [x] 28-02-PLAN.md — Provision Neon Postgres and migrate data from Railway
+  - [x] 28-03-PLAN.md — Launch Fly.io app, set secrets, first deploy
+  - [x] 28-04-PLAN.md — GitHub Actions auto-deploy on push to main
 
 #### Phase 29: Auth Foundation
 **Goal**: Users can sign up, sign in, and stay signed in; all wishlist routes require authentication
@@ -172,7 +176,7 @@ See archive: `.planning/milestones/v1.5-ROADMAP.md`
 | 25. eBay Credentials | v1.5 | 1/1 | Complete | 2026-04-26 |
 | 26. Shopify Store Expansion | v1.5 | 2/2 | Complete | 2026-04-26 |
 | 27. Clarity Records Adapter | v1.5 | 1/1 | Complete | 2026-04-26 |
-| 28. Infrastructure Migration | v1.6 | 0/? | Not started | - |
+| 28. Infrastructure Migration | v1.6 | 4/4 | Complete    | 2026-04-29 |
 | 29. Auth Foundation | v1.6 | 0/? | Not started | - |
 | 30. Data Isolation | v1.6 | 0/? | Not started | - |
 | 31. Auth Expansion | v1.6 | 0/? | Not started | - |
