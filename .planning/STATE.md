@@ -53,6 +53,7 @@ Progress: [░░░░░░░░░░] 0% (v1.6)
 ### Todos
 
 - **[backlog]** eBay adapter may return cassette listings alongside vinyl — add optional vinyl-only filter in a future phase
+- **[backlog]** Delete Railway service and PostgreSQL add-on — fully superseded by Fly.io + Neon after Phase 28 completion
 
 ### Blockers
 
