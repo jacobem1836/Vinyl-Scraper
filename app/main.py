@@ -12,6 +12,7 @@ from app.auth import AuthRedirect, auth_redirect_response
 from app.config import settings
 from app.database import Base, engine, get_db, run_migrations
 from app.models import Listing, WishlistItem
+from app.routers.auth import auth_router
 from app.routers.wishlist import api_router, web_router
 from app.services.cache import get_cached_dashboard, invalidate_dashboard_cache, set_cached_dashboard
 from app.services.fx import convert_to_aud, format_orig_display, get_rate
@@ -42,6 +43,7 @@ templates = Jinja2Templates(directory="templates")
 
 # Include routers
 app.include_router(web_router)
+app.include_router(auth_router)
 app.include_router(api_router)
 
 
