@@ -4,6 +4,7 @@ from typing import Optional
 class Settings(BaseSettings):
     database_url: str = "sqlite:///./vinyl.db"
     api_key: str = "change-me-please"
+    secret_key: str = "dev-insecure-change-me"  # Used to sign session cookies (Starlette SessionMiddleware)
     discogs_token: Optional[str] = None
     ebay_app_id: Optional[str] = None    # eBay App ID (Client ID) for Browse API
     ebay_cert_id: Optional[str] = None   # eBay Cert ID (Client Secret) for Browse API

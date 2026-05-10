@@ -44,3 +44,12 @@ class Listing(Base):
     __table_args__ = (
         UniqueConstraint("wishlist_item_id", "url", name="uq_listing_item_url"),
     )
+
+
+class User(Base):
+    __tablename__ = "users"
+
+    id = Column(Integer, primary_key=True, index=True)
+    email = Column(String, nullable=False, unique=True, index=True)
+    password_hash = Column(String, nullable=False)
+    created_at = Column(DateTime, default=datetime.utcnow)
