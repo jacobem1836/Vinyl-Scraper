@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}CRATE{% endblock %}</title>
+  <link rel="preload" href="/static/fonts/BodoniModa-Bold.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="/static/fonts/Inter-VariableFont_opsz,wght.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="/static/style.css">
+</head>
+<body class="auth-body">
+  <main class="auth-shell">
+    <a href="/" class="auth-brand">
+      <img src="/static/logo.svg" alt="" width="32" height="32" aria-hidden="true">
+      <span>CRATE</span>
+    </a>
+    <section class="auth-card">
+      {% block content %}{% endblock %}
+    </section>
+  </main>
+</body>
+</html>

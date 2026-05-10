@@ -1,0 +1,25 @@
+{% extends "auth_base.html" %}
+{% block title %}Create account — CRATE{% endblock %}
+{% block content %}
+  <h1 class="auth-heading">Create account</h1>
+  {% if error %}
+    <p class="auth-error" role="alert">{{ error }}</p>
+  {% endif %}
+  <form method="post" action="/signup" class="auth-form" novalidate>
+    <input type="hidden" name="next" value="{{ next }}">
+    <label class="auth-label">
+      <span>Email</span>
+      <input class="auth-input" type="email" name="email" value="{{ email }}" required autofocus autocomplete="email">
+    </label>
+    <label class="auth-label">
+      <span>Password</span>
+      <input class="auth-input" type="password" name="password" required minlength="8" autocomplete="new-password">
+      <span class="auth-hint">At least 8 characters.</span>
+    </label>
+    <button type="submit" class="btn-cta auth-submit">Create account</button>
+  </form>
+  <p class="auth-foot">
+    Already have an account?
+    <a href="/login{% if next %}?next={{ next | urlencode }}{% endif %}">Sign in</a>
+  </p>
+{% endblock %}
