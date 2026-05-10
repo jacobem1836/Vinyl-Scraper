@@ -1,10 +1,12 @@
 import asyncio
 
 import httpx
-from fastapi import APIRouter, BackgroundTasks, Depends, Form, Header, HTTPException
+from fastapi import APIRouter, BackgroundTasks, Depends, Form, Header, HTTPException, Request
 from fastapi.responses import RedirectResponse, StreamingResponse
 from sqlalchemy.orm import Session
 
+from app.auth import AuthRedirect, current_user
+from app.auth import require_auth
 from app.config import settings
 from app.database import SessionLocal, get_db
 from app.models import Listing, WishlistItem
@@ -35,6 +37,29 @@ async def _scan_in_background(item_id: int) -> None:
 async def require_api_key(x_api_key: str = Header(...)):
     if x_api_key != settings.api_key:
         raise HTTPException(status_code=401, detail="Invalid API key")
+
+
+async def require_session_or_api_key(
+    request: Request,
+    x_api_key: str | None = Header(default=None),
+    db: Session = Depends(get_db),
+):
+    """Accept either a valid session OR a valid X-API-Key (iOS Shortcut path).
+
+    Used on /api/scan/start and /api/scan/status so the dashboard can call
+    these endpoints via session cookie while the iOS Shortcut uses X-API-Key.
+    """
+    if x_api_key is not None:
+        if x_api_key != settings.api_key:
+            raise HTTPException(status_code=401, detail="Invalid API key")
+        return
+    # Fall back to session auth -- raises AuthRedirect on failure.
+    user = current_user(request, db)
+    if user is None:
+        next_path = request.url.path
+        if request.url.query:
+            next_path = f"{next_path}?{request.url.query}"
+        raise AuthRedirect(next_path=next_path)
 
 
 def _landed(listing, fx_rates: dict | None = None) -> float:
@@ -99,6 +124,7 @@ async def add_wishlist_item_web(
     notify_email: str = Form(""),
     discogs_release_id: str = Form(""),
     db: Session = Depends(get_db),
+    _user=Depends(require_auth),
 ):
     release_id = int(discogs_release_id) if discogs_release_id else None
     notify_email_bool = notify_email.lower() in ("on", "true", "1", "yes")
@@ -131,6 +157,7 @@ async def edit_wishlist_item_web(
     notify_email: str = Form(""),
     discogs_release_id: str = Form(""),
     db: Session = Depends(get_db),
+    _user=Depends(require_auth),
 ):
     release_id = int(discogs_release_id) if discogs_release_id else None
     notify_email_bool = notify_email.lower() in ("on", "true", "1", "yes")
@@ -149,7 +176,7 @@ async def edit_wishlist_item_web(
 
 
 @web_router.post("/wishlist/{item_id}/delete")
-async def delete_wishlist_item_web(item_id: int, db: Session = Depends(get_db)):
+async def delete_wishlist_item_web(item_id: int, db: Session = Depends(get_db), _user=Depends(require_auth)):
     item = db.query(WishlistItem).filter_by(id=item_id).first()
     if item:
         db.delete(item)
@@ -159,7 +186,7 @@ async def delete_wishlist_item_web(item_id: int, db: Session = Depends(get_db)):
 
 
 @web_router.post("/wishlist/{item_id}/scan")
-async def scan_single_item_web(item_id: int, db: Session = Depends(get_db)):
+async def scan_single_item_web(item_id: int, db: Session = Depends(get_db), _user=Depends(require_auth)):
     item = db.query(WishlistItem).filter_by(id=item_id, is_active=True).first()
     if not item:
         raise HTTPException(status_code=404, detail="Item not found")
@@ -175,7 +202,7 @@ async def scan_single_item_web(item_id: int, db: Session = Depends(get_db)):
 
 
 @web_router.post("/scan-all")
-async def scan_all_items_web(db: Session = Depends(get_db)):
+async def scan_all_items_web(db: Session = Depends(get_db), _user=Depends(require_auth)):
     summary = await scanner.scan_all_items(db)
 
     for item_summary in summary.get("items", []):
@@ -203,7 +230,7 @@ async def scan_all_items_web(db: Session = Depends(get_db)):
 
 
 @web_router.get("/wishlist/{item_id}/status")
-async def item_scan_status(item_id: int, db: Session = Depends(get_db)):
+async def item_scan_status(item_id: int, db: Session = Depends(get_db), _user=Depends(require_auth)):
     item = db.query(WishlistItem).filter_by(id=item_id, is_active=True).first()
     if not item:
         raise HTTPException(status_code=404, detail="Item not found")
@@ -219,7 +246,7 @@ async def item_scan_status(item_id: int, db: Session = Depends(get_db)):
 
 
 @web_router.get("/api/discogs/search")
-async def discogs_typeahead_search(q: str = "", type: str = "album"):
+async def discogs_typeahead_search(q: str = "", type: str = "album", _user=Depends(require_auth)):
     if len(q.strip()) < 2:
         return []
     from app.services.discogs import typeahead_search
@@ -228,7 +255,7 @@ async def discogs_typeahead_search(q: str = "", type: str = "album"):
 
 
 @web_router.get("/api/artwork")
-async def proxy_artwork(url: str = ""):
+async def proxy_artwork(url: str = "", _user=Depends(require_auth)):
     if not url:
         raise HTTPException(status_code=400, detail="url required")
     try:
@@ -350,7 +377,7 @@ async def scan_all_items_api(db: Session = Depends(get_db)):
 
 
 @api_router.post("/scan/start")
-async def start_scan_api(item_id: int | None = None, db: Session = Depends(get_db)):
+async def start_scan_api(item_id: int | None = None, db: Session = Depends(get_db), _auth=Depends(require_session_or_api_key)):
     from app.services import scan_status as _scan_status
 
     if _scan_status.get()["is_running"]:
@@ -387,6 +414,6 @@ async def start_scan_api(item_id: int | None = None, db: Session = Depends(get_d
 
 
 @api_router.get("/scan/status")
-async def scan_status_api():
+async def scan_status_api(_auth=Depends(require_session_or_api_key)):
     from app.services import scan_status as _scan_status
     return _scan_status.get()

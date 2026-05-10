@@ -8,10 +8,11 @@ from sqlalchemy.orm import Session, selectinload
 from starlette.middleware.sessions import SessionMiddleware
 
 from app.auth import AuthRedirect, auth_redirect_response
+from app.auth import require_auth
 
 from app.config import settings
 from app.database import Base, engine, get_db, run_migrations
-from app.models import Listing, WishlistItem
+from app.models import Listing, User, WishlistItem
 from app.routers.auth import auth_router
 from app.routers.wishlist import api_router, web_router
 from app.services.cache import get_cached_dashboard, invalidate_dashboard_cache, set_cached_dashboard
@@ -75,7 +76,7 @@ async def shutdown():
 # Web page routes (GET)
 
 @app.get("/")
-async def index(request: Request, db: Session = Depends(get_db)):
+async def index(request: Request, db: Session = Depends(get_db), user: User = Depends(require_auth)):
     from app.routers.wishlist import _enrich_item
 
     cached = get_cached_dashboard()
@@ -107,6 +108,7 @@ async def index(request: Request, db: Session = Depends(get_db)):
         "index.html",
         {
             "request": request,
+            "user": user,
             "items": enriched,
             "total_listings": sum(i["listing_count"] for i in enriched),
             "total_cost": total_cost,
@@ -118,7 +120,7 @@ async def index(request: Request, db: Session = Depends(get_db)):
 
 
 @app.get("/item/{item_id}")
-async def item_detail(item_id: int, request: Request, db: Session = Depends(get_db)):
+async def item_detail(item_id: int, request: Request, db: Session = Depends(get_db), user: User = Depends(require_auth)):
     from fastapi import HTTPException
 
     from app.routers.wishlist import _enrich_item
@@ -178,6 +180,7 @@ async def item_detail(item_id: int, request: Request, db: Session = Depends(get_
         "item_detail.html",
         {
             "request": request,
+            "user": user,
             "item": _enrich_item(item, fx_rates=fx_rates),
             "listings": listings,
         },

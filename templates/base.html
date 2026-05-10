@@ -21,6 +21,14 @@
       >
         Add Item
       </button>
+      {% if user %}
+      <div class="nav-user" style="display:flex;align-items:center;gap:var(--space-sm);margin-left:var(--space-md);">
+        <span style="font-size:var(--text-label);color:var(--color-text-muted);">{{ user.email }}</span>
+        <form method="post" action="/logout" style="margin:0;">
+          <button type="submit" class="nav-logout" style="background:transparent;border:1px solid var(--color-border);color:var(--color-text-muted);padding:0.4rem 0.7rem;border-radius:var(--radius-btn);font-size:var(--text-label);cursor:pointer;letter-spacing:0.04em;text-transform:uppercase;">Logout</button>
+        </form>
+      </div>
+      {% endif %}
     </div>
   </nav>
 
