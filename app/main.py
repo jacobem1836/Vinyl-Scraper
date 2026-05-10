@@ -1,9 +1,13 @@
 import asyncio
 
 from fastapi import Depends, FastAPI, Request
+from fastapi.responses import RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from sqlalchemy.orm import Session, selectinload
+from starlette.middleware.sessions import SessionMiddleware
+
+from app.auth import AuthRedirect, auth_redirect_response
 
 from app.config import settings
 from app.database import Base, engine, get_db, run_migrations
@@ -15,6 +19,22 @@ from app.scheduler import scheduler, setup_scheduler
 from app.services.shipping import get_shipping_cost
 
 app = FastAPI(title="Vinyl Wishlist")
+
+# Session middleware — signed httpOnly cookie. Per D-01, D-02 in 29-CONTEXT.md.
+app.add_middleware(
+    SessionMiddleware,
+    secret_key=settings.secret_key,
+    session_cookie="crate_session",
+    max_age=60 * 60 * 24 * 30,  # 30 days, per D-02
+    same_site="lax",
+    https_only=False,  # Set True in production via env-driven config later.
+)
+
+
+@app.exception_handler(AuthRedirect)
+async def _auth_redirect_handler(request: Request, exc: AuthRedirect):
+    return auth_redirect_response(exc.next_path)
+
 
 # Static files and templates
 app.mount("/static", StaticFiles(directory="static"), name="static")
