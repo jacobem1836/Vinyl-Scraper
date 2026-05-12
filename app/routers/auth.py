@@ -7,6 +7,7 @@ Session cookie name: crate_session (set by SessionMiddleware in main.py).
 from fastapi import APIRouter, Depends, Form, Request
 from fastapi.responses import RedirectResponse
 from fastapi.templating import Jinja2Templates
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
 from app.auth import hash_password, verify_password
@@ -102,7 +103,11 @@ async def signup_submit(
 
     user = User(email=email_norm, password_hash=hash_password(password))
     db.add(user)
-    db.commit()
+    try:
+        db.commit()
+    except IntegrityError:
+        db.rollback()
+        return _err("An account with that email already exists.")
     db.refresh(user)
     request.session["user_id"] = user.id
     return RedirectResponse(url=_safe_next(next), status_code=303)
