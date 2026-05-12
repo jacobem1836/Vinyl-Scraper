@@ -105,10 +105,10 @@ async def signup_submit(
     db.add(user)
     try:
         db.commit()
+        db.refresh(user)
     except IntegrityError:
         db.rollback()
         return _err("An account with that email already exists.")
-    db.refresh(user)
     request.session["user_id"] = user.id
     return RedirectResponse(url=_safe_next(next), status_code=303)
 
