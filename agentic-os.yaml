@@ -1,0 +1,42 @@
+# Example Agentic OS Project Policy
+# Copy this file to your project directory and adjust as needed.
+
+# Project metadata
+project:
+  name: vinyl-scraper
+  description: Vinyl wishlist and deal scraper from Discogs and eBay
+
+# Autonomy level determines what the agent can do without approval
+# - gated: All activities require approval
+# - autonomous_local: Can run locally, push requires approval
+# - autonomous_with_push: Can run and push without approval (use with caution)
+autonomy_level: gated
+
+# List of activities the agent is allowed to perform
+# Available: shell.run, fs.read, fs.write, fs.delete, git.commit, git.push, git.branch_create, api.call
+allowed_activities:
+  - shell
+  - fs_read
+  - fs_write
+  - git.commit
+  - git.branch_create
+
+# Activities that always require human approval, even if autonomy_level allows them
+approval_required_for:
+  - git.push
+
+# Cost caps – override global defaults for this project
+cost_caps:
+  per_workflow_usd: 3.00
+  per_day_usd: 20.00
+
+# Sandbox configuration for safe execution
+sandbox:
+  # Container image to use for isolated execution
+  image: agentic-sandbox-base:latest
+
+  # Network egress allowlist – which external hosts the agent can reach
+  egress_allowlist:
+    - api.discogs.com
+    - www.ebay.com
+    - www.discogs.com

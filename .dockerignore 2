@@ -1,0 +1,24 @@
+venv/
+__pycache__/
+*.pyc
+*.pyo
+.pytest_cache/
+node_modules/
+.planning/
+.git/
+.github/
+.gitignore
+.env
+*.db
+vinyl.db
+.DS_Store
+README.md
+LICENSE
+tests/
+graphify-out/
+empty vinyl image.png
+wishlist.txt
+package.json
+package-lock.json
+railway.toml
+Procfile

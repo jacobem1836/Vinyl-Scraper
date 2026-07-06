@@ -177,7 +177,7 @@ See archive: `.planning/milestones/v1.5-ROADMAP.md`
 | 26. Shopify Store Expansion | v1.5 | 2/2 | Complete | 2026-04-26 |
 | 27. Clarity Records Adapter | v1.5 | 1/1 | Complete | 2026-04-26 |
 | 28. Infrastructure Migration | v1.6 | 4/4 | Complete    | 2026-04-29 |
-| 29. Auth Foundation | v1.6 | 0/? | Not started | - |
+| 29. Auth Foundation | v1.6 | 2/3 | In Progress|  |
 | 30. Data Isolation | v1.6 | 0/? | Not started | - |
 | 31. Auth Expansion | v1.6 | 0/? | Not started | - |
 | 32. User Features | v1.6 | 0/? | Not started | - |
