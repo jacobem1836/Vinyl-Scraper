@@ -100,11 +100,11 @@ _HEADERS = {
 
 # Bound concurrent outbound requests across the STORES list, with jitter: many of these stores sit
 # behind the same Cloudflare zone, and a synchronous burst from one IP trips a shared challenge for minutes.
-_semaphore = asyncio.Semaphore(4)
+_semaphore = asyncio.Semaphore(3)
 
 
 async def _polite_delay() -> None:
-    await asyncio.sleep(random.uniform(0.2, 1.2))
+    await asyncio.sleep(random.uniform(0.4, 1.6))
 
 # This is a vinyl price tracker -- keep only listings that plausibly are vinyl records,
 # and drop obvious non-vinyl merch that a keyword search can otherwise pull in.

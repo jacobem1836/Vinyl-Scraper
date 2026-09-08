@@ -1,0 +1,108 @@
+# Plan 1: Backend Performance — Scan Decoupling, N+1 Fix, Cache, Semaphore
+
+**Phase:** 1 — Infrastructure
+**Goal:** Item add returns immediately (scan in background), dashboard loads fast (no N+1, cached enrichment), concurrent scans rate-limited via semaphore, scheduler parallelized with guard
+**Requires:** None (first plan)
+**Requirements:** PERF-01, PERF-02, PERF-03, PERF-04
+
+## Tasks
+
+### Task 1: Add `cachetools` dependency and create cache module
+
+**File(s):** `requirements.txt`, `app/services/cache.py`
+**What:** Add `cachetools` to requirements.txt. Create `app/services/cache.py` with a `TTLCache(maxsize=1, ttl=300)` for the whole dashboard, plus `get_cached_dashboard()`, `set_cached_dashboard(data)`, and `invalidate_dashboard_cache()` functions.
+**How:**
+- Add `cachetools>=5.5.0` to `requirements.txt` (per D-07)
+- Create `app/services/cache.py`:
+  - Module-level `_dashboard_cache = TTLCache(maxsize=1, ttl=300)` (per D-07)
+  - `get_cached_dashboard() -> list[dict] | None` — returns cached value for key `"dashboard"` or None
+  - `set_cached_dashboard(data: list[dict])` — stores data under key `"dashboard"`
+  - `invalidate_dashboard_cache()` — calls `_dashboard_cache.clear()`
+- Keep it simple: no class, no decorator, just three functions and the cache object.
+**Acceptance:** `from app.services.cache import get_cached_dashboard, set_cached_dashboard, invalidate_dashboard_cache` works without error. `pip install -r requirements.txt` succeeds.
+
+### Task 2: Create global semaphore module
+
+**File(s):** `app/services/rate_limit.py`
+**What:** Create a module exposing a global `asyncio.Semaphore` for controlling concurrent scan requests across all sources.
+**How:**
+- Create `app/services/rate_limit.py`
+- Module-level `scan_semaphore = asyncio.Semaphore(3)` (per D-09 — starting at 3; Discogs rate limit is 60/min, and with 2-3 sources per item, 3 concurrent items keeps us well under)
+- Export only `scan_semaphore`
+**Acceptance:** `from app.services.rate_limit import scan_semaphore` imports successfully.
+
+### Task 3: Decouple scan from HTTP response using BackgroundTasks + wire cache invalidation + selectinload + scheduler parallelism
+
+**File(s):** `app/routers/wishlist.py`, `app/main.py`, `app/scheduler.py`, `app/services/scanner.py`
+**What:** This is the core wiring task. It modifies four files to connect all the pieces from Tasks 1-2.
+**How:**
+
+**`app/routers/wishlist.py` changes:**
+1. Add import: `from fastapi import BackgroundTasks` and `from app.database import SessionLocal`
+2. Add import: `from app.services.cache import invalidate_dashboard_cache`
+3. Add import: `from app.services.rate_limit import scan_semaphore`
+4. Create `async def _scan_in_background(item_id: int)` (per D-01, D-02):
+   - Opens its own `db = SessionLocal()` in a `try/finally` that calls `db.close()`
+   - Fetches the item by ID
+   - Calls `await scanner.scan_item(db, item)` (wrapped with `async with scan_semaphore:`)
+   - If `item.notify_email` and new listings, calls `await notifier.send_deal_email(item, new_listings)`
+   - In `finally`: calls `invalidate_dashboard_cache()` then `db.close()` (per D-08)
+5. Modify `add_wishlist_item_web` (line 64):
+   - Add `background_tasks: BackgroundTasks` parameter
+   - Remove the `await scanner.scan_item(db, item)` and email lines (lines 85-87)
+   - Add `background_tasks.add_task(_scan_in_background, item.id)` (per D-01)
+   - Change redirect URL to `/?toast=Item+added%2C+scanning+in+background` (per D-03)
+6. Modify `create_wishlist_item_api` (line 192):
+   - Add `background_tasks: BackgroundTasks` parameter
+   - When `scan=True`: replace `await scanner.scan_item(...)` block (lines 208-214) with `background_tasks.add_task(_scan_in_background, item.id)` and return the un-scanned enriched item immediately (per D-01)
+   - iOS Shortcut contract preserved: same URL, same `X-API-Key`, same response shape — just returns faster with no listings yet
+7. Add `invalidate_dashboard_cache()` calls after DB mutations in:
+   - `edit_wishlist_item_web` (after `db.commit()` on line 110) (per D-08)
+   - `delete_wishlist_item_web` (after `db.commit()` on line 119) (per D-08)
+   - `delete_wishlist_item_api` (after `db.commit()` on line 243) (per D-08)
+8. Modify `scan_single_item_web` (line 124): wrap `scanner.scan_item` call with `async with scan_semaphore:`
+
+**`app/main.py` changes (N+1 fix + cache):**
+1. Add import: `from sqlalchemy.orm import selectinload` and `from app.services.cache import get_cached_dashboard, set_cached_dashboard, invalidate_dashboard_cache`
+2. In `index` route (line 39): modify the items query to add `.options(selectinload(WishlistItem.listings))` (per D-06). This eliminates the N+1 — all listings loaded in a single `SELECT ... WHERE wishlist_item_id IN (...)` query.
+3. In `index` route: check `cached = get_cached_dashboard()` before the query. If cached, use it directly (skip DB query + enrichment). After computing `enriched`, call `set_cached_dashboard(enriched)` (per D-07).
+4. In `item_detail` route (line 69): add `.options(selectinload(WishlistItem.listings))` to the item query for consistency.
+
+**`app/services/scanner.py` changes:**
+1. Add import: `from app.services.cache import invalidate_dashboard_cache`
+2. At the end of `scan_item()` (after the final `db.commit()` on line 58), call `invalidate_dashboard_cache()` (per D-08 — scan completion invalidates cache)
+
+**`app/scheduler.py` changes (per D-13, D-14):**
+1. Add import: `from app.services.rate_limit import scan_semaphore` and `from app.services.cache import invalidate_dashboard_cache`
+2. Replace the sequential `for item in items:` loop (line 17) with parallel execution:
+   ```python
+   async def _scan_one(db, item):
+       async with scan_semaphore:
+           new_listings = await scanner.scan_item(db, item)
+           if item.notify_email and new_listings:
+               notifiable = [l for l in new_listings if notifier.should_notify(item, l)]
+               if notifiable:
+                   await notifier.send_deal_email(item, notifiable)
+   
+   await asyncio.gather(*[_scan_one(db, item) for item in items], return_exceptions=True)
+   ```
+3. Add `invalidate_dashboard_cache()` after the gather completes
+4. Add `max_instances=1` to the `scheduler.add_job()` call (line 26) (per D-14)
+
+**Acceptance:**
+- Adding an item via web form redirects to dashboard within 2 seconds; item appears with no listings; listings appear after background scan completes
+- `POST /api/wishlist` with `X-API-Key` returns response immediately with the item (no listings yet); same URL, same header, same response model
+- Dashboard `GET /` fires only 2 SQL queries (items + listings via selectinload), not N+1
+- Visiting dashboard twice within 5 minutes: second load uses cache (no DB query)
+- Adding/editing/deleting an item immediately invalidates the cache
+- Scheduler runs items in parallel with semaphore limiting concurrency to 3; `max_instances=1` prevents overlap
+
+## Verification
+
+1. Start the app locally: `uvicorn app.main:app --reload`
+2. Add an item via the web form — verify redirect happens in < 2 seconds and item appears on dashboard with no listings
+3. Wait 10-15 seconds, refresh — listings should now appear (background scan completed)
+4. Add an item via API: `curl -X POST http://localhost:8000/api/wishlist -H "X-API-Key: <key>" -H "Content-Type: application/json" -d '{"type":"album","query":"Test Album"}'` — verify response returns immediately
+5. Load dashboard, then load again — second load should be noticeably faster (cache hit)
+6. Check terminal logs: no N+1 pattern (should see 2 queries for dashboard, not one per item)
+7. Check terminal logs during scan-all: confirm semaphore limits concurrent execution (items should process in batches of 3)
