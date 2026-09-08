@@ -1,0 +1,25 @@
+{% extends "auth_base.html" %}
+{% block title %}Set a new password · CRATE{% endblock %}
+{% block content %}
+  <h1 class="auth-heading">New password</h1>
+
+  {% if error %}
+    <p class="auth-error" role="alert">{{ error }}</p>
+  {% endif %}
+
+  <form method="post" action="/reset-password/{{ token }}" class="auth-form">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+    <div class="auth-label">
+      <label for="resetPassword">New password</label>
+      <input class="auth-input" id="resetPassword" type="password" name="password"
+             required minlength="8" autofocus autocomplete="new-password"
+             aria-describedby="resetPasswordHint">
+      <span class="auth-hint" id="resetPasswordHint">At least 8 characters.</span>
+    </div>
+
+    <button type="submit" class="btn-cta auth-submit">Set new password</button>
+  </form>
+
+  <p class="auth-foot"><a href="/login">Back to sign in</a></p>
+{% endblock %}

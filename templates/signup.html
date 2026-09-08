@@ -1,0 +1,44 @@
+{% extends "auth_base.html" %}
+{% block title %}Create account · CRATE{% endblock %}
+{% block content %}
+  <h1 class="auth-heading">Create account</h1>
+
+  {% if invite_only %}
+    <p class="auth-hint" style="margin: 0;">
+      Sign-up is by invitation. Use the address you put on the waitlist — any other address will
+      be turned away. Not on the list yet? <a href="/#waitlist" class="link-underline">Join the waitlist</a>.
+    </p>
+  {% endif %}
+
+  {% if error %}
+    <p class="auth-error" role="alert">{{ error }}</p>
+  {% endif %}
+
+  <form method="post" action="/signup" class="auth-form">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <input type="hidden" name="next" value="{{ next }}">
+
+    <div class="auth-label">
+      <label for="signupEmail">Email</label>
+      <input class="auth-input" id="signupEmail" type="email" name="email" value="{{ email }}"
+             required autofocus autocomplete="email">
+    </div>
+
+    <div class="auth-label">
+      <label for="signupPassword">Password</label>
+      <input class="auth-input" id="signupPassword" type="password" name="password"
+             required minlength="8" autocomplete="new-password" aria-describedby="signupPasswordHint">
+      <span class="auth-hint" id="signupPasswordHint">At least 8 characters.</span>
+    </div>
+
+    <button type="submit" class="btn-cta auth-submit">Create account</button>
+    <p class="auth-hint" style="text-align: center; margin: 0;">
+      By creating an account you agree to the <a href="/privacy">privacy notice</a>.
+    </p>
+  </form>
+
+  <p class="auth-foot">
+    Already have an account?
+    <a href="/login{% if next %}?next={{ next | urlencode }}{% endif %}">Sign in</a>
+  </p>
+{% endblock %}

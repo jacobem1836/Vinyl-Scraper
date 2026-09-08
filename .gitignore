@@ -32,10 +32,8 @@ Thumbs.db
 # Logs
 *.log
 
-# Node
+# Node (none used)
 node_modules/
-package.json
-package-lock.json
 
 # Claude Code
 .claude/
@@ -47,3 +45,6 @@ package-lock.json
 .planning/phases/28-infrastructure-migration/railway-dump.sql
 .planning/phases/28-infrastructure-migration/railway-rowcounts.txt
 .planning/phases/28-infrastructure-migration/neon-rowcounts.txt
+
+# Test artefacts
+.pytest_cache/

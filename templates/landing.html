@@ -1,0 +1,126 @@
+{% extends "base.html" %}
+
+{% block title %}CRATE — the cheapest way to buy the records you want{% endblock %}
+{% block main_class %}landing-main{% endblock %}
+
+{% block content %}
+
+<section class="landing-hero" aria-labelledby="heroHeading">
+  <div class="container landing-hero-inner">
+    <div>
+      <p class="eyebrow">Vinyl price tracking · Australia</p>
+      <h1 id="heroHeading" class="hero-title">
+        The cheapest way<br>to buy the records<br><em>you</em> want.
+      </h1>
+      <p class="hero-lede">
+        Tell CRATE what you are hunting for. It searches Discogs, eBay AU and 26+ Australian
+        record stores, converts every price to Australian dollars with shipping included, and
+        tells you the moment something drops.
+      </p>
+      <div class="hero-actions">
+        {% if signup_open %}
+          <a href="/signup" class="btn-cta">Create account</a>
+        {% else %}
+          <a href="#waitlist" class="btn-cta">Join the waitlist</a>
+        {% endif %}
+        <a href="/login" class="link-underline">Already invited? Sign in</a>
+      </div>
+    </div>
+
+    <div class="hero-motif" aria-hidden="true">
+      <div class="sleeve"></div>
+      <div class="disc"></div>
+    </div>
+  </div>
+</section>
+
+<section class="landing-section" aria-labelledby="howHeading">
+  <div class="container">
+    <p class="eyebrow">How it works</p>
+    <h2 id="howHeading" class="hero-title" style="font-size: clamp(1.8rem, 1rem + 2.6vw, 3rem);">
+      Three steps, then leave it alone.
+    </h2>
+
+    <ol class="steps">
+      <li class="step">
+        <span class="step-number" aria-hidden="true">1</span>
+        <h3>Add the records you want</h3>
+        <p>
+          An album, an artist, a label, or a key word. Album searches pull suggestions straight
+          from Discogs so you can pin the exact pressing rather than a near-miss.
+        </p>
+      </li>
+      <li class="step">
+        <span class="step-number" aria-hidden="true">2</span>
+        <h3>CRATE searches for you</h3>
+        <p>
+          Discogs marketplace, eBay AU and 26+ Australian record stores, rescanned on a schedule.
+          Irrelevant matches are filtered out before they reach you.
+        </p>
+      </li>
+      <li class="step">
+        <span class="step-number" aria-hidden="true">3</span>
+        <h3>See the real landed cost</h3>
+        <p>
+          Every listing is converted to AUD with estimated shipping to Australia added, so a
+          cheap US copy and a local one are finally comparable. Email alerts when a price drops.
+        </p>
+      </li>
+    </ol>
+  </div>
+</section>
+
+<section class="landing-section" id="waitlist" aria-labelledby="waitlistHeading">
+  <div class="container">
+    <p class="eyebrow">{% if signup_open %}Get started{% else %}Invite only, for now{% endif %}</p>
+    <h2 id="waitlistHeading" class="hero-title" style="font-size: clamp(1.8rem, 1rem + 2.6vw, 3rem); margin-bottom: var(--space-lg);">
+      {% if signup_open %}Create your crate.{% else %}Get on the list.{% endif %}
+    </h2>
+
+    <div class="waitlist-panel">
+      {% if signup_open %}
+        <p class="text-muted" style="margin: 0;">
+          Sign-ups are open. Create an account and add your first record in under a minute.
+        </p>
+        <div class="hero-actions" style="margin-top: var(--space-md);">
+          <a href="/signup" class="btn-cta">Create account</a>
+          <a href="/login" class="link-underline">Already invited? Sign in</a>
+        </div>
+      {% elif joined %}
+        <p class="notice" role="status" style="margin: 0;">
+          <strong>You're on the list.</strong> We will email you when a spot opens up.
+        </p>
+        <p class="text-muted" style="margin: var(--space-md) 0 0 0;">
+          <a href="/login" class="link-underline">Already invited? Sign in</a>
+        </p>
+      {% else %}
+        <p class="text-muted" style="margin: 0;">
+          CRATE runs on a small machine and scans politely, so accounts open in batches.
+          Leave your email and we will send you an invitation.
+        </p>
+
+        {% if error is defined and error %}
+          <p class="notice notice--error" role="alert">{{ error }}</p>
+        {% endif %}
+
+        <form method="post" action="/waitlist" class="waitlist-form">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          <label class="visually-hidden" for="waitlistEmail">Email address</label>
+          <input class="form-input" id="waitlistEmail" type="email" name="email" required
+                 autocomplete="email" placeholder="you@example.com" maxlength="254">
+          <button type="submit" class="btn-cta">Join the waitlist</button>
+        </form>
+
+        <p class="text-muted text-label" style="margin: var(--space-md) 0 0 0;">
+          One address, stored so we can invite you. Nothing else, and no marketing.
+          See the <a href="/privacy" class="link-underline">privacy notice</a>.
+        </p>
+        <p class="text-muted" style="margin: var(--space-md) 0 0 0;">
+          <a href="/login" class="link-underline">Already invited? Sign in</a>
+        </p>
+      {% endif %}
+    </div>
+  </div>
+</section>
+
+{% endblock %}

@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+
+{% block title %}{{ status }} · CRATE{% endblock %}
+
+{% block content %}
+<section class="error-page">
+  <p class="eyebrow">Something is off</p>
+  <p class="error-code">{{ status }}</p>
+  <p class="error-message">{{ message }}</p>
+  <div class="hero-actions" style="justify-content: center;">
+    <a href="/" class="btn-cta">Back to CRATE</a>
+    {% if not (user is defined and user) %}
+      <a href="/login" class="link-underline">Sign in</a>
+    {% endif %}
+  </div>
+</section>
+{% endblock %}

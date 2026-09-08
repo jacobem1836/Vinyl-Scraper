@@ -1,54 +1,58 @@
 {% extends "base.html" %}
 
-{% block title %}CRATE — {{ item.query }}{% endblock %}
+{% block title %}{{ item.query }} · CRATE{% endblock %}
 
 {% block content %}
 <div class="stack-lg">
 
-  <!-- Header section with artwork thumbnail -->
-  <section class="card" style="padding: var(--space-lg);">
-    <a href="/" class="text-sm text-accent" style="display: inline-block; margin-bottom: var(--space-md);">← Back to Dashboard</a>
+  <!-- Header -->
+  <section class="panel">
+    <a href="/" class="back-link">← Back to your crate</a>
 
-    <div class="flex" style="gap: var(--space-lg); flex-wrap: wrap;">
-      <!-- Artwork thumbnail 120x120 -->
-      <div style="flex-shrink: 0;">
-        {% if item.artwork_url %}
-          <img
-            src="/api/artwork?url={{ item.artwork_url | urlencode }}"
-            alt="{{ item.query }} album cover"
-            onerror="this.src='/static/empty-vinyl-placeholder.png'"
-            style="width: 120px; height: 120px; object-fit: cover; border-radius: 0;"
-          >
-        {% else %}
-          <img
-            src="/static/empty-vinyl-placeholder.png"
-            alt="{{ item.query }} — no artwork available"
-            style="width: 120px; height: 120px; object-fit: cover; border-radius: 0;"
-          >
-        {% endif %}
-      </div>
+    <div class="detail-header">
+      <img class="detail-artwork"
+           {% if item.artwork_url %}
+             src="/api/artwork?url={{ item.artwork_url | urlencode }}"
+             alt="Cover art for {{ item.query }}"
+           {% else %}
+             src="/static/empty-vinyl-placeholder.png"
+             alt=""
+           {% endif %}
+           width="120" height="120"
+           onerror="this.src='/static/vinyl-placeholder.svg'">
 
-      <div style="flex: 1; min-width: 200px;">
-        <div class="flex items-center" style="gap: var(--space-sm); flex-wrap: wrap; margin-bottom: var(--space-sm);">
-          <h1 class="text-heading">{{ item.query }}</h1>
-          <span class="badge {% if item.type == 'album' %}badge-album{% elif item.type == 'artist' %}badge-artist{% else %}badge-other{% endif %}">
-            {{ item.type }}
-          </span>
+      <div class="detail-body">
+        <div class="flex items-center gap-sm" style="flex-wrap: wrap; margin-bottom: var(--space-sm);">
+          <h1 class="text-heading" style="margin: 0;">{{ item.query }}</h1>
+          <span class="badge {% if item.type == 'album' %}badge-album{% elif item.type == 'artist' %}badge-artist{% else %}badge-other{% endif %}">{{ item.type }}</span>
         </div>
 
         {% if item.notes %}
-          <p class="text-sm text-muted" style="margin-bottom: var(--space-sm);">{{ item.notes }}</p>
+          <p class="text-muted" style="margin: 0 0 var(--space-sm) 0;">{{ item.notes }}</p>
         {% endif %}
 
-        <div class="text-sm text-muted" style="display: flex; flex-direction: column; gap: var(--space-xs);">
-          <p>Notify when ≥ <span class="text-accent">{{ item.notify_below_pct|int }}%</span> below typical price{% if item.typical_price is not none %} (~${{ '%.2f'|format(item.typical_price) }}){% endif %}</p>
-          <p>Last scanned: {% if item.last_scanned_at %}<span data-timestamp="{{ item.last_scanned_at.isoformat() }}">{{ item.last_scanned_at }}</span>{% else %}never{% endif %}</p>
-        </div>
+        <dl class="listing-meta" style="max-width: 520px;">
+          <div>
+            <dt>Typical landed</dt>
+            <dd>{% if item.typical_price is not none %}A${{ '%.2f'|format(item.typical_price) }}{% else %}Not enough listings yet{% endif %}</dd>
+          </div>
+          <div>
+            <dt>Alert threshold</dt>
+            <dd>{{ item.notify_below_pct|int }}% below typical{% if not item.notify_email %} (email off){% endif %}</dd>
+          </div>
+          <div>
+            <dt>Last scanned</dt>
+            <dd>{% if item.last_scanned_at %}<span data-timestamp="{{ item.last_scanned_at.isoformat() }}">{{ item.last_scanned_at }}</span>{% else %}Never{% endif %}</dd>
+          </div>
+          <div>
+            <dt>Live listings</dt>
+            <dd>{{ item.listing_count }}</dd>
+          </div>
+        </dl>
       </div>
 
-      <div class="flex items-center" style="gap: var(--space-sm);">
-        <button type="button"
-                class="btn-secondary"
+      <div class="detail-actions">
+        <button type="button" class="btn-secondary"
                 data-edit-item
                 data-id="{{ item.id }}"
                 data-query="{{ item.query }}"
@@ -56,234 +60,169 @@
                 data-notes="{{ item.notes or '' }}"
                 data-notify-below-pct="{{ item.notify_below_pct }}"
                 data-notify-email="{{ 'true' if item.notify_email else 'false' }}"
-                data-discogs-release-id="{{ item.discogs_release_id or '' }}"
-                data-discogs-release-title="{{ item.query }}">
+                data-discogs-release-id="{{ item.discogs_release_id or '' }}">
           Edit
         </button>
-        <button type="button" onclick="startScan({{ item.id }})" class="btn-cta">Scan Now</button>
-        <div id="deleteConfirm" style="display: flex; align-items: center; gap: var(--space-sm);">
-          <button type="button" id="deleteInitBtn" class="btn-destructive" onclick="document.getElementById('deleteInitBtn').style.display='none'; document.getElementById('deleteConfirmBtns').style.display='flex';">Remove from Crate</button>
-          <div id="deleteConfirmBtns" style="display: none; align-items: center; gap: var(--space-sm);">
-            <form action="/wishlist/{{ item.id }}/delete" method="post" style="display: inline;">
-              <button type="submit" class="btn-destructive">Confirm?</button>
+
+        <button type="button" class="btn-cta" data-scan-btn data-scan-item-id="{{ item.id }}">
+          <span class="spinner" data-scan-spinner hidden style="margin-right: var(--space-sm);" aria-hidden="true"></span>
+          Rescan
+        </button>
+
+        <div class="confirm-group">
+          <button type="button" id="deleteInitBtn" class="btn-destructive"
+                  aria-expanded="false" aria-controls="deleteConfirm">
+            Remove
+          </button>
+          <div id="deleteConfirm" class="confirm-group" hidden>
+            <span class="text-label text-muted">Remove this item and its listings?</span>
+            <form action="/wishlist/{{ item.id }}/delete" method="post">
+              <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+              <button type="submit" class="btn-destructive">Yes, remove</button>
             </form>
-            <button type="button" class="btn-secondary" onclick="document.getElementById('deleteInitBtn').style.display='inline-flex'; document.getElementById('deleteConfirmBtns').style.display='none';">Cancel</button>
+            <button type="button" id="deleteCancelBtn" class="btn-secondary">Cancel</button>
           </div>
         </div>
       </div>
     </div>
   </section>
 
-  <!-- Best Deals section -->
-  <section style="display: flex; flex-direction: column; gap: var(--space-md);">
-    <h2 style="font-size: 22px; font-weight: 600;">Best Deals</h2>
+  <!-- Best deals -->
+  <section class="stack-md" aria-labelledby="bestHeading">
+    <h2 id="bestHeading" class="section-heading">Best value right now</h2>
     {% if item.top_listings %}
       <div class="card-grid">
         {% for l in item.top_listings %}
           <article class="card" style="padding: var(--space-md); display: flex; flex-direction: column; gap: var(--space-sm);">
-            <div>
-              <p class="text-price price-best">${{ '%.2f'|format(l.landed_price) }} <span class="text-sm text-muted" style="font-weight: 400;">landed AU</span></p>
-              <p class="text-sm text-faint">${{ '%.2f'|format(l.price) }} + shipping from {{ l.ships_from or 'Unknown' }}</p>
-            </div>
+            <p class="text-price price-best" style="margin: 0;">
+              {% if l.landed is not none %}A${{ '%.2f'|format(l.landed) }}{% else %}—{% endif %}
+              <span class="text-label text-muted" style="font-weight: 400;">landed</span>
+            </p>
+            <p class="text-label text-muted" style="margin: 0;">
+              {{ l.price_display or '—' }}
+              {% if l.ships_from %}
+                + A${{ '%.2f'|format(l.shipping) }} shipping from {{ l.ships_from }}
+              {% else %}
+                + A${{ '%.2f'|format(l.shipping) }} shipping (origin unknown)
+              {% endif %}
+            </p>
             <span class="badge {% if l.source == 'discogs' %}badge-source-discogs{% else %}badge-source-other{% endif %}" style="align-self: flex-start;">
               {{ l.source|replace('_', ' ')|title }}
             </span>
-            <p class="text-sm truncate" style="color: var(--color-text-muted);">{{ l.title }}</p>
-            <a href="{{ l.url }}" target="_blank" rel="noopener noreferrer" class="text-sm text-accent">View Listing →</a>
+            <p class="listing-title" style="margin: 0;">{{ l.title }}</p>
+            <a href="{{ l.url }}" target="_blank" rel="noopener noreferrer" class="listing-open mt-auto">View listing →</a>
           </article>
         {% endfor %}
       </div>
     {% else %}
-      <div class="empty-state" style="padding: var(--space-lg);">
-        No listings found yet. Click Scan Now to search.
+      <div class="empty-state">
+        Nothing priced yet. Hit <strong>Rescan</strong> to search the stores again.
       </div>
     {% endif %}
   </section>
 
-  <!-- All Listings table -->
-  <section style="display: flex; flex-direction: column; gap: var(--space-md);">
-    <h2 style="font-size: 22px; font-weight: 600;">All Listings</h2>
+  <!-- All listings -->
+  <section class="stack-md" aria-labelledby="allHeading">
+    <h2 id="allHeading" class="section-heading">All listings <span class="text-muted text-label">({{ listings|length }})</span></h2>
 
     {% if listings %}
-      <div class="table-container">
-        <table class="table">
-          <thead>
-            <tr>
-              <th>Landed (AU)</th>
-              <th>Ships From</th>
-              <th>Condition</th>
-              <th>Source</th>
-              <th>Title</th>
-              <th>Seller</th>
-              <th>Found</th>
-              <th>Link</th>
-            </tr>
-          </thead>
-          <tbody>
-            {% for listing in listings if listing.price is not none %}
-              <tr class="listing-row{% if not listing.is_in_stock %}" style="opacity: 0.5{% endif %}">
-                <td>
-                  {% if listing.aud_total is not none %}
-                    <span class="price-best">${{ '%.2f'|format(listing.aud_total) }}</span>
-                    <span class="text-sm text-muted" style="display: block;">
-                      {{ listing.orig_display }}
-                    </span>
-                  {% elif listing.landed_price is not none %}
-                    <span class="price-best">${{ '%.2f'|format(listing.landed_price) }}</span>
-                    <span class="text-sm text-faint" style="display: block;">
-                      {{ listing.currency }} {{ '%.2f'|format(listing.price) }} + shipping
-                    </span>
-                  {% else %}
-                    <span class="text-faint">—</span>
-                  {% endif %}
-                </td>
-                <td class="text-muted">{{ listing.ships_from or '—' }}</td>
-                <td class="text-muted">{{ listing.condition or '—' }}</td>
-                <td>
-                  <span class="badge {% if listing.source == 'discogs' %}badge-source-discogs{% else %}badge-source-other{% endif %}">
-                    {{ listing.source|replace('_', ' ')|title }}
-                  </span>
-                  {% if not listing.is_in_stock %}
-                  <span class="text-sm text-destructive" style="display: block; margin-top: var(--space-xs);">Out of stock</span>
-                  {% endif %}
-                </td>
-                <td class="title-cell">{{ listing.title }}</td>
-                <td class="text-muted">{{ listing.seller or '—' }}</td>
-                <td class="text-muted"><span data-timestamp="{{ listing.found_at.isoformat() }}">{{ listing.found_at }}</span></td>
-                <td><a href="{{ listing.url }}" target="_blank" rel="noopener noreferrer" class="text-accent">Open</a></td>
-              </tr>
-            {% endfor %}
+      <ul class="listing-list">
+        {% for l in listings %}
+          <li class="listing-item{% if not l.is_active %} listing-item--inactive{% endif %}">
+            <div class="listing-price">
+              {% if l.landed is not none %}
+                <span class="landed">A${{ '%.2f'|format(l.landed) }}</span>
+                <span class="breakdown">
+                  {{ l.price_display or '—' }} + A${{ '%.2f'|format(l.shipping) }} shipping
+                </span>
+              {% else %}
+                <span class="landed" aria-label="No price">—</span>
+                <span class="breakdown">Price not listed</span>
+              {% endif %}
+              {% if l.prev_price_display %}
+                <span class="breakdown">Was {{ l.prev_price_display }} at the last scan</span>
+              {% endif %}
+            </div>
 
-            {% for listing in listings if listing.price is none %}
-              <tr class="listing-row">
-                <td class="text-faint">—</td>
-                <td class="text-faint">—</td>
-                <td class="text-muted">{{ listing.condition or '—' }}</td>
-                <td>
-                  <span class="badge {% if listing.source == 'discogs' %}badge-source-discogs{% else %}badge-source-other{% endif %}">
-                    {{ listing.source|replace('_', ' ')|title }}
-                  </span>
-                </td>
-                <td class="title-cell">{{ listing.title }}</td>
-                <td class="text-muted">{{ listing.seller or '—' }}</td>
-                <td class="text-muted"><span data-timestamp="{{ listing.found_at.isoformat() }}">{{ listing.found_at }}</span></td>
-                <td><a href="{{ listing.url }}" target="_blank" rel="noopener noreferrer" class="text-accent">Open</a></td>
-              </tr>
-            {% endfor %}
-          </tbody>
-        </table>
-      </div>
+            <div class="listing-body">
+              <p class="listing-title">{{ l.title }}</p>
+
+              <div class="listing-flags" style="margin: var(--space-xs) 0;">
+                <span class="badge {% if l.source == 'discogs' %}badge-source-discogs{% else %}badge-source-other{% endif %}">
+                  {{ l.source|replace('_', ' ')|title }}
+                </span>
+                {% if not l.is_active %}
+                  <span class="flag flag--warn">No longer listed</span>
+                {% elif not l.is_in_stock %}
+                  <span class="flag flag--warn">Out of stock</span>
+                {% endif %}
+              </div>
+
+              <dl class="listing-meta">
+                <div>
+                  <dt>Ships from</dt>
+                  <dd>
+                    {% if l.ships_from %}
+                      {{ l.ships_from }}
+                    {% else %}
+                      Origin unknown, A${{ '%.2f'|format(shipping_fallback) }} shipping assumed
+                    {% endif %}
+                  </dd>
+                </div>
+                <div>
+                  <dt>Condition</dt>
+                  <dd>{{ l.condition or 'Not stated' }}</dd>
+                </div>
+                <div>
+                  <dt>Seller</dt>
+                  <dd>{{ l.seller or 'Not stated' }}</dd>
+                </div>
+                <div>
+                  <dt>Found</dt>
+                  <dd>{% if l.found_at %}<span data-timestamp="{{ l.found_at.isoformat() }}">{{ l.found_at }}</span>{% else %}—{% endif %}</dd>
+                </div>
+              </dl>
+            </div>
+
+            <a href="{{ l.url }}" target="_blank" rel="noopener noreferrer" class="listing-open">
+              Open<span class="visually-hidden"> listing for {{ l.title }} on {{ l.source|replace('_', ' ')|title }}</span> →
+            </a>
+          </li>
+        {% endfor %}
+      </ul>
     {% else %}
-      <div class="empty-state" style="padding: var(--space-3xl) var(--space-xl);">
-        No listings found yet. Click Scan Now to search.
+      <div class="empty-state">
+        No listings found yet. Hit <strong>Rescan</strong> to search the stores again.
       </div>
     {% endif %}
   </section>
-
-  <!-- Edit Item Modal -->
-  <div id="editItemModal" class="hidden modal-overlay" role="dialog" aria-modal="true" aria-labelledby="editItemModalTitle">
-    <div data-edit-backdrop class="modal-backdrop opacity-0"></div>
-    <div class="modal-center">
-      <div data-edit-panel class="modal-panel opacity-0 translate-y-4">
-        <h2 id="editItemModalTitle" style="font-size: var(--text-heading); font-weight: 600; margin-bottom: var(--space-md);">Edit Wishlist Item</h2>
-        <form id="editItemForm" action="" method="post" class="stack-md">
-          <div>
-            <label class="form-label">What are you looking for?</label>
-            <div class="typeahead-wrapper">
-              <input id="editQuery" name="query" required placeholder="Search Discogs..." class="form-input"
-                     role="combobox" aria-expanded="false" aria-haspopup="listbox" aria-autocomplete="list"
-                     aria-controls="edit-typeahead-listbox" autocomplete="off" />
-              <div id="editSpinner" class="typeahead-spinner spinner hidden" aria-label="Searching Discogs..."></div>
-              <div id="edit-typeahead-listbox" class="typeahead-dropdown" role="listbox"></div>
-            </div>
-            <input type="hidden" id="editDiscogsReleaseId" name="discogs_release_id" value="" />
-          </div>
-          <div>
-            <label class="form-label">Type</label>
-            <select id="editType" name="type" class="form-input">
-              <option value="album">Album</option>
-              <option value="artist">Artist</option>
-              <option value="label">Label</option>
-              <option value="subject">Key Word/s</option>
-            </select>
-          </div>
-          <div>
-            <label class="form-label">Notes (optional)</label>
-            <input id="editNotes" name="notes" class="form-input" />
-          </div>
-          <div>
-            <label class="form-label">Notify when price is this % below typical</label>
-            <input id="editNotifyPct" name="notify_below_pct" type="number" step="1" min="1" max="90" class="form-input" />
-          </div>
-          <label class="flex items-center gap-sm text-sm text-muted">
-            <input type="hidden" name="notify_email" value="" />
-            <input id="editNotifyEmail" type="checkbox" name="notify_email" class="form-checkbox" />
-            Email me when deals are found
-          </label>
-          <div class="flex justify-end gap-sm" style="padding-top: var(--space-sm);">
-            <button type="button" data-close-edit-modal class="btn-secondary">Cancel</button>
-            <button type="submit" class="btn-cta">Save Changes</button>
-          </div>
-        </form>
-      </div>
-    </div>
-  </div>
 
 </div>
 
+{% include "_edit_modal.html" %}
+{% endblock %}
+
+{% block scripts %}
 <script>
-  document.addEventListener('DOMContentLoaded', () => {
-    const modal = document.getElementById('editItemModal');
-    const form = document.getElementById('editItemForm');
-    let editTriggerBtn = null;
+  document.addEventListener('DOMContentLoaded', function () {
+    var initBtn = document.getElementById('deleteInitBtn');
+    var confirm = document.getElementById('deleteConfirm');
+    var cancelBtn = document.getElementById('deleteCancelBtn');
+    if (!initBtn || !confirm || !cancelBtn) return;
 
-    const openEdit = (btn) => {
-      editTriggerBtn = btn;
-      form.action = '/wishlist/' + btn.dataset.id + '/edit';
-      document.getElementById('editQuery').value = btn.dataset.query;
-      document.getElementById('editType').value = btn.dataset.type;
-      document.getElementById('editNotes').value = btn.dataset.notes;
-      document.getElementById('editNotifyPct').value = btn.dataset.notifyBelowPct;
-      document.getElementById('editNotifyEmail').checked = btn.dataset.notifyEmail === 'true';
-      // Pre-populate pinned release ID if present
-      const releaseIdInput = document.getElementById('editDiscogsReleaseId');
-      if (releaseIdInput) releaseIdInput.value = btn.dataset.discogsReleaseId || '';
-      modal.classList.remove('hidden');
-      requestAnimationFrame(() => {
-        const backdrop = modal.querySelector('[data-edit-backdrop]');
-        const panel = modal.querySelector('[data-edit-panel]');
-        if (backdrop) backdrop.classList.remove('opacity-0');
-        if (panel) panel.classList.remove('opacity-0', 'translate-y-4');
-        const firstFocusable = modal.querySelector('input, select, textarea, button');
-        if (firstFocusable) firstFocusable.focus();
-      });
-    };
-
-    const closeEdit = () => {
-      if (typeof resetTypeahead === 'function') resetTypeahead('edit');
-      const backdrop = modal.querySelector('[data-edit-backdrop]');
-      const panel = modal.querySelector('[data-edit-panel]');
-      if (backdrop) backdrop.classList.add('opacity-0');
-      if (panel) panel.classList.add('opacity-0', 'translate-y-4');
-      setTimeout(() => modal.classList.add('hidden'), 200);
-      if (editTriggerBtn) editTriggerBtn.focus();
-    };
-
-    document.querySelectorAll('[data-edit-item]').forEach(btn => {
-      btn.addEventListener('click', () => openEdit(btn));
+    initBtn.addEventListener('click', function () {
+      confirm.hidden = false;
+      initBtn.hidden = true;
+      initBtn.setAttribute('aria-expanded', 'true');
+      confirm.querySelector('button[type="submit"]').focus();
     });
-    document.querySelectorAll('[data-close-edit-modal]').forEach(btn => {
-      btn.addEventListener('click', closeEdit);
-    });
-    if (modal) {
-      modal.addEventListener('click', (e) => {
-        if (e.target.matches('[data-edit-backdrop]')) closeEdit();
-      });
-    }
 
-    // Initialize typeahead for edit modal
-    const editTypeSelect = document.getElementById('editType');
-    if (editTypeSelect) initTypeahead('edit', editTypeSelect);
+    cancelBtn.addEventListener('click', function () {
+      confirm.hidden = true;
+      initBtn.hidden = false;
+      initBtn.setAttribute('aria-expanded', 'false');
+      initBtn.focus();
+    });
   });
 </script>
 {% endblock %}

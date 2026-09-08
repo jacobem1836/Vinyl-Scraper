@@ -1,162 +1,96 @@
 import asyncio
+from contextlib import asynccontextmanager
 
-from fastapi import Depends, FastAPI, Request
+from fastapi import FastAPI, Request
+from fastapi.responses import JSONResponse
 from fastapi.staticfiles import StaticFiles
-from fastapi.templating import Jinja2Templates
-from sqlalchemy.orm import Session, selectinload
+from starlette.middleware.base import BaseHTTPMiddleware
+from starlette.exceptions import HTTPException
+from starlette.middleware.sessions import SessionMiddleware
 
+from app.auth import AuthRedirect, auth_redirect_response
 from app.config import settings
-from app.database import Base, engine, get_db, run_migrations
-from app.models import Listing, WishlistItem
+from app.database import engine
+from app.migrations import run_migrations
+from app.routers.auth import auth_router
+from app.routers.public import public_router
 from app.routers.wishlist import api_router, web_router
-from app.services.cache import get_cached_dashboard, invalidate_dashboard_cache, set_cached_dashboard
-from app.services.fx import convert_to_aud, format_orig_display, get_rate
 from app.scheduler import scheduler, setup_scheduler
-from app.services.shipping import get_shipping_cost
+from app.templating import templates
 
-app = FastAPI(title="Vinyl Wishlist")
+SESSION_MAX_AGE = 60 * 60 * 24 * 30
 
-# Static files and templates
-app.mount("/static", StaticFiles(directory="static"), name="static")
-templates = Jinja2Templates(directory="templates")
+SECURITY_HEADERS = {
+    "X-Content-Type-Options": "nosniff",
+    "X-Frame-Options": "DENY",
+    "Referrer-Policy": "strict-origin-when-cross-origin",
+    "Permissions-Policy": "camera=(), microphone=(), geolocation=()",
+    "Content-Security-Policy": (
+        "default-src 'self'; img-src 'self' data: https:; style-src 'self' 'unsafe-inline'; "
+        "script-src 'self' 'unsafe-inline'; connect-src 'self'; frame-ancestors 'none'; base-uri 'self'; form-action 'self'"
+    ),
+}
 
-# Include routers
-app.include_router(web_router)
-app.include_router(api_router)
 
-
-@app.on_event("startup")
-async def startup():
-    async def _init_db_with_retries():
-        for attempt in range(1, 6):
-            try:
-                await asyncio.to_thread(run_migrations)
-                await asyncio.to_thread(Base.metadata.create_all, bind=engine)
-                print("[startup] DB init complete")
-                return
-            except Exception as e:
-                print(f"[startup] DB init attempt {attempt}/5 failed: {e}")
-                await asyncio.sleep(min(30, 2 ** attempt))
-
-        print("[startup] DB init failed after retries; app will continue and retry on demand")
-
-    asyncio.create_task(_init_db_with_retries())
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    await asyncio.to_thread(run_migrations, engine)
     setup_scheduler()
     scheduler.start()
+    yield
+    scheduler.shutdown(wait=False)
 
 
-@app.on_event("shutdown")
-async def shutdown():
-    scheduler.shutdown()
+app = FastAPI(title="CRATE", lifespan=lifespan, docs_url=None, redoc_url=None, openapi_url=None)
 
 
-# Web page routes (GET)
-
-@app.get("/")
-async def index(request: Request, db: Session = Depends(get_db)):
-    from app.routers.wishlist import _enrich_item
-
-    cached = get_cached_dashboard()
-    if cached is not None:
-        enriched = cached
-    else:
-        # Pre-resolve FX rates for this request
-        fx_rates = {}
-        for currency in ("USD", "GBP"):
-            rate = await get_rate(currency)
-            if rate:
-                fx_rates[currency] = rate
-
-        items = (
-            db.query(WishlistItem)
-            .filter_by(is_active=True)
-            .options(selectinload(WishlistItem.listings))
-            .order_by(WishlistItem.created_at.desc())
-            .all()
-        )
-        enriched = [_enrich_item(item, fx_rates=fx_rates) for item in items]
-        set_cached_dashboard(enriched)
-    shipping_estimate = settings.shipping_estimate_usd
-    priced = [i for i in enriched if i["best_price"] is not None]
-    total_cost = round(sum(i["best_price"] for i in priced), 2) if priced else None
-    cheapest = min(priced, key=lambda i: i["best_price"]) if priced else None
-    most_expensive = max(priced, key=lambda i: i["best_price"]) if priced else None
-    return templates.TemplateResponse(
-        "index.html",
-        {
-            "request": request,
-            "items": enriched,
-            "total_listings": sum(i["listing_count"] for i in enriched),
-            "total_cost": total_cost,
-            "cheapest": cheapest,
-            "most_expensive": most_expensive,
-            "shipping_estimate": shipping_estimate,
-        },
-    )
+class SecurityHeadersMiddleware(BaseHTTPMiddleware):
+    async def dispatch(self, request, call_next):
+        response = await call_next(request)
+        for k, v in SECURITY_HEADERS.items():
+            response.headers.setdefault(k, v)
+        if settings.is_production:
+            response.headers.setdefault("Strict-Transport-Security", "max-age=31536000; includeSubDomains")
+        return response
 
 
-@app.get("/item/{item_id}")
-async def item_detail(item_id: int, request: Request, db: Session = Depends(get_db)):
-    from fastapi import HTTPException
+app.add_middleware(SecurityHeadersMiddleware)
+app.add_middleware(
+    SessionMiddleware,
+    secret_key=settings.secret_key,
+    session_cookie="crate_session",
+    max_age=SESSION_MAX_AGE,
+    same_site="lax",
+    https_only=settings.is_production,
+)
 
-    from app.routers.wishlist import _enrich_item
 
-    item = (
-        db.query(WishlistItem)
-        .filter_by(id=item_id, is_active=True)
-        .options(selectinload(WishlistItem.listings))
-        .first()
-    )
-    if not item:
-        raise HTTPException(status_code=404, detail="Item not found")
+def _wants_html(request: Request) -> bool:
+    return not request.url.path.startswith("/api/") and "text/html" in request.headers.get("accept", "")
 
-    raw_listings = (
-        db.query(Listing)
-        .filter_by(wishlist_item_id=item_id, is_active=True)
-        .order_by(Listing.price.asc().nullslast())
-        .all()
-    )
-    fallback = settings.shipping_estimate_usd
 
-    # Pre-resolve FX rates for this request
-    fx_rates = {}
-    for currency in ("USD", "GBP"):
-        rate = await get_rate(currency)
-        if rate:
-            fx_rates[currency] = rate
+@app.exception_handler(AuthRedirect)
+async def _auth_redirect(request: Request, exc: AuthRedirect):
+    return auth_redirect_response(exc.next_path)
 
-    listings = [
-        {
-            "id": l.id,
-            "source": l.source,
-            "title": l.title,
-            "price": l.price,
-            "currency": l.currency,
-            "condition": l.condition,
-            "seller": l.seller,
-            "ships_from": l.ships_from,
-            "url": l.url,
-            "found_at": l.found_at,
-            "is_active": l.is_active,
-            "landed_price": (l.price + get_shipping_cost(l.ships_from, fallback)) if l.price is not None else None,
-            "is_in_stock": l.is_in_stock,
-            # FX conversion fields
-            "aud_total": convert_to_aud(
-                l.price + get_shipping_cost(l.ships_from, fallback),
-                l.currency,
-                fx_rates.get(l.currency) if l.currency != "AUD" else 1.0,
-            ) if l.price is not None else None,
-            "orig_display": format_orig_display(
-                l.price, get_shipping_cost(l.ships_from, fallback), l.currency
-            ) if l.price is not None else None,
-        }
-        for l in raw_listings
-    ]
-    return templates.TemplateResponse(
-        "item_detail.html",
-        {
-            "request": request,
-            "item": _enrich_item(item, fx_rates=fx_rates),
-            "listings": listings,
-        },
-    )
+
+@app.exception_handler(HTTPException)
+async def _http_error(request: Request, exc: HTTPException):
+    if _wants_html(request):
+        return templates.TemplateResponse(request, "error.html", {"status": exc.status_code, "message": exc.detail}, status_code=exc.status_code)
+    return JSONResponse({"detail": exc.detail}, status_code=exc.status_code, headers=getattr(exc, "headers", None))
+
+
+@app.exception_handler(Exception)
+async def _server_error(request: Request, exc: Exception):
+    print(f"[error] {request.method} {request.url.path}: {exc!r}")
+    if _wants_html(request):
+        return templates.TemplateResponse(request, "error.html", {"status": 500, "message": "Something went wrong on our side. Please try again."}, status_code=500)
+    return JSONResponse({"detail": "Internal server error"}, status_code=500)
+
+
+app.mount("/static", StaticFiles(directory="static"), name="static")
+app.include_router(public_router)
+app.include_router(auth_router)
+app.include_router(web_router)
+app.include_router(api_router)
