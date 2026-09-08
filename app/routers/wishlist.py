@@ -1,419 +1,229 @@
+"""Wishlist pages and the JSON endpoints the dashboard's JavaScript calls. Everything is scoped to the signed-in user."""
 import asyncio
+import ipaddress
+import socket
+from urllib.parse import urlparse
 
 import httpx
-from fastapi import APIRouter, BackgroundTasks, Depends, Form, Header, HTTPException, Request
-from fastapi.responses import RedirectResponse, StreamingResponse
-from sqlalchemy.orm import Session
+from fastapi import APIRouter, Depends, Form, HTTPException, Request
+from fastapi.responses import RedirectResponse, Response
+from sqlalchemy.orm import Session, selectinload
 
-from app.auth import AuthRedirect, current_user
-from app.auth import require_auth
+from app.auth import require_auth, require_auth_json, require_csrf, throttle
 from app.config import settings
 from app.database import SessionLocal, get_db
-from app.models import Listing, WishlistItem
-from app.schemas import ListingResponse, WishlistItemCreate, WishlistItemResponse
-from app.services import notifier, scanner
-from app.services.cache import invalidate_dashboard_cache
-from app.services.fx import convert_to_aud, format_orig_display, get_rate
-from app.services.notifier import compute_typical_price
-from app.services.shipping import get_shipping_cost
+from app.models import Listing, User, WishlistItem
+from app.services import scan_status, scanner
+from app.services.http import USER_AGENT
+from app.services.pricing import format_money, get_rates, listing_landed, shipping_aud, typical_price
+from app.templating import templates
 
 web_router = APIRouter(tags=["web"])
 api_router = APIRouter(prefix="/api", tags=["api"])
 
-
-async def _scan_in_background(item_id: int) -> None:
-    db = SessionLocal()
-    try:
-        item = db.query(WishlistItem).filter_by(id=item_id).first()
-        if item:
-            new_listings = await scanner.scan_item(db, item)
-            if item.notify_email and new_listings:
-                await notifier.send_deal_email(item, new_listings)
-    finally:
-        invalidate_dashboard_cache()
-        db.close()
+ITEM_TYPES = {"album", "artist", "label", "subject"}
 
 
-async def require_api_key(x_api_key: str = Header(...)):
-    if x_api_key != settings.api_key:
-        raise HTTPException(status_code=401, detail="Invalid API key")
+# --- helpers ---------------------------------------------------------------------
+
+def _owned_item(db: Session, user: User, item_id: int, with_listings: bool = False) -> WishlistItem:
+    q = db.query(WishlistItem).filter_by(id=item_id, user_id=user.id, is_active=True)
+    if with_listings:
+        q = q.options(selectinload(WishlistItem.listings))
+    item = q.first()
+    if item is None:
+        raise HTTPException(status_code=404, detail="Item not found")
+    return item
 
 
-async def require_session_or_api_key(
-    request: Request,
-    x_api_key: str | None = Header(default=None),
-    db: Session = Depends(get_db),
-):
-    """Accept either a valid session OR a valid X-API-Key (iOS Shortcut path).
-
-    Used on /api/scan/start and /api/scan/status so the dashboard can call
-    these endpoints via session cookie while the iOS Shortcut uses X-API-Key.
-    """
-    if x_api_key is not None:
-        if x_api_key != settings.api_key:
-            raise HTTPException(status_code=401, detail="Invalid API key")
-        return
-    # Fall back to session auth -- raises AuthRedirect on failure.
-    user = current_user(request, db)
-    if user is None:
-        next_path = request.url.path
-        if request.url.query:
-            next_path = f"{next_path}?{request.url.query}"
-        raise AuthRedirect(next_path=next_path)
-
-
-def _landed(listing, fx_rates: dict | None = None) -> float:
-    """Compute landed cost. If fx_rates provided, converts to AUD."""
-    shipping = get_shipping_cost(listing.ships_from, settings.shipping_estimate_usd)
-    base_total = listing.price + shipping
-    if fx_rates and listing.currency != "AUD":
-        rate = fx_rates.get(listing.currency)
-        aud = convert_to_aud(base_total, listing.currency, rate)
-        if aud is not None:
-            return aud
-    return base_total
-
-
-def _enrich_item(item: WishlistItem, fx_rates: dict | None = None) -> dict:
-    all_listings = list(item.listings or [])
-    active_priced = [l for l in all_listings if l.is_active and l.price is not None]
-
-    sorted_by_landed = sorted(active_priced, key=lambda l: _landed(l, fx_rates)) if active_priced else []
-    best_listing = sorted_by_landed[0] if sorted_by_landed else None
-
+def enrich_item(item: WishlistItem, rates: dict) -> dict:
+    live = [l for l in item.listings if l.is_active and l.is_in_stock and l.price is not None]
+    ranked = sorted(live, key=lambda l: listing_landed(l, rates) or float("inf"))
+    best = ranked[0] if ranked else None
     return {
-        "id": item.id,
-        "type": item.type,
-        "query": item.query,
-        "notes": item.notes,
-        "notify_below_pct": item.notify_below_pct,
-        "notify_email": item.notify_email,
-        "created_at": item.created_at,
-        "last_scanned_at": item.last_scanned_at,
-        "is_active": item.is_active,
-        "artwork_url": item.artwork_url,
-        "discogs_release_id": item.discogs_release_id,
-        "best_price": _landed(best_listing, fx_rates) if best_listing else None,        # landed price (AUD if fx_rates)
-        "best_price_raw": best_listing.price if best_listing else None,        # listing price only
-        "best_ships_from": best_listing.ships_from if best_listing else None,
-        "best_price_source": best_listing.source if best_listing else None,
-        "listing_count": len(all_listings),
-        "typical_price": compute_typical_price(active_priced),
+        "id": item.id, "type": item.type, "query": item.query, "notes": item.notes,
+        "notify_below_pct": item.notify_below_pct, "notify_email": item.notify_email,
+        "created_at": item.created_at, "last_scanned_at": item.last_scanned_at,
+        "artwork_url": item.artwork_url, "discogs_release_id": item.discogs_release_id,
+        "best_price": listing_landed(best, rates) if best else None,
+        "best_source": best.source if best else None,
+        "best_ships_from": best.ships_from if best else None,
+        "listing_count": len(live),
+        "typical_price": typical_price(item.listings, rates),
         "top_listings": [
-            {
-                "title": l.title,
-                "price": l.price,
-                "landed_price": _landed(l, fx_rates),
-                "ships_from": l.ships_from,
-                "source": l.source,
-                "url": l.url,
-                "currency": l.currency,
-            }
-            for l in sorted_by_landed[:3]
+            {"title": l.title, "landed": listing_landed(l, rates), "price": l.price, "currency": l.currency,
+             "price_display": format_money(l.price, l.currency), "ships_from": l.ships_from,
+             "shipping": shipping_aud(l.ships_from), "source": l.source, "url": l.url}
+            for l in ranked[:3]
         ],
     }
 
 
-@web_router.post("/wishlist/add")
-async def add_wishlist_item_web(
-    background_tasks: BackgroundTasks,
-    type: str = Form(...),
-    query: str = Form(...),
-    notes: str | None = Form(None),
-    notify_below_pct: float = Form(20.0),
-    notify_email: str = Form(""),
-    discogs_release_id: str = Form(""),
-    db: Session = Depends(get_db),
-    _user=Depends(require_auth),
-):
-    release_id = int(discogs_release_id) if discogs_release_id else None
-    notify_email_bool = notify_email.lower() in ("on", "true", "1", "yes")
-    item = WishlistItem(
-        type=type,
-        query=query,
-        notes=notes,
-        notify_below_pct=notify_below_pct,
-        notify_email=notify_email_bool,
-        discogs_release_id=release_id,
-        is_active=True,
-    )
-    db.add(item)
-    db.commit()
-    db.refresh(item)
-
-    invalidate_dashboard_cache()
-    background_tasks.add_task(_scan_in_background, item.id)
-
-    return RedirectResponse(url="/", status_code=303)
-
-
-@web_router.post("/wishlist/{item_id}/edit")
-async def edit_wishlist_item_web(
-    item_id: int,
-    type: str = Form(...),
-    query: str = Form(...),
-    notes: str | None = Form(None),
-    notify_below_pct: float = Form(20.0),
-    notify_email: str = Form(""),
-    discogs_release_id: str = Form(""),
-    db: Session = Depends(get_db),
-    _user=Depends(require_auth),
-):
-    release_id = int(discogs_release_id) if discogs_release_id else None
-    notify_email_bool = notify_email.lower() in ("on", "true", "1", "yes")
-    item = db.query(WishlistItem).filter_by(id=item_id, is_active=True).first()
-    if not item:
-        raise HTTPException(status_code=404, detail="Item not found")
-    item.type = type
-    item.query = query
-    item.notes = notes or None
-    item.notify_below_pct = notify_below_pct
-    item.notify_email = notify_email_bool
-    item.discogs_release_id = release_id
-    db.commit()
-    invalidate_dashboard_cache()
-    return RedirectResponse(url=f"/item/{item_id}?toast=Item+updated", status_code=303)
-
-
-@web_router.post("/wishlist/{item_id}/delete")
-async def delete_wishlist_item_web(item_id: int, db: Session = Depends(get_db), _user=Depends(require_auth)):
-    item = db.query(WishlistItem).filter_by(id=item_id).first()
-    if item:
-        db.delete(item)
-        db.commit()
-        invalidate_dashboard_cache()
-    return RedirectResponse(url="/", status_code=303)
-
-
-@web_router.post("/wishlist/{item_id}/scan")
-async def scan_single_item_web(item_id: int, db: Session = Depends(get_db), _user=Depends(require_auth)):
-    item = db.query(WishlistItem).filter_by(id=item_id, is_active=True).first()
-    if not item:
-        raise HTTPException(status_code=404, detail="Item not found")
-
-    new_listings = await scanner.scan_item(db, item)
-
-    if item.notify_email and new_listings:
-        notifiable = [l for l in new_listings if notifier.should_notify(item, l, list(item.listings or []))]
-        if notifiable:
-            await notifier.send_deal_email(item, notifiable)
-
-    return RedirectResponse(url=f"/item/{item_id}?toast={len(new_listings)}+new+listings+found", status_code=303)
-
-
-@web_router.post("/scan-all")
-async def scan_all_items_web(db: Session = Depends(get_db), _user=Depends(require_auth)):
-    summary = await scanner.scan_all_items(db)
-
-    for item_summary in summary.get("items", []):
-        new_count = item_summary.get("new_listings", 0)
-        if not new_count:
-            continue
-
-        item = db.query(WishlistItem).filter_by(id=item_summary["id"], is_active=True).first()
-        if not item or not item.notify_email:
-            continue
-
-        recent_new = (
-            db.query(Listing)
-            .filter_by(wishlist_item_id=item.id, is_active=True)
-            .order_by(Listing.found_at.desc())
-            .limit(new_count)
-            .all()
-        )
-
-        notifiable = [l for l in recent_new if notifier.should_notify(item, l, list(item.listings or []))]
-        if notifiable:
-            await notifier.send_deal_email(item, notifiable)
-
-    return RedirectResponse(url=f"/?toast={summary['new_listings_found']}+new+listings+found", status_code=303)
-
-
-@web_router.get("/wishlist/{item_id}/status")
-async def item_scan_status(item_id: int, db: Session = Depends(get_db), _user=Depends(require_auth)):
-    item = db.query(WishlistItem).filter_by(id=item_id, is_active=True).first()
-    if not item:
-        raise HTTPException(status_code=404, detail="Item not found")
-    listing_count = db.query(Listing).filter_by(
-        wishlist_item_id=item_id, is_active=True
-    ).count()
+def _parse_form(type: str, query: str, notes: str | None, notify_below_pct: float, notify_email: str, discogs_release_id: str) -> dict:
+    if type not in ITEM_TYPES:
+        raise HTTPException(status_code=422, detail="Invalid item type")
+    query = query.strip()
+    if not 1 <= len(query) <= 200:
+        raise HTTPException(status_code=422, detail="Query must be 1-200 characters")
+    try:
+        release_id = int(discogs_release_id) if discogs_release_id.strip() else None
+    except ValueError:
+        raise HTTPException(status_code=422, detail="Invalid Discogs release id")
     return {
-        "id": item_id,
-        "has_listings": listing_count > 0,
-        "listing_count": listing_count,
-        "last_scanned_at": item.last_scanned_at.isoformat() if item.last_scanned_at else None,
+        "type": type, "query": query, "notes": (notes or "").strip()[:500] or None,
+        "notify_below_pct": min(max(float(notify_below_pct), 1.0), 90.0),
+        "notify_email": notify_email.lower() in ("on", "true", "1", "yes"),
+        "discogs_release_id": release_id,
     }
 
 
-@web_router.get("/api/discogs/search")
-async def discogs_typeahead_search(q: str = "", type: str = "album", _user=Depends(require_auth)):
-    if len(q.strip()) < 2:
-        return []
-    from app.services.discogs import typeahead_search
-    results = await typeahead_search(q.strip(), item_type=type, max_results=5)
-    return results
+async def _scan_one_in_background(item_id: int) -> None:
+    with SessionLocal() as db:
+        item = db.get(WishlistItem, item_id, options=[selectinload(WishlistItem.listings)])
+        if item is None:
+            return
+        try:
+            await scanner.scan_item(db, item)
+        except Exception as e:
+            db.rollback()
+            print(f"[Scanner] initial scan for item {item_id} failed: {e}")
 
 
-@web_router.get("/api/artwork")
-async def proxy_artwork(url: str = "", _user=Depends(require_auth)):
-    if not url:
-        raise HTTPException(status_code=400, detail="url required")
-    try:
-        async with httpx.AsyncClient(timeout=10.0) as client:
-            r = await client.get(url, headers={"User-Agent": "VinylWishlist/1.0"})
-            if r.status_code != 200:
-                raise HTTPException(status_code=502, detail="upstream error")
-            return StreamingResponse(
-                r.aiter_bytes(),
-                media_type=r.headers.get("content-type", "image/jpeg"),
-                headers={"Cache-Control": "public, max-age=86400"},
-            )
-    except httpx.HTTPError:
-        raise HTTPException(status_code=502, detail="artwork fetch failed")
+# --- pages ------------------------------------------------------------------------
 
-
-@api_router.get("/health")
-async def health_check():
-    return {"status": "ok"}
-
-
-@api_router.get(
-    "/wishlist",
-    response_model=list[WishlistItemResponse],
-    dependencies=[Depends(require_api_key)],
-)
-async def list_wishlist_items_api(db: Session = Depends(get_db)):
+async def dashboard(request: Request, db: Session, user: User):
+    rates = await get_rates()
     items = (
         db.query(WishlistItem)
-        .filter_by(is_active=True)
+        .filter_by(user_id=user.id, is_active=True)
+        .options(selectinload(WishlistItem.listings))
         .order_by(WishlistItem.created_at.desc())
         .all()
     )
-    return [_enrich_item(item) for item in items]
+    enriched = [enrich_item(i, rates) for i in items]
+    priced = [i for i in enriched if i["best_price"] is not None]
+    return templates.TemplateResponse(request, "index.html", {
+        "user": user,
+        "items": enriched,
+        "total_listings": sum(i["listing_count"] for i in enriched),
+        "total_cost": round(sum(i["best_price"] for i in priced), 2) if priced else None,
+        "cheapest": min(priced, key=lambda i: i["best_price"]) if priced else None,
+        "scan_running": scan_status.is_running(user.id),
+    })
 
 
-@api_router.post(
-    "/wishlist",
-    response_model=WishlistItemResponse,
-    dependencies=[Depends(require_api_key)],
-)
-async def create_wishlist_item_api(
-    payload: WishlistItemCreate,
-    background_tasks: BackgroundTasks,
-    scan: bool = True,
-    db: Session = Depends(get_db),
+@web_router.get("/item/{item_id}")
+async def item_detail(item_id: int, request: Request, db: Session = Depends(get_db), user: User = Depends(require_auth)):
+    item = _owned_item(db, user, item_id, with_listings=True)
+    rates = await get_rates()
+    rows = []
+    for l in sorted(item.listings, key=lambda l: (not l.is_active, not l.is_in_stock, listing_landed(l, rates) or float("inf"))):
+        rows.append({
+            "id": l.id, "source": l.source, "title": l.title, "condition": l.condition, "seller": l.seller,
+            "ships_from": l.ships_from, "url": l.url, "found_at": l.found_at, "last_seen_at": l.last_seen_at,
+            "is_active": l.is_active, "is_in_stock": l.is_in_stock,
+            "landed": listing_landed(l, rates), "price_display": format_money(l.price, l.currency) if l.price is not None else None,
+            "shipping": shipping_aud(l.ships_from), "prev_price": l.prev_price,
+            "prev_price_display": format_money(l.prev_price, l.currency) if l.prev_price is not None else None,
+        })
+    return templates.TemplateResponse(request, "item_detail.html", {
+        "user": user, "item": enrich_item(item, rates), "listings": rows,
+        "shipping_fallback": settings.shipping_estimate_aud,
+    })
+
+
+@web_router.post("/wishlist/add", dependencies=[Depends(require_csrf)])
+async def add_item(
+    type: str = Form(...), query: str = Form(...), notes: str | None = Form(None), notify_below_pct: float = Form(20.0),
+    notify_email: str = Form(""), discogs_release_id: str = Form(""),
+    db: Session = Depends(get_db), user: User = Depends(require_auth),
 ):
-    item = WishlistItem(
-        type=payload.type,
-        query=payload.query,
-        notes=payload.notes,
-        notify_below_pct=payload.notify_below_pct,
-        notify_email=payload.notify_email,
-        discogs_release_id=payload.discogs_release_id,
-        is_active=True,
-    )
+    item = WishlistItem(user_id=user.id, is_active=True, **_parse_form(type, query, notes, notify_below_pct, notify_email, discogs_release_id))
     db.add(item)
     db.commit()
     db.refresh(item)
-
-    if scan:
-        background_tasks.add_task(_scan_in_background, item.id)
-
-    return _enrich_item(item)
+    asyncio.create_task(_scan_one_in_background(item.id))
+    return RedirectResponse(url="/", status_code=303)
 
 
-@api_router.post("/wishlist/bulk", dependencies=[Depends(require_api_key)])
-async def bulk_create_wishlist_items_api(payload: list[WishlistItemCreate], db: Session = Depends(get_db)):
-    items = [
-        WishlistItem(
-            type=p.type,
-            query=p.query,
-            notes=p.notes,
-            notify_below_pct=p.notify_below_pct,
-            notify_email=p.notify_email,
-            is_active=True,
-        )
-        for p in payload
-    ]
-    db.add_all(items)
+@web_router.post("/wishlist/{item_id}/edit", dependencies=[Depends(require_csrf)])
+async def edit_item(
+    item_id: int, type: str = Form(...), query: str = Form(...), notes: str | None = Form(None), notify_below_pct: float = Form(20.0),
+    notify_email: str = Form(""), discogs_release_id: str = Form(""),
+    db: Session = Depends(get_db), user: User = Depends(require_auth),
+):
+    item = _owned_item(db, user, item_id)
+    for k, v in _parse_form(type, query, notes, notify_below_pct, notify_email, discogs_release_id).items():
+        setattr(item, k, v)
     db.commit()
-    return {"added": len(items)}
+    return RedirectResponse(url=f"/item/{item_id}?toast=Item+updated", status_code=303)
 
 
-@api_router.delete("/wishlist/{item_id}", dependencies=[Depends(require_api_key)])
-async def delete_wishlist_item_api(item_id: int, db: Session = Depends(get_db)):
-    item = db.query(WishlistItem).filter_by(id=item_id).first()
-    if not item:
-        raise HTTPException(status_code=404, detail="Item not found")
-
+@web_router.post("/wishlist/{item_id}/delete", dependencies=[Depends(require_csrf)])
+async def delete_item(item_id: int, db: Session = Depends(get_db), user: User = Depends(require_auth)):
+    item = _owned_item(db, user, item_id)
     db.delete(item)
     db.commit()
-    invalidate_dashboard_cache()
-    return {"deleted": True}
+    return RedirectResponse(url="/?toast=Removed+from+your+crate", status_code=303)
 
 
-@api_router.get(
-    "/wishlist/{item_id}/listings",
-    response_model=list[ListingResponse],
-    dependencies=[Depends(require_api_key)],
-)
-async def list_item_listings_api(item_id: int, db: Session = Depends(get_db)):
-    item = db.query(WishlistItem).filter_by(id=item_id).first()
-    if not item:
-        raise HTTPException(status_code=404, detail="Item not found")
-
-    listings = (
-        db.query(Listing)
-        .filter_by(wishlist_item_id=item_id)
-        .order_by(Listing.price.asc().nullslast())
-        .all()
-    )
-    return listings
+@web_router.get("/wishlist/{item_id}/status")
+async def item_status(item_id: int, db: Session = Depends(get_db), user: User = Depends(require_auth_json)):
+    item = _owned_item(db, user, item_id)
+    count = db.query(Listing).filter_by(wishlist_item_id=item.id, is_active=True).count()
+    return {"id": item.id, "has_listings": count > 0, "listing_count": count,
+            "last_scanned_at": item.last_scanned_at.isoformat() if item.last_scanned_at else None,
+            "artwork_url": item.artwork_url}
 
 
-@api_router.post("/scan", dependencies=[Depends(require_api_key)])
-async def scan_all_items_api(db: Session = Depends(get_db)):
-    return await scanner.scan_all_items(db)
+# --- JSON endpoints used by the dashboard JS --------------------------------------------
 
-
-@api_router.post("/scan/start")
-async def start_scan_api(item_id: int | None = None, db: Session = Depends(get_db), _auth=Depends(require_session_or_api_key)):
-    from app.services import scan_status as _scan_status
-
-    if _scan_status.get()["is_running"]:
-        return {"started": False, "reason": "scan already in progress"}
-
-    if item_id is not None:
-        item = db.query(WishlistItem).filter_by(id=item_id, is_active=True).first()
-        if not item:
-            raise HTTPException(status_code=404, detail="Item not found")
-
-        async def _run_single():
-            from app.database import SessionLocal
-            _db = SessionLocal()
-            try:
-                _item = _db.query(WishlistItem).filter_by(id=item_id).first()
-                if _item:
-                    await scanner.scan_item(_db, _item, track=True)
-            finally:
-                _db.close()
-
-        asyncio.create_task(_run_single())
-    else:
-        async def _run_all():
-            from app.database import SessionLocal
-            _db = SessionLocal()
-            try:
-                await scanner.scan_all_items(_db, track=True)
-            finally:
-                _db.close()
-
-        asyncio.create_task(_run_all())
-
+@api_router.post("/scan/start", dependencies=[Depends(require_csrf)])
+async def start_scan(request: Request, item_id: int | None = None, db: Session = Depends(get_db), user: User = Depends(require_auth_json)):
+    throttle(request, "scan", limit=12, window_seconds=3600, extra_key=str(user.id))
+    if scan_status.is_running(user.id):
+        return {"started": False, "reason": "A scan is already running"}
+    ids = [_owned_item(db, user, item_id).id] if item_id is not None else None
+    asyncio.create_task(scanner.scan_user(user.id, ids, notify=True))
     return {"started": True}
 
 
 @api_router.get("/scan/status")
-async def scan_status_api(_auth=Depends(require_session_or_api_key)):
-    from app.services import scan_status as _scan_status
-    return _scan_status.get()
+async def get_scan_status(user: User = Depends(require_auth_json)):
+    return scan_status.get(user.id)
+
+
+@api_router.get("/discogs/search")
+async def discogs_typeahead(request: Request, q: str = "", type: str = "album", user: User = Depends(require_auth_json)):
+    if len(q.strip()) < 2:
+        return []
+    throttle(request, "typeahead", limit=60, window_seconds=60, extra_key=str(user.id))
+    from app.services.discogs import typeahead_search
+    return await typeahead_search(q.strip()[:100], item_type=type if type in ITEM_TYPES else "album", max_results=5)
+
+
+def _is_public_host(host: str) -> bool:
+    try:
+        infos = socket.getaddrinfo(host, 443, proto=socket.IPPROTO_TCP)
+    except socket.gaierror:
+        return False
+    return all(ipaddress.ip_address(info[4][0]).is_global for info in infos)
+
+
+@api_router.get("/artwork")
+async def proxy_artwork(url: str = "", user: User = Depends(require_auth_json)):
+    """Image proxy so store/Discogs artwork loads with our User-Agent. Public https hosts only (no SSRF)."""
+    parsed = urlparse(url)
+    if parsed.scheme != "https" or not parsed.hostname or parsed.port not in (None, 443):
+        raise HTTPException(status_code=400, detail="https image URL required")
+    if not await asyncio.to_thread(_is_public_host, parsed.hostname):
+        raise HTTPException(status_code=400, detail="host not allowed")
+    try:
+        async with httpx.AsyncClient(timeout=10.0, follow_redirects=False) as client:
+            r = await client.get(url, headers={"User-Agent": USER_AGENT})
+    except httpx.HTTPError:
+        raise HTTPException(status_code=502, detail="artwork fetch failed")
+    ctype = r.headers.get("content-type", "")
+    if r.status_code != 200 or not ctype.startswith("image/") or len(r.content) > 5_000_000:
+        raise HTTPException(status_code=502, detail="upstream did not return an image")
+    return Response(content=r.content, media_type=ctype, headers={"Cache-Control": "public, max-age=86400"})

@@ -1,0 +1,30 @@
+{% extends "auth_base.html" %}
+{% block title %}Reset your password · CRATE{% endblock %}
+{% block content %}
+  <h1 class="auth-heading">Reset password</h1>
+
+  {% if sent %}
+    <p class="notice" role="status" style="margin: 0;">
+      If that address has an account, a reset link is on its way. The link is good for one hour.
+    </p>
+    <p class="auth-foot"><a href="/login">Back to sign in</a></p>
+  {% else %}
+    <p class="auth-hint" style="margin: 0;">
+      Enter the email address on your account and we will send you a link to set a new password.
+    </p>
+
+    <form method="post" action="/forgot-password" class="auth-form">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+      <div class="auth-label">
+        <label for="forgotEmail">Email</label>
+        <input class="auth-input" id="forgotEmail" type="email" name="email"
+               required autofocus autocomplete="email">
+      </div>
+
+      <button type="submit" class="btn-cta auth-submit">Send reset link</button>
+    </form>
+
+    <p class="auth-foot"><a href="/login">Back to sign in</a></p>
+  {% endif %}
+{% endblock %}

@@ -1,291 +1,160 @@
 {% extends "base.html" %}
 
-{% block title %}Dashboard · CRATE{% endblock %}
+{% block title %}Your crate · CRATE{% endblock %}
 
 {% block content %}
 <div class="stack-lg">
 
-  <!-- Stats bar -->
-  <section class="card" style="padding: var(--space-md);">
-    <div class="flex items-center justify-between" style="flex-wrap: wrap; gap: var(--space-lg);">
-      <div class="flex items-center" style="flex-wrap: wrap; gap: var(--space-lg);">
-        <div style="display: flex; flex-direction: column; gap: var(--space-xs);">
-          <span style="font-size: var(--text-subheading); font-weight: 700; color: var(--color-text);">{{ items|length }}</span>
-          <span style="font-size: var(--text-label); color: var(--color-text-faint);">items watching</span>
+  <!-- Stats -->
+  <section class="stack-sm" aria-labelledby="statsHeading">
+    <h1 id="statsHeading" class="visually-hidden">Your crate</h1>
+    <div class="stats-bar">
+      <div class="stats-figures">
+        <div class="stat">
+          <span class="stat-value">{{ items|length }}</span>
+          <span class="stat-label">Items</span>
         </div>
-        <div style="display: flex; flex-direction: column; gap: var(--space-xs);">
-          <span style="font-size: var(--text-subheading); font-weight: 700; color: var(--color-text);">{{ total_listings }}</span>
-          <span style="font-size: var(--text-label); color: var(--color-text-faint);">listings found</span>
+        <div class="stat">
+          <span class="stat-value">{{ total_listings }}</span>
+          <span class="stat-label">Listings</span>
+        </div>
+        <div class="stat">
+          <span class="stat-value{% if total_cost is none %} stat-value--muted{% endif %}">
+            {% if total_cost is not none %}A${{ '%.2f'|format(total_cost) }}{% else %}—{% endif %}
+          </span>
+          <span class="stat-label">Total landed</span>
+        </div>
+        <div class="stat">
+          <span class="stat-value{% if not cheapest %} stat-value--muted{% endif %}">
+            {% if cheapest %}A${{ '%.2f'|format(cheapest.best_price) }}{% else %}—{% endif %}
+          </span>
+          <span class="stat-label">
+            {% if cheapest %}Best find — {{ cheapest.query|truncate(24, true) }}{% else %}Best find{% endif %}
+          </span>
         </div>
       </div>
-      <button type="button" onclick="startScan()" class="btn-cta" data-scan-btn>Scan All</button>
+
+      <button type="button" class="btn-cta" data-scan-btn
+              {% if scan_running %}disabled aria-busy="true"{% endif %}>
+        <span class="spinner" data-scan-spinner {% if not scan_running %}hidden{% endif %}
+              style="margin-right: var(--space-sm);" aria-hidden="true"></span>
+        Rescan wishlist
+      </button>
     </div>
-    {% if total_cost is not none %}
-    <div style="padding-top: var(--space-sm); margin-top: var(--space-sm); border-top: 1px solid var(--color-border);">
-      <div class="flex items-center" style="flex-wrap: wrap; gap: var(--space-lg);">
-        <div style="display: flex; flex-direction: column; gap: var(--space-xs);">
-          <span class="text-accent" style="font-size: var(--text-subheading); font-weight: 700;">${{ '%.2f'|format(total_cost) }}</span>
-          <span style="font-size: var(--text-label); color: var(--color-text-faint);">total to Australia</span>
-        </div>
-        {% if cheapest %}
-        <div style="display: flex; flex-direction: column; gap: var(--space-xs);">
-          <span class="text-success" style="font-size: var(--text-subheading); font-weight: 700;">${{ '%.2f'|format(cheapest.best_price) }}</span>
-          <span style="font-size: var(--text-label); color: var(--color-text-faint);">best find -- {{ cheapest.query|truncate(20, true) }}</span>
-        </div>
-        {% endif %}
-      </div>
-    </div>
-    {% endif %}
+    <p class="stat-note">Landed = the listing price converted to AUD plus estimated shipping to Australia.</p>
   </section>
-
-  <!-- Add Item Modal -->
-  <div id="addItemModal" class="hidden modal-overlay" role="dialog" aria-modal="true" aria-labelledby="addItemModalTitle">
-    <div data-backdrop class="modal-backdrop opacity-0"></div>
-    <div class="modal-center">
-      <div data-panel class="modal-panel opacity-0 translate-y-4">
-        <h2 id="addItemModalTitle" style="font-size: var(--text-heading); font-weight: 700; margin-bottom: var(--space-md);">Add Wishlist Item</h2>
-        <form action="/wishlist/add" method="post" class="stack-md">
-          <div>
-            <label class="form-label">What are you looking for?</label>
-            <div class="typeahead-wrapper">
-              <input id="addQuery" name="query" required placeholder="Search Discogs..." class="form-input"
-                     role="combobox" aria-expanded="false" aria-haspopup="listbox" aria-autocomplete="list"
-                     aria-controls="add-typeahead-listbox" autocomplete="off" />
-              <div id="addSpinner" class="typeahead-spinner hidden" aria-label="Searching Discogs..."></div>
-              <div id="add-typeahead-listbox" class="typeahead-dropdown" role="listbox"></div>
-            </div>
-            <input type="hidden" id="addDiscogsReleaseId" name="discogs_release_id" value="" />
-          </div>
-
-          <div>
-            <label class="form-label">Type</label>
-            <select name="type" class="form-input">
-              <option value="album" selected>Album</option>
-              <option value="artist">Artist</option>
-              <option value="label">Label</option>
-              <option value="subject">Key Word/s</option>
-            </select>
-          </div>
-
-          <div>
-            <label class="form-label">Notes (optional)</label>
-            <input name="notes" placeholder="Any notes..." class="form-input" />
-          </div>
-
-          <div>
-            <label class="form-label">Notify when price is this % below typical</label>
-            <input name="notify_below_pct" step="1" min="1" max="90" type="number" value="20" class="form-input" />
-          </div>
-
-          <label class="flex items-center gap-sm text-muted" style="font-size: var(--text-label);">
-            <input type="hidden" name="notify_email" value="" />
-            <input type="checkbox" name="notify_email" checked class="form-checkbox" />
-            Email me when deals are found
-          </label>
-
-          <div class="flex justify-end gap-sm" style="padding-top: var(--space-sm);">
-            <button type="button" data-close-modal class="btn-secondary">Cancel</button>
-            <button type="submit" class="btn-cta">Add to Wishlist</button>
-          </div>
-        </form>
-      </div>
-    </div>
-  </div>
-
-  <!-- Edit Item Modal -->
-  <div id="editItemModal" class="hidden modal-overlay" role="dialog" aria-modal="true" aria-labelledby="editItemModalTitle">
-    <div data-edit-backdrop class="modal-backdrop opacity-0"></div>
-    <div class="modal-center">
-      <div data-edit-panel class="modal-panel opacity-0 translate-y-4">
-        <h2 id="editItemModalTitle" style="font-size: var(--text-heading); font-weight: 700; margin-bottom: var(--space-md);">Edit Wishlist Item</h2>
-        <form id="editItemForm" action="" method="post" class="stack-md">
-          <div>
-            <label class="form-label">What are you looking for?</label>
-            <div class="typeahead-wrapper">
-              <input id="editQuery" name="query" required placeholder="Search Discogs..." class="form-input"
-                     role="combobox" aria-expanded="false" aria-haspopup="listbox" aria-autocomplete="list"
-                     aria-controls="edit-typeahead-listbox" autocomplete="off" />
-              <div id="editSpinner" class="typeahead-spinner hidden" aria-label="Searching Discogs..."></div>
-              <div id="edit-typeahead-listbox" class="typeahead-dropdown" role="listbox"></div>
-            </div>
-            <input type="hidden" id="editDiscogsReleaseId" name="discogs_release_id" value="" />
-          </div>
-          <div>
-            <label class="form-label">Type</label>
-            <select id="editType" name="type" class="form-input">
-              <option value="album">Album</option>
-              <option value="artist">Artist</option>
-              <option value="label">Label</option>
-              <option value="subject">Key Word/s</option>
-            </select>
-          </div>
-          <div>
-            <label class="form-label">Notes (optional)</label>
-            <input id="editNotes" name="notes" class="form-input" />
-          </div>
-          <div>
-            <label class="form-label">Notify when price is this % below typical</label>
-            <input id="editNotifyPct" name="notify_below_pct" type="number" step="1" min="1" max="90" class="form-input" />
-          </div>
-          <label class="flex items-center gap-sm text-muted" style="font-size: var(--text-label);">
-            <input type="hidden" name="notify_email" value="" />
-            <input id="editNotifyEmail" type="checkbox" name="notify_email" class="form-checkbox" />
-            Email me when deals are found
-          </label>
-          <div class="flex justify-end gap-sm" style="padding-top: var(--space-sm);">
-            <button type="button" data-close-edit-modal class="btn-secondary">Cancel</button>
-            <button type="submit" class="btn-cta">Save Changes</button>
-          </div>
-        </form>
-      </div>
-    </div>
-  </div>
 
   <!-- Album art card grid -->
   {% if items %}
-    <section class="card-grid">
-      {% for item in items %}
-        {% set is_scanning = item.listing_count == 0 and item.last_scanned_at is none %}
-        {% set has_deal = item.best_price is not none and item.typical_price is not none and item.typical_price > 0 and ((item.typical_price - item.best_price) / item.typical_price * 100) >= item.notify_below_pct %}
-        {% set no_listings = item.listing_count == 0 and item.last_scanned_at is not none %}
-        <a href="/item/{{ item.id }}" class="card{% if has_deal %} card--deal{% endif %}{% if no_listings or is_scanning %} card--empty{% endif %}{% if is_scanning %} card--scanning{% endif %}"
-           data-item-id="{{ item.id }}"
-           {% if is_scanning %}data-scanning="true"{% endif %}
-           style="text-decoration: none; color: inherit; display: flex; flex-direction: column;">
-          <div class="card-artwork-wrapper">
-          {% if item.artwork_url %}
-            <img
-              class="card-artwork"
-              src="/api/artwork?url={{ item.artwork_url | urlencode }}"
-              alt="{{ item.query }} album cover"
-              onerror="this.src='/static/vinyl-placeholder.svg'; this.classList.add('loaded'); this.parentElement.classList.add('loaded');"
-              onload="this.classList.add('loaded'); this.parentElement.classList.add('loaded');"
-              loading="lazy"
-            >
-          {% else %}
-            <img
-              class="card-artwork"
-              src="/static/empty-vinyl-placeholder.png"
-              alt="{{ item.query }} — no artwork available"
-              onerror="this.src='/static/vinyl-placeholder.svg'; this.classList.add('loaded'); this.parentElement.classList.add('loaded');"
-              onload="this.classList.add('loaded'); this.parentElement.classList.add('loaded');"
-            >
-          {% endif %}
-          {% if has_deal %}
-            {% set deal_pct = ((item.typical_price - item.best_price) / item.typical_price * 100)|int %}
-            <span class="card-deal-badge">DEAL -{{ deal_pct }}%</span>
-          {% endif %}
-          </div>
-          <div class="card-body" style="display: flex; flex-direction: column; gap: var(--space-xs);">
-            {% if is_scanning %}
-              <div class="flex items-center gap-sm">
-                <span class="spinner"></span>
-                <span class="text-muted" style="font-size: var(--text-label);">Scanning...</span>
-              </div>
-            {% endif %}
-            <h3 class="text-title">{{ item.query }}</h3>
-            {% if item.best_price is not none %}
-              <span class="card-price price-best">${{ '%.2f'|format(item.best_price) }}</span>
-            {% elif not is_scanning %}
-              <span class="text-faint" style="font-size: var(--text-label);">No listings found yet</span>
-            {% endif %}
-          </div>
-        </a>
-      {% endfor %}
+    <section aria-label="Wishlist">
+      <div class="card-grid">
+        {% for item in items %}
+          {% set is_scanning = item.listing_count == 0 and item.last_scanned_at is none %}
+          {% set has_deal = item.best_price is not none and item.typical_price is not none and item.typical_price > 0 and ((item.typical_price - item.best_price) / item.typical_price * 100) >= item.notify_below_pct %}
+          {% set no_listings = item.listing_count == 0 and item.last_scanned_at is not none %}
+          <a href="/item/{{ item.id }}"
+             class="card{% if has_deal %} card--deal{% endif %}{% if no_listings or is_scanning %} card--empty{% endif %}{% if is_scanning %} card--scanning{% endif %}"
+             data-item-id="{{ item.id }}"
+             {% if is_scanning %}data-scanning="true"{% endif %}
+             style="color: inherit; display: flex; flex-direction: column;">
+            <div class="card-artwork-wrapper">
+              <img class="card-artwork"
+                   {% if item.artwork_url %}
+                     src="/api/artwork?url={{ item.artwork_url | urlencode }}"
+                     alt="Cover art for {{ item.query }}"
+                     loading="lazy"
+                   {% else %}
+                     src="/static/empty-vinyl-placeholder.png"
+                     alt=""
+                   {% endif %}
+                   onerror="this.src='/static/vinyl-placeholder.svg'; this.classList.add('loaded'); this.parentElement.classList.add('loaded');"
+                   onload="this.classList.add('loaded'); this.parentElement.classList.add('loaded');">
+              {% if has_deal %}
+                {% set deal_pct = ((item.typical_price - item.best_price) / item.typical_price * 100)|int %}
+                <span class="card-deal-badge">Deal −{{ deal_pct }}%</span>
+              {% endif %}
+            </div>
+            <div class="card-body" style="display: flex; flex-direction: column; gap: var(--space-xs);">
+              {% if is_scanning %}
+                <span class="flex items-center gap-sm text-muted text-label">
+                  <span class="spinner" aria-hidden="true"></span> Searching stores…
+                </span>
+              {% endif %}
+              <h2 class="text-title">{{ item.query }}</h2>
+              {% if item.best_price is not none %}
+                <span class="card-price price-best">A${{ '%.2f'|format(item.best_price) }}</span>
+                <span class="text-muted text-label">
+                  {{ item.listing_count }} listing{{ '' if item.listing_count == 1 else 's' }}{% if item.best_source %} · best from {{ item.best_source|replace('_', ' ')|title }}{% endif %}
+                </span>
+              {% elif not is_scanning %}
+                <span class="text-muted text-label">No listings found yet</span>
+              {% endif %}
+            </div>
+          </a>
+        {% endfor %}
+      </div>
     </section>
   {% else %}
-    <section class="empty-state">
-      <h3 style="font-size: var(--text-heading); font-weight: 600; margin-bottom: var(--space-sm);">Your crate is empty</h3>
-      <p class="text-muted">Click <span class="text-accent" style="font-weight: 500;">Add Item</span> above to start tracking prices.</p>
+    <section class="panel" aria-labelledby="emptyHeading">
+      <h2 id="emptyHeading" class="section-heading">Your crate is empty</h2>
+      <p class="text-muted" style="max-width: 60ch;">
+        Add the records you are hunting for and CRATE watches them for you. Start with an album
+        (&ldquo;Portishead — Dummy&rdquo;), an artist, a label, or just a key word.
+      </p>
+      <ol class="steps" style="margin-top: var(--space-lg);">
+        <li class="step">
+          <span class="step-number">1</span>
+          <h3>Add a record</h3>
+          <p>Use <strong>Add Item</strong> in the top bar. Album searches get Discogs suggestions, so you can pin the exact pressing.</p>
+        </li>
+        <li class="step">
+          <span class="step-number">2</span>
+          <h3>We go looking</h3>
+          <p>The first search starts straight away across Discogs, eBay AU and Australian record stores. It usually takes under a minute.</p>
+        </li>
+        <li class="step">
+          <span class="step-number">3</span>
+          <h3>Watch the price</h3>
+          <p>Every listing is shown as a landed AUD cost. Confirm your email and we will alert you when something drops below typical.</p>
+        </li>
+      </ol>
     </section>
   {% endif %}
 
 </div>
 
+{% include "_edit_modal.html" %}
+{% endblock %}
+
+{% block scripts %}
 <script>
-  document.addEventListener('DOMContentLoaded', () => {
-    const modal = document.getElementById('editItemModal');
-    const form = document.getElementById('editItemForm');
-    let editTriggerBtn = null;
+  document.addEventListener('DOMContentLoaded', function () {
+    // Newly added items scan in the background; poll until listings land, then refresh.
+    var POLL_INTERVAL_MS = 5000;
+    var POLL_TIMEOUT_MS = 120000; // 2 minutes, then give up
 
-    const openEdit = (btn) => {
-      editTriggerBtn = btn;
-      form.action = '/wishlist/' + btn.dataset.id + '/edit';
-      document.getElementById('editQuery').value = btn.dataset.query;
-      document.getElementById('editType').value = btn.dataset.type;
-      document.getElementById('editNotes').value = btn.dataset.notes;
-      document.getElementById('editNotifyPct').value = btn.dataset.notifyBelowPct;
-      document.getElementById('editNotifyEmail').checked = btn.dataset.notifyEmail === 'true';
-      // Pre-populate pinned release ID if present
-      const releaseIdInput = document.getElementById('editDiscogsReleaseId');
-      if (releaseIdInput) releaseIdInput.value = btn.dataset.discogsReleaseId || '';
-      modal.classList.remove('hidden');
-      requestAnimationFrame(() => {
-        const backdrop = modal.querySelector('[data-edit-backdrop]');
-        const panel = modal.querySelector('[data-edit-panel]');
-        if (backdrop) backdrop.classList.remove('opacity-0');
-        if (panel) panel.classList.remove('opacity-0', 'translate-y-4');
-        const firstFocusable = modal.querySelector('input, select, textarea, button');
-        if (firstFocusable) firstFocusable.focus();
-      });
-    };
+    document.querySelectorAll('[data-scanning="true"]').forEach(function (card) {
+      var itemId = card.dataset.itemId;
+      var startedAt = Date.now();
 
-    const closeEdit = () => {
-      if (typeof resetTypeahead === 'function') resetTypeahead('edit');
-      const backdrop = modal.querySelector('[data-edit-backdrop]');
-      const panel = modal.querySelector('[data-edit-panel]');
-      if (backdrop) backdrop.classList.add('opacity-0');
-      if (panel) panel.classList.add('opacity-0', 'translate-y-4');
-      setTimeout(() => modal.classList.add('hidden'), 200);
-      if (editTriggerBtn) editTriggerBtn.focus();
-    };
+      var timer = setInterval(function () {
+        if (Date.now() - startedAt > POLL_TIMEOUT_MS) { clearInterval(timer); return; }
 
-    document.querySelectorAll('[data-edit-item]').forEach(btn => {
-      btn.addEventListener('click', () => openEdit(btn));
-    });
-    document.querySelectorAll('[data-close-edit-modal]').forEach(btn => {
-      btn.addEventListener('click', closeEdit);
-    });
-    if (modal) {
-      modal.addEventListener('click', (e) => {
-        if (e.target.matches('[data-edit-backdrop]')) closeEdit();
-      });
-    }
-
-    // Initialize typeahead for add and edit modals
-    const addTypeSelect = document.querySelector('#addItemModal select[name="type"]');
-    if (addTypeSelect) initTypeahead('add', addTypeSelect);
-    const editTypeSelect = document.getElementById('editType');
-    if (editTypeSelect) initTypeahead('edit', editTypeSelect);
-
-    // Polling for scanning items
-    const POLL_INTERVAL_MS = 5000;
-    const POLL_TIMEOUT_MS = 120000;
-    document.querySelectorAll('[data-scanning="true"]').forEach(card => {
-      const itemId = card.dataset.itemId;
-      const startTime = Date.now();
-      const timer = setInterval(async () => {
-        if (Date.now() - startTime > POLL_TIMEOUT_MS) {
-          clearInterval(timer);
-          return;
-        }
-        try {
-          const res = await fetch('/wishlist/' + itemId + '/status');
-          if (!res.ok) { clearInterval(timer); return; }
-          const data = await res.json();
-          if (data.has_listings) {
-            clearInterval(timer);
-            if (data.artwork_url) {
-              const img = card.querySelector('img');
-              if (img) {
-                img.src = '/api/artwork?url=' + encodeURIComponent(data.artwork_url) + '&t=' + Date.now();
-              }
+        window.crateGet('/wishlist/' + itemId + '/status')
+          .then(function (res) {
+            if (!res.ok) { clearInterval(timer); return null; }
+            return res.json();
+          })
+          .then(function (data) {
+            if (data && data.has_listings) {
+              clearInterval(timer);
+              window.location.reload();
             }
-            window.location.reload();
-          }
-        } catch (e) {
-          // network error — keep polling
-        }
+          })
+          .catch(function (err) {
+            if (err && err.message === 'unauthenticated') clearInterval(timer);
+            // otherwise transient: keep polling
+          });
       }, POLL_INTERVAL_MS);
     });
   });

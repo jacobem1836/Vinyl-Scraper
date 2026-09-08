@@ -213,7 +213,11 @@
         const url = "/api/discogs/search?q=" + encodeURIComponent(query) + "&type=" + encodeURIComponent(currentType);
         fetch(url, { signal: ctrl.signal })
           .then(function (res) {
-            if (!res.ok) throw new Error("HTTP " + res.status);
+            // 401 (session gone) and 429 (throttled) are expected: fail quietly,
+            // never redirect and never blow up the form the user is filling in.
+            if (res.status === 401) { const e = new Error("unauthenticated"); e.quiet = true; throw e; }
+            if (res.status === 429) throw new Error("Too many searches. Pause for a moment.");
+            if (!res.ok) throw new Error("Search unavailable. Try again.");
             return res.json();
           })
           .then(function (data) {
@@ -222,13 +226,13 @@
           })
           .catch(function (err) {
             if (spinner) spinner.classList.add("hidden");
-            if (err.name === "AbortError") return;
+            if (err.name === "AbortError" || err.quiet) { closeDropdown(prefix); return; }
             const { listbox } = getEls(prefix);
             if (listbox) {
               listbox.innerHTML = "";
               const errDiv = document.createElement("div");
               errDiv.className = "typeahead-empty";
-              errDiv.textContent = "Search unavailable. Try again.";
+              errDiv.textContent = err.message || "Search unavailable. Try again.";
               listbox.appendChild(errDiv);
               listbox.classList.add("typeahead-dropdown--open");
               input.setAttribute("aria-expanded", "true");

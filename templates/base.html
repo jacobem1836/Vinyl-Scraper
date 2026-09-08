@@ -3,232 +3,309 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="csrf-token" content="{{ csrf_token() }}">
   <title>{% block title %}CRATE{% endblock %}</title>
+  <meta name="description" content="{% block description %}CRATE tracks the records you want across Discogs, eBay AU and Australian record stores, and shows the cheapest landed price in AUD.{% endblock %}">
+  <link rel="icon" href="/static/logo.svg" type="image/svg+xml">
   <link rel="preload" href="/static/fonts/BodoniModa-Bold.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="preload" href="/static/fonts/Inter-VariableFont_opsz,wght.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="stylesheet" href="/static/style.css">
 </head>
 <body>
-  <nav class="nav">
-    <div class="nav-inner">
-      <a href="/" class="nav-brand">
-        <img src="/static/logo.svg" alt="" width="28" height="28" aria-hidden="true">CRATE
-      </a>
-      <button
-        id="openAddItemBtn"
-        type="button"
-        class="btn-cta"
-      >
-        Add Item
-      </button>
-      {% if user %}
-      <div class="nav-user" style="display:flex;align-items:center;gap:var(--space-sm);margin-left:var(--space-md);">
-        <span style="font-size:var(--text-label);color:var(--color-text-muted);">{{ user.email }}</span>
-        <form method="post" action="/logout" style="margin:0;">
-          <button type="submit" class="nav-logout" style="background:transparent;border:1px solid var(--color-border);color:var(--color-text-muted);padding:0.4rem 0.7rem;border-radius:var(--radius-btn);font-size:var(--text-label);cursor:pointer;letter-spacing:0.04em;text-transform:uppercase;">Logout</button>
-        </form>
-      </div>
-      {% endif %}
-    </div>
-  </nav>
+  <a class="skip-link" href="#main">Skip to content</a>
 
-  <main class="container" style="padding-top: var(--space-lg); padding-bottom: var(--space-lg);">
+  <header>
+    <nav class="nav" aria-label="Main">
+      <div class="nav-inner">
+        <a href="/" class="nav-brand">
+          <img src="/static/logo.svg" alt="" width="28" height="28" aria-hidden="true">CRATE
+        </a>
+        <div class="nav-actions">
+          {% if user is defined and user %}
+            <button id="openAddItemBtn" type="button" class="btn-cta">Add Item</button>
+            <a href="/account" class="nav-link">Account</a>
+            <form method="post" action="/logout" class="nav-logout-form">
+              <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+              <button type="submit" class="nav-link">Log out</button>
+            </form>
+          {% else %}
+            <a href="/login" class="btn-cta">Sign in</a>
+          {% endif %}
+        </div>
+      </div>
+    </nav>
+
+    {% if user is defined and user and not user.is_verified %}
+      <div class="verify-banner">
+        <div class="container verify-banner-inner">
+          <p>Confirm your email to receive deal alerts.</p>
+          <form method="post" action="/resend-verification">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <button type="submit" class="verify-banner-btn">Resend confirmation</button>
+          </form>
+        </div>
+      </div>
+    {% endif %}
+  </header>
+
+  <main id="main" class="{% block main_class %}container page-main{% endblock %}">
     {% block content %}{% endblock %}
   </main>
 
-  <script>
-    document.addEventListener('DOMContentLoaded', () => {
-      const modal = document.getElementById('addItemModal');
-      const openBtn = document.getElementById('openAddItemBtn');
-      const closeBtns = document.querySelectorAll('[data-close-modal]');
+  <footer class="site-footer">
+    <div class="container footer-inner">
+      <span class="footer-brand">CRATE</span>
+      <nav class="footer-links" aria-label="Footer">
+        <a href="/privacy">Privacy</a>
+        {% if user is defined and user %}<a href="/account">Account</a>{% endif %}
+      </nav>
+    </div>
+  </footer>
 
-      const openModal = () => {
-        if (!modal) return;
-        modal.classList.remove('hidden');
-        requestAnimationFrame(() => {
-          modal.dataset.open = 'true';
-          const backdrop = modal.querySelector('[data-backdrop]');
-          const panel = modal.querySelector('[data-panel]');
-          if (backdrop) backdrop.classList.remove('opacity-0');
-          if (panel) panel.classList.remove('opacity-0', 'translate-y-4');
-          const firstFocusable = modal.querySelector('input, select, textarea, button');
-          if (firstFocusable) firstFocusable.focus();
-        });
-      };
-
-      const closeModal = () => {
-        if (!modal) return;
-        if (typeof resetTypeahead === 'function') resetTypeahead('add');
-        modal.dataset.open = 'false';
-        const backdrop = modal.querySelector('[data-backdrop]');
-        const panel = modal.querySelector('[data-panel]');
-        if (backdrop) backdrop.classList.add('opacity-0');
-        if (panel) panel.classList.add('opacity-0', 'translate-y-4');
-        setTimeout(() => modal.classList.add('hidden'), 200);
-        if (openBtn) openBtn.focus();
-      };
-
-      if (openBtn) {
-        openBtn.addEventListener('click', () => {
-          if (modal) openModal();
-        });
-      }
-
-      closeBtns.forEach(btn => btn.addEventListener('click', closeModal));
-
-      if (modal) {
-        modal.addEventListener('click', (e) => {
-          if (e.target.matches('[data-backdrop]')) closeModal();
-        });
-      }
-
-      const relativeTime = (iso) => {
-        const dt = new Date(iso);
-        if (Number.isNaN(dt.getTime())) return 'never';
-        const now = new Date();
-        const diffSec = Math.max(0, Math.floor((now - dt) / 1000));
-        if (diffSec < 60) return 'just now';
-        const mins = Math.floor(diffSec / 60);
-        if (mins < 60) return `${mins} minute${mins === 1 ? '' : 's'} ago`;
-        const hours = Math.floor(mins / 60);
-        if (hours < 24) return `${hours} hour${hours === 1 ? '' : 's'} ago`;
-        const days = Math.floor(hours / 24);
-        return `${days} day${days === 1 ? '' : 's'} ago`;
-      };
-
-      document.querySelectorAll('[data-timestamp]').forEach(el => {
-        const value = el.getAttribute('data-timestamp');
-        if (!value) {
-          el.textContent = 'never';
-          return;
-        }
-        el.textContent = relativeTime(value);
-      });
-    });
-  </script>
+  {% if user is defined and user %}{% include "_add_modal.html" %}{% endif %}
 
   <!-- Toast notification -->
-  <div id="toast" class="hidden toast">
+  <div id="toast" class="hidden toast" role="status" aria-live="polite">
     <span id="toastMessage"></span>
   </div>
 
-  <script>
-    (function () {
-      var _toastTimer = null;
-      // {message, isPersistent} — tracks what's currently showing so interrupts can restore it
-      var _active = null;
-
-      window.showToast = function (message, duration) {
-        var toast = document.getElementById('toast');
-        var msg = document.getElementById('toastMessage');
-        if (!toast || !msg) return;
-
-        var isPersistent = !duration || duration >= 10000;
-        var isVisible = !toast.classList.contains('hidden');
-
-        clearTimeout(_toastTimer);
-
-        if (isVisible && !isPersistent && _active) {
-          // Short toast interrupting an existing one: show briefly, then restore previous
-          var previous = _active;
-          msg.textContent = message;
-          var interruptMs = Math.min(duration, 1500);
-          _toastTimer = setTimeout(function () {
-            msg.textContent = previous.message;
-            if (!previous.isPersistent) {
-              // Previous was also short — just hide
-              toast.classList.add('hidden');
-              _active = null;
-            }
-            // If previous was persistent it stays visible
-          }, interruptMs);
-          return;
-        }
-
-        // Normal: show the toast
-        msg.textContent = message;
-        toast.classList.remove('hidden');
-        _active = { message: message, isPersistent: isPersistent };
-
-        if (!isPersistent) {
-          _toastTimer = setTimeout(function () {
-            toast.classList.add('hidden');
-            _active = null;
-          }, duration);
-        }
-      };
-
-      window.hideToast = function () {
-        clearTimeout(_toastTimer);
-        var toast = document.getElementById('toast');
-        if (toast) toast.classList.add('hidden');
-        _active = null;
-      };
-
-      document.addEventListener('DOMContentLoaded', function () {
-        var params = new URLSearchParams(window.location.search);
-        var toastMsg = params.get('toast');
-        if (toastMsg) {
-          window.showToast(decodeURIComponent(toastMsg.replace(/\+/g, ' ')), 4000);
-          window.history.replaceState({}, '', window.location.pathname);
-        }
-      });
-    })();
-  </script>
-
   <!-- Floating scan status panel -->
   <div id="scanPanel" class="hidden scan-panel">
-    <div id="scanPill"
-         class="scan-pill"
-         onclick="toggleScanPanel()">
-      <div id="scanSpinner" class="spinner"></div>
-      <span id="scanPillText" style="font-size: var(--text-label);">Scanning…</span>
-    </div>
-    <div id="scanCard"
-         class="hidden scan-card">
+    <button id="scanPill" type="button" class="scan-pill" aria-expanded="false" aria-controls="scanCard">
+      <span id="scanSpinner" class="spinner" aria-hidden="true"></span>
+      <span id="scanPillText" class="text-label" role="status" aria-live="polite">Scanning…</span>
+    </button>
+    <div id="scanCard" class="hidden scan-card">
       <div class="flex items-center justify-between" style="margin-bottom:var(--space-sm)">
-        <span style="font-size: var(--text-body); font-weight:600">Scan Progress</span>
-        <button onclick="toggleScanPanel()" class="text-muted" style="font-size: var(--text-label); cursor:pointer">collapse</button>
+        <span class="text-body" style="font-weight:600">Scan progress</span>
       </div>
       <div id="scanActive" class="stack-sm"></div>
       <div id="scanLog" class="stack-sm" style="max-height:192px;overflow-y:auto"></div>
-      <div id="scanSummary" class="hidden text-success" style="font-size: var(--text-label); font-weight:600"></div>
+      <p id="scanSummary" class="hidden text-label" style="margin:var(--space-sm) 0 0 0;font-weight:600"></p>
     </div>
   </div>
 
   <script src="/static/typeahead.js"></script>
 
   <script>
-  window.VINYL_API_KEY = '';
+  window.CRATE_SIGNED_IN = {% if user is defined and user %}true{% else %}false{% endif %};
+  </script>
+
+  <script>
+  /* ---------- CSRF-aware fetch helpers ---------- */
+  (function () {
+    var meta = document.querySelector('meta[name="csrf-token"]');
+    window.CRATE_CSRF = meta ? meta.getAttribute('content') : '';
+
+    // A 401 on any of these endpoints means the session expired; send them to sign in.
+    function guardAuth(res) {
+      if (res.status === 401) {
+        window.location.href = '/login?next=' + encodeURIComponent(window.location.pathname);
+        throw new Error('unauthenticated');
+      }
+      return res;
+    }
+
+    window.cratePost = function (url) {
+      return fetch(url, {
+        method: 'POST',
+        headers: { 'X-CSRF-Token': window.CRATE_CSRF, 'Accept': 'application/json' }
+      }).then(guardAuth);
+    };
+
+    window.crateGet = function (url) {
+      return fetch(url, { headers: { 'Accept': 'application/json' } }).then(guardAuth);
+    };
+  })();
+  </script>
+
+  <script>
+  /* ---------- Modal controller (shared by add + edit modals) ---------- */
+  window.CrateModal = (function () {
+    var FOCUSABLE = 'a[href], button:not([disabled]), input:not([type="hidden"]), select, textarea, [tabindex]:not([tabindex="-1"])';
+    var openModal = null;
+    var lastFocused = null;
+
+    function panels(modal) {
+      return {
+        backdrop: modal.querySelector('[data-backdrop]'),
+        panel: modal.querySelector('[data-panel]')
+      };
+    }
+
+    function open(modal, opener) {
+      if (!modal) return;
+      lastFocused = opener || document.activeElement;
+      openModal = modal;
+      modal.classList.remove('hidden');
+      var p = panels(modal);
+      requestAnimationFrame(function () {
+        if (p.backdrop) p.backdrop.classList.remove('opacity-0');
+        if (p.panel) p.panel.classList.remove('opacity-0', 'translate-y-4');
+        var first = modal.querySelectorAll(FOCUSABLE)[0];
+        if (first) first.focus();
+      });
+    }
+
+    function close(modal) {
+      modal = modal || openModal;
+      if (!modal) return;
+      if (typeof resetTypeahead === 'function' && modal.dataset.typeaheadPrefix) {
+        resetTypeahead(modal.dataset.typeaheadPrefix);
+      }
+      var p = panels(modal);
+      if (p.backdrop) p.backdrop.classList.add('opacity-0');
+      if (p.panel) p.panel.classList.add('opacity-0', 'translate-y-4');
+      setTimeout(function () { modal.classList.add('hidden'); }, 200);
+      openModal = null;
+      if (lastFocused && document.contains(lastFocused)) lastFocused.focus();
+    }
+
+    document.addEventListener('keydown', function (e) {
+      if (!openModal) return;
+      if (e.key === 'Escape') { e.preventDefault(); close(openModal); return; }
+      if (e.key !== 'Tab') return;
+      var items = Array.prototype.filter.call(
+        openModal.querySelectorAll(FOCUSABLE),
+        function (el) { return el.offsetParent !== null; }
+      );
+      if (!items.length) return;
+      var first = items[0];
+      var last = items[items.length - 1];
+      if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
+      else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
+    });
+
+    document.addEventListener('click', function (e) {
+      var closer = e.target.closest ? e.target.closest('[data-close-modal]') : null;
+      if (closer) { close(closer.closest('.modal-overlay')); return; }
+      if (e.target.matches && e.target.matches('[data-backdrop]')) {
+        close(e.target.closest('.modal-overlay'));
+      }
+    });
+
+    return { open: open, close: close };
+  })();
+  </script>
+
+  <script>
+  /* ---------- Toast ---------- */
+  (function () {
+    var _timer = null;
+    var _active = null;
+
+    window.showToast = function (message, duration) {
+      var toast = document.getElementById('toast');
+      var msg = document.getElementById('toastMessage');
+      if (!toast || !msg) return;
+
+      var isPersistent = !duration || duration >= 10000;
+      var isVisible = !toast.classList.contains('hidden');
+      clearTimeout(_timer);
+
+      if (isVisible && !isPersistent && _active) {
+        var previous = _active;
+        msg.textContent = message;
+        _timer = setTimeout(function () {
+          msg.textContent = previous.message;
+          if (!previous.isPersistent) {
+            toast.classList.add('hidden');
+            _active = null;
+          }
+        }, Math.min(duration, 1500));
+        return;
+      }
+
+      msg.textContent = message;
+      toast.classList.remove('hidden');
+      _active = { message: message, isPersistent: isPersistent };
+
+      if (!isPersistent) {
+        _timer = setTimeout(function () {
+          toast.classList.add('hidden');
+          _active = null;
+        }, duration);
+      }
+    };
+
+    window.hideToast = function () {
+      clearTimeout(_timer);
+      var toast = document.getElementById('toast');
+      if (toast) toast.classList.add('hidden');
+      _active = null;
+    };
+
+    document.addEventListener('DOMContentLoaded', function () {
+      var params = new URLSearchParams(window.location.search);
+      var toastMsg = params.get('toast');
+      if (toastMsg) {
+        window.showToast(toastMsg, 5000);
+        window.history.replaceState({}, '', window.location.pathname);
+      }
+    });
+  })();
+  </script>
+
+  <script>
+  /* ---------- Relative timestamps ---------- */
+  (function () {
+    function relativeTime(iso) {
+      var dt = new Date(iso);
+      if (Number.isNaN(dt.getTime())) return 'never';
+      var diffSec = Math.max(0, Math.floor((Date.now() - dt.getTime()) / 1000));
+      if (diffSec < 60) return 'just now';
+      var mins = Math.floor(diffSec / 60);
+      if (mins < 60) return mins + ' minute' + (mins === 1 ? '' : 's') + ' ago';
+      var hours = Math.floor(mins / 60);
+      if (hours < 24) return hours + ' hour' + (hours === 1 ? '' : 's') + ' ago';
+      var days = Math.floor(hours / 24);
+      return days + ' day' + (days === 1 ? '' : 's') + ' ago';
+    }
+
+    document.addEventListener('DOMContentLoaded', function () {
+      document.querySelectorAll('[data-timestamp]').forEach(function (el) {
+        el.textContent = relativeTime(el.getAttribute('data-timestamp') || '');
+      });
+    });
+  })();
+  </script>
+
+  <script>
+  /* ---------- Scan panel ---------- */
   (function () {
     var _pollTimer = null;
     var _dismissTimer = null;
     var _expanded = false;
 
-    function startScan(itemId) {
-      // Disable all scan buttons
-      document.querySelectorAll('[data-scan-btn]').forEach(function(btn) {
-        btn.disabled = true;
-      });
+    function scanButtons() { return document.querySelectorAll('[data-scan-btn]'); }
 
-      var url = (itemId != null) ? '/api/scan/start?item_id=' + itemId : '/api/scan/start';
-      fetch(url, { method: 'POST', headers: { 'X-API-Key': window.VINYL_API_KEY || '' } })
-        .then(function(r) { return r.json(); })
-        .then(function(data) {
-          if (data.started) { showPanel(); startPolling(); }
-          else {
-            // Scan didn't start -- re-enable buttons
-            document.querySelectorAll('[data-scan-btn]').forEach(function(btn) {
-              btn.disabled = false;
-            });
+    function setButtonsBusy(busy) {
+      scanButtons().forEach(function (btn) {
+        btn.disabled = busy;
+        btn.setAttribute('aria-busy', busy ? 'true' : 'false');
+        var spin = btn.querySelector('[data-scan-spinner]');
+        if (spin) spin.hidden = !busy;
+      });
+    }
+
+    function startScan(itemId) {
+      setButtonsBusy(true);
+      var url = (itemId != null) ? '/api/scan/start?item_id=' + encodeURIComponent(itemId) : '/api/scan/start';
+      window.cratePost(url)
+        .then(function (r) { return r.json(); })
+        .then(function (data) {
+          if (data.started) {
+            showPanel();
+            startPolling();
+          } else {
+            setButtonsBusy(false);
+            window.showToast(data.reason || 'Could not start a scan right now.', 4000);
           }
         })
-        .catch(function(err) {
-          console.error(err);
-          // Error -- re-enable buttons
-          document.querySelectorAll('[data-scan-btn]').forEach(function(btn) {
-            btn.disabled = false;
-          });
+        .catch(function (err) {
+          if (err && err.message === 'unauthenticated') return;
+          setButtonsBusy(false);
+          window.showToast('Could not start a scan. Try again.', 4000);
         });
     }
 
@@ -240,12 +317,14 @@
     function hidePanel() {
       document.getElementById('scanPanel').classList.add('hidden');
       document.getElementById('scanCard').classList.add('hidden');
+      document.getElementById('scanPill').setAttribute('aria-expanded', 'false');
       _expanded = false;
     }
 
     function toggleScanPanel() {
       _expanded = !_expanded;
       document.getElementById('scanCard').classList.toggle('hidden', !_expanded);
+      document.getElementById('scanPill').setAttribute('aria-expanded', _expanded ? 'true' : 'false');
     }
 
     function startPolling() {
@@ -260,19 +339,23 @@
     }
 
     function pollStatus() {
-      fetch('/api/scan/status')
-        .then(function(r) { return r.json(); })
+      window.crateGet('/api/scan/status')
+        .then(function (r) { return r.json(); })
         .then(renderStatus)
-        .catch(console.error);
+        .catch(function () { /* transient network error: keep polling */ });
     }
 
-    function escHtml(str) {
-      return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+    function plural(n, word) { return n + ' ' + word + (n === 1 ? '' : 's'); }
+
+    function esc(str) {
+      return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;').replace(/"/g, '&quot;');
     }
 
     function renderStatus(s) {
       if (!s.is_running && !s.started_at) { hidePanel(); stopPolling(); return; }
       showPanel();
+
       var pillText = document.getElementById('scanPillText');
       var spinner = document.getElementById('scanSpinner');
       var activeEl = document.getElementById('scanActive');
@@ -282,40 +365,59 @@
       if (s.is_running) {
         spinner.classList.remove('hidden');
         pillText.textContent = 'Scanning ' + s.done + '/' + s.total + '…';
-        activeEl.innerHTML = s.current.map(function(c) {
-          return '<div class="text-muted" style="font-size:var(--text-label)">⟳ ' + escHtml(c.query) + ' <span class="text-faint">(' + escHtml(c.type) + ')</span></div>';
+        activeEl.innerHTML = s.current.map(function (c) {
+          return '<div class="text-muted text-label">' + esc(c.query) +
+                 ' <span class="text-faint">(' + esc(c.type) + ')</span></div>';
         }).join('');
       } else {
         spinner.classList.add('hidden');
-        pillText.textContent = 'Done — ' + s.new_total + ' new listing' + (s.new_total !== 1 ? 's' : '');
+        // Errors must be surfaced, or a run where every source failed reads as "nothing new".
+        var summary = plural(s.new_total, 'new listing');
+        if (s.errors > 0) summary += ' — ' + plural(s.errors, 'source') + ' failed';
+        pillText.textContent = 'Done — ' + summary;
         activeEl.innerHTML = '';
-        summaryEl.textContent = s.new_total + ' new listing' + (s.new_total !== 1 ? 's' : '') + ' found';
+        summaryEl.textContent = summary;
         summaryEl.classList.remove('hidden');
+        summaryEl.className = 'text-label ' + (s.errors > 0 ? 'text-destructive' : 'text-success');
         stopPolling();
         window.hideToast();
-        document.querySelectorAll('[data-scan-btn]').forEach(function(btn) {
-          btn.disabled = false;
-        });
+        setButtonsBusy(false);
         _dismissTimer = setTimeout(hidePanel, 10000);
       }
 
-      logEl.innerHTML = s.log.slice().reverse().map(function(entry) {
-        var typeLabel = entry.type ? ' <span class="text-faint">(' + escHtml(entry.type) + ')</span>' : '';
-        return '<div class="text-muted" style="font-size:var(--text-label)">' + escHtml(entry.query) + typeLabel + ' — <span class="text-success">+' + entry.new_listings + '</span></div>';
+      logEl.innerHTML = s.log.slice().reverse().map(function (entry) {
+        var typeLabel = entry.type ? ' <span class="text-faint">(' + esc(entry.type) + ')</span>' : '';
+        var failed = entry.failed_sources > 0
+          ? ' <span class="text-destructive">' + plural(entry.failed_sources, 'source') + ' failed</span>'
+          : '';
+        return '<div class="text-muted text-label">' + esc(entry.query) + typeLabel +
+               ' — <span class="text-success">+' + entry.new_listings + '</span>' + failed + '</div>';
       }).join('');
     }
 
-    document.addEventListener('DOMContentLoaded', function() {
-      fetch('/api/scan/status')
-        .then(function(r) { return r.json(); })
-        .then(function(s) { if (s.is_running) { showPanel(); startPolling(); } })
-        .catch(function(){});
+    document.addEventListener('DOMContentLoaded', function () {
+      if (!window.CRATE_SIGNED_IN) return;
+
+      var pill = document.getElementById('scanPill');
+      if (pill) pill.addEventListener('click', toggleScanPanel);
+
+      document.querySelectorAll('[data-scan-btn]').forEach(function (btn) {
+        btn.addEventListener('click', function () {
+          var id = btn.getAttribute('data-scan-item-id');
+          startScan(id ? id : null);
+        });
+      });
+
+      window.crateGet('/api/scan/status')
+        .then(function (r) { return r.json(); })
+        .then(function (s) { if (s.is_running) { setButtonsBusy(true); showPanel(); startPolling(); } })
+        .catch(function () {});
     });
 
     window.startScan = startScan;
-    window.toggleScanPanel = toggleScanPanel;
   })();
   </script>
 
+  {% block scripts %}{% endblock %}
 </body>
 </html>

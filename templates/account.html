@@ -1,0 +1,123 @@
+{% extends "base.html" %}
+
+{% block title %}Account · CRATE{% endblock %}
+
+{% block content %}
+<div class="prose" style="max-width: 720px;">
+  <h1>Account</h1>
+
+  {% if error %}
+    <p class="notice notice--error" role="alert">{{ error }}</p>
+  {% endif %}
+
+  <section class="panel" style="margin-top: var(--space-lg);">
+    <h2>Email</h2>
+    <div class="status-row">
+      <span class="text-body">{{ user.email }}</span>
+      {% if user.is_verified %}
+        <span class="flag">Confirmed</span>
+      {% else %}
+        <span class="flag flag--warn">Not confirmed</span>
+        <form method="post" action="/resend-verification" style="margin: 0;">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          <button type="submit" class="btn-secondary">Resend confirmation email</button>
+        </form>
+      {% endif %}
+    </div>
+
+    <p class="field-hint" style="margin-top: var(--space-md);">
+      Deal alerts go to your account email after confirmation.
+    </p>
+
+    {% if not mail_configured %}
+      <p class="notice" style="margin-top: var(--space-md);">
+        Email delivery is not enabled on this instance, so confirmation and alert emails will not
+        be sent. Everything else works as normal.
+      </p>
+    {% endif %}
+  </section>
+
+  <section class="panel">
+    <h2>Change password</h2>
+    <form method="post" action="/account/password" class="panel-form">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+      <div class="field">
+        <label for="currentPassword">Current password</label>
+        <input class="form-input" id="currentPassword" type="password" name="current_password"
+               required autocomplete="current-password">
+      </div>
+
+      <div class="field">
+        <label for="newPassword">New password</label>
+        <input class="form-input" id="newPassword" type="password" name="new_password"
+               required minlength="8" autocomplete="new-password" aria-describedby="newPasswordHint">
+        <span class="field-hint" id="newPasswordHint">At least 8 characters.</span>
+      </div>
+
+      <div>
+        <button type="submit" class="btn-cta">Change password</button>
+      </div>
+    </form>
+  </section>
+
+  <section class="panel panel--danger">
+    <h2>Delete account</h2>
+    <p class="field-hint" style="margin-top: 0;">
+      This removes your account, every wishlist item and every listing we found for you.
+      It cannot be undone.
+    </p>
+
+    <button type="button" id="deleteInitBtn" class="btn-destructive"
+            aria-expanded="false" aria-controls="deleteConfirm">
+      Delete my account
+    </button>
+
+    <div id="deleteConfirm" hidden>
+      <form method="post" action="/account/delete" class="panel-form" style="margin-top: var(--space-md);">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+        <div class="field">
+          <label for="deletePassword">Confirm with your password</label>
+          <input class="form-input" id="deletePassword" type="password" name="password"
+                 required autocomplete="current-password">
+        </div>
+
+        <div class="flex gap-sm items-center">
+          <button type="submit" class="btn-destructive">Permanently delete</button>
+          <button type="button" id="deleteCancelBtn" class="btn-secondary">Cancel</button>
+        </div>
+      </form>
+    </div>
+  </section>
+
+  <p style="margin-top: var(--space-xl);">
+    <a href="/privacy" class="link-underline">How we handle your data</a>
+  </p>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    var initBtn = document.getElementById('deleteInitBtn');
+    var confirm = document.getElementById('deleteConfirm');
+    var cancelBtn = document.getElementById('deleteCancelBtn');
+    if (!initBtn || !confirm || !cancelBtn) return;
+
+    initBtn.addEventListener('click', function () {
+      confirm.hidden = false;
+      initBtn.hidden = true;
+      initBtn.setAttribute('aria-expanded', 'true');
+      document.getElementById('deletePassword').focus();
+    });
+
+    cancelBtn.addEventListener('click', function () {
+      confirm.hidden = true;
+      initBtn.hidden = false;
+      initBtn.setAttribute('aria-expanded', 'false');
+      initBtn.focus();
+    });
+  });
+</script>
+{% endblock %}

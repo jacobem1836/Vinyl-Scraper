@@ -3,7 +3,9 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="csrf-token" content="{{ csrf_token() }}">
   <title>{% block title %}CRATE{% endblock %}</title>
+  <link rel="icon" href="/static/logo.svg" type="image/svg+xml">
   <link rel="preload" href="/static/fonts/BodoniModa-Bold.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="preload" href="/static/fonts/Inter-VariableFont_opsz,wght.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="stylesheet" href="/static/style.css">
@@ -17,6 +19,10 @@
     <section class="auth-card">
       {% block content %}{% endblock %}
     </section>
+    <nav class="footer-links" aria-label="Footer">
+      <a href="/privacy">Privacy</a>
+      <a href="/">Home</a>
+    </nav>
   </main>
 </body>
 </html>

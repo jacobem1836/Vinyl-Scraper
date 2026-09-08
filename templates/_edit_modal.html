@@ -1,0 +1,82 @@
+{# Edit-item modal. Included from index.html and item_detail.html.
+   Opened by any [data-edit-item] button; the button's data-* attributes populate the form. #}
+<div id="editItemModal" class="hidden modal-overlay" role="dialog" aria-modal="true"
+     aria-labelledby="editItemModalTitle" data-typeahead-prefix="edit">
+  <div data-backdrop class="modal-backdrop opacity-0"></div>
+  <div class="modal-center">
+    <div data-panel class="modal-panel opacity-0 translate-y-4">
+      <h2 id="editItemModalTitle" class="section-heading" style="margin-bottom: var(--space-md);">Edit wishlist item</h2>
+
+      <form id="editItemForm" action="" method="post" class="stack-md">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+        <div>
+          <label class="form-label" for="editQuery">What are you looking for?</label>
+          <div class="typeahead-wrapper">
+            <input id="editQuery" name="query" required placeholder="Search Discogs…" class="form-input"
+                   role="combobox" aria-expanded="false" aria-haspopup="listbox" aria-autocomplete="list"
+                   aria-controls="edit-typeahead-listbox" autocomplete="off">
+            <div id="editSpinner" class="typeahead-spinner hidden" aria-hidden="true"></div>
+            <div id="edit-typeahead-listbox" class="typeahead-dropdown" role="listbox" aria-label="Discogs matches"></div>
+          </div>
+          <input type="hidden" id="editDiscogsReleaseId" name="discogs_release_id" value="">
+        </div>
+
+        <div>
+          <label class="form-label" for="editType">Type</label>
+          <select id="editType" name="type" class="form-input">
+            <option value="album">Album</option>
+            <option value="artist">Artist</option>
+            <option value="label">Label</option>
+            <option value="subject">Key word/s</option>
+          </select>
+        </div>
+
+        <div>
+          <label class="form-label" for="editNotes">Notes (optional)</label>
+          <input id="editNotes" name="notes" class="form-input">
+        </div>
+
+        <div>
+          <label class="form-label" for="editNotifyPct">Alert me when a listing is this % below typical</label>
+          <input id="editNotifyPct" name="notify_below_pct" type="number" step="1" min="1" max="90" class="form-input">
+        </div>
+
+        <label class="flex items-center gap-sm text-muted text-label" for="editNotifyEmail">
+          <input type="hidden" name="notify_email" value="">
+          <input id="editNotifyEmail" type="checkbox" name="notify_email" class="form-checkbox">
+          Email me when deals are found
+        </label>
+
+        <div class="flex justify-end gap-sm" style="padding-top: var(--space-sm);">
+          <button type="button" data-close-modal class="btn-secondary">Cancel</button>
+          <button type="submit" class="btn-cta">Save changes</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    var modal = document.getElementById('editItemModal');
+    var form = document.getElementById('editItemForm');
+    if (!modal || !form) return;
+
+    document.querySelectorAll('[data-edit-item]').forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        form.action = '/wishlist/' + btn.dataset.id + '/edit';
+        document.getElementById('editQuery').value = btn.dataset.query || '';
+        document.getElementById('editType').value = btn.dataset.type || 'album';
+        document.getElementById('editNotes').value = btn.dataset.notes || '';
+        document.getElementById('editNotifyPct').value = btn.dataset.notifyBelowPct || '20';
+        document.getElementById('editNotifyEmail').checked = btn.dataset.notifyEmail === 'true';
+        document.getElementById('editDiscogsReleaseId').value = btn.dataset.discogsReleaseId || '';
+        window.CrateModal.open(modal, btn);
+      });
+    });
+
+    var typeSelect = document.getElementById('editType');
+    if (typeSelect && typeof initTypeahead === 'function') initTypeahead('edit', typeSelect);
+  });
+</script>
