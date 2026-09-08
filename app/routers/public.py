@@ -14,9 +14,10 @@ public_router = APIRouter(tags=["public"])
 
 @public_router.get("/")
 async def home(request: Request, db: Session = Depends(get_db)):
-    if current_user(request, db) is not None:
+    user = current_user(request, db)
+    if user is not None:
         from app.routers.wishlist import dashboard
-        return await dashboard(request, db, current_user(request, db))
+        return await dashboard(request, db, user)
     return templates.TemplateResponse(request, "landing.html", {"user": None, "joined": request.query_params.get("joined") == "1"})
 
 

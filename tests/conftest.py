@@ -4,7 +4,7 @@ import re
 import tempfile
 
 _TMP = tempfile.mkdtemp(prefix="crate-test-")
-os.environ["DATABASE_URL"] = f"sqlite:///{_TMP}/test.db"
+os.environ["DATABASE_URL"] = os.environ.get("CRATE_TEST_DATABASE_URL") or f"sqlite:///{_TMP}/test.db"
 os.environ["ENV"] = "development"
 os.environ["SIGNUP_MODE"] = "open"
 os.environ["RESEND_API_KEY"] = ""

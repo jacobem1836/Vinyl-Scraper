@@ -9,7 +9,7 @@ Keep migrations idempotent and dialect-aware; local dev is SQLite, production is
 """
 from datetime import datetime
 
-from sqlalchemy import Column, DateTime, Integer, String, inspect, text
+from sqlalchemy import Boolean, Column, DateTime, Integer, String, inspect, text
 from sqlalchemy.engine import Connection, Engine
 
 from app.config import settings
@@ -86,7 +86,23 @@ def _assign_legacy_owner(conn: Connection) -> None:
     print(f"[migrate] assigned {orphans} legacy wishlist rows to {email}")
 
 
+def _fix_postgres_integer_booleans(conn: Connection) -> None:
+    """Legacy hand-rolled migrations created boolean columns as INTEGER on Postgres; psycopg2 refuses to
+    write Python bools into them. Convert every ORM Boolean column that is not boolean in the database."""
+    if conn.dialect.name != "postgresql":
+        return
+    insp = inspect(conn)
+    for table in Base.metadata.sorted_tables:
+        db_types = {c["name"]: str(c["type"]).lower() for c in insp.get_columns(table.name)}
+        for col in table.columns:
+            if isinstance(col.type, Boolean) and col.name in db_types and "bool" not in db_types[col.name]:
+                conn.execute(text(f'ALTER TABLE {table.name} ALTER COLUMN "{col.name}" DROP DEFAULT'))
+                conn.execute(text(f'ALTER TABLE {table.name} ALTER COLUMN "{col.name}" TYPE BOOLEAN USING ("{col.name}" <> 0)'))
+                print(f"[migrate] converted {table.name}.{col.name} integer -> boolean")
+
+
 def _m001_multiuser(conn: Connection) -> None:
+    _fix_postgres_integer_booleans(conn)
     _assign_legacy_owner(conn)
     conn.execute(text("CREATE INDEX IF NOT EXISTS ix_wishlist_items_user_id ON wishlist_items (user_id)"))
     conn.execute(text("CREATE UNIQUE INDEX IF NOT EXISTS uq_listing_item_url ON listings (wishlist_item_id, url)"))

@@ -185,10 +185,8 @@ limiter = RateLimiter()
 
 
 def client_ip(request: Request) -> str:
-    fwd = request.headers.get("fly-client-ip") or request.headers.get("x-forwarded-for", "")
-    if fwd:
-        return fwd.split(",")[0].strip()
-    return request.client.host if request.client else "unknown"
+    # Fly's proxy sets Fly-Client-IP and strips any client-supplied copy; X-Forwarded-For's first hop is spoofable, so ignore it.
+    return request.headers.get("fly-client-ip") or (request.client.host if request.client else "unknown")
 
 
 def throttle(request: Request, bucket: str, limit: int, window_seconds: int, extra_key: str = "") -> None:
